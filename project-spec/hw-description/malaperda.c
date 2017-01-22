@@ -21,28 +21,18 @@
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
 
+static struct dma_chan *tx_chan;
+static struct dma_chan *rx_chan;
+static struct completion tx_cmp;
+static struct completion rx_cmp;
+static dma_cookie_t tx_cookie;
+static dma_cookie_t rx_cookie;
+static dma_addr_t tx_dma_handle;
+static dma_addr_t rx_dma_handle;
+
 #define WAIT 	1
 #define NO_WAIT 0
 #define DRIVER_NAME "malaperda"
-
-unsigned length = 4*1024*1024;
-//module_param(length, unsigned, S_IRUGO);
-
-struct dma_xfer {
-	struct dma_chan *chan;
-	struct dma_async_tx_descriptor *chan_desc;
-	dma_addr_t handle;
-	dma_cookie_t cookie;
-	struct completion cmp;
-	enum dma_data_direction dir;
-/*	int irq;
-	unsigned long mem_start;
-	unsigned long mem_end;
-	void __iomem *base_addr;*/
-	size_t size;
-	void *buf;
-} tx, rx;
-
 
 /* Handle a callback and indicate the DMA transfer is complete to another
  * thread of control
@@ -55,6 +45,42 @@ static void sync_callback(void *completion)
 
 	complete(completion);
 
+}
+
+/* Prepare a DMA buffer to be used in a DMA transaction, submit it to the DMA engine 
+ * to queued and return a cookie that can be used to track that status of the 
+ * transaction
+ */
+static dma_cookie_t prep_buffer(struct dma_chan *chan, dma_addr_t buf, size_t len, 
+				enum dma_transfer_direction dir, struct completion *cmp) 
+{
+	enum dma_ctrl_flags flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
+	struct dma_async_tx_descriptor *chan_desc;
+	dma_cookie_t cookie;
+
+	/* Step 5, create a buffer (channel)  descriptor for the buffer since only a  
+	 * single buffer is being used for this transfer
+	 */
+
+	chan_desc = dmaengine_prep_slave_single(chan, buf, len, dir, flags);
+
+	/* Make sure the operation was completed successfully
+	 */
+	if (!chan_desc) {
+		pr_err("dmaengine_prep_slave_single() returned NULL\n");
+		cookie = -EBUSY;
+	} else {
+		chan_desc->callback = sync_callback;
+		chan_desc->callback_param = cmp;
+
+		/* Step 6, submit the transaction to the DMA engine so that it's queued
+		 * up to be processed later and get a cookie to track it's status
+		 */
+		pr_info("will submit descriptor...\n");
+		cookie = dmaengine_submit(chan_desc);
+	
+	}
+	return cookie;
 }
 
 /* Start a DMA transfer that was previously submitted to the DMA engine and then
@@ -101,91 +127,96 @@ static cycles_t start_transfer(struct dma_chan *chan, struct completion *cmp,
 	return 0;
 }
 
-static int test_transfer(void)
+static void test_transfer(int dma_length)
 {
 	int i;
 	cycles_t cc;
 
-	pr_info("About start DMA: %8p -> %8p (size %d)\n", tx.buf, rx.buf, tx.size);
+	/* Step 3, allocate cached memory for the transmit and receive buffers to use for DMA
+	 * zeroing the destination buffer
+	 */
+
+	char *src_dma_buffer = kmalloc(dma_length, GFP_KERNEL);
+	char *dst_dma_buffer = kzalloc(dma_length, GFP_KERNEL);
+
+	pr_info("dma_length=%d, src_dma_buffer=%8p, dst_dma_buffer=%8p\n", dma_length, src_dma_buffer, dst_dma_buffer);
+
+	if (!src_dma_buffer || !dst_dma_buffer) {
+		pr_err("kmalloc() returned NULL!\n");
+		return;
+	}
 
 	/* Initialize the source buffer with known data to allow the destination buffer to
 	 * be checked for success
 	 */
-	for (i = 0; i < tx.size/8; i++) ((s64 *)tx.buf)[i] = i;
+	for (i = 0; i < dma_length/sizeof(src_dma_buffer[0]); i++) 
+		src_dma_buffer[i] = i;
 
 	/* Step 4, since the CPU is done with the buffers, transfer ownership to the DMA and don't
 	 * touch the buffers til the DMA is done, transferring ownership may involve cache operations
 	 */
-	tx.handle = dma_map_single(tx.chan->device->dev, tx.buf, tx.size, tx.dir = DMA_TO_DEVICE);	
-	if (dma_mapping_error(tx.chan->device->dev, tx.handle)) {
+	debug_dma_mapping_error(tx_chan->device->dev, tx_dma_handle);
+	debug_dma_mapping_error(rx_chan->device->dev, rx_dma_handle);
+	tx_dma_handle = dma_map_single(tx_chan->device->dev, src_dma_buffer, dma_length, DMA_TO_DEVICE);	
+	rx_dma_handle = dma_map_single(rx_chan->device->dev, dst_dma_buffer, dma_length, DMA_FROM_DEVICE);
+	
+	if (dma_mapping_error(tx_chan->device->dev, tx_dma_handle)) {
 		pr_err("dma_mapping_error() returned an error condition on TX buffer mapping!\n");
-		return -1;
 	};
-
-	rx.handle = dma_map_single(rx.chan->device->dev, rx.buf, rx.size, rx.dir = DMA_FROM_DEVICE);
-	if (dma_mapping_error(rx.chan->device->dev, rx.handle)) {
+	if (dma_mapping_error(rx_chan->device->dev, rx_dma_handle)) {
 		pr_err("dma_mapping_error() returned an error condition on RX buffer mapping!\n");
-		dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, tx.dir);
-		return -1;
 	};
 
-	pr_info("dma_map_single() handles: tx: %8x, rx: %8x (size %d)\n", tx.handle, rx.handle, sizeof(tx.handle));
+	//debug_dma_dump_map_errors
+	pr_info("dma_map_single() returned tx_dma_handle: %8x, rx_dma_handle: %8x\n", tx_dma_handle, rx_dma_handle);
 
+	
 	/* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
 	 * any errors
 	 */
-	tx.chan_desc = dmaengine_prep_slave_single(tx.chan, tx.handle, tx.size, 
-		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT);
-	if (tx.chan_desc == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return tx.cookie = -EBUSY;
-	}
-	rx.chan_desc = dmaengine_prep_slave_single(rx.chan, rx.handle, rx.size, 
-		DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT);
-	if (rx.chan_desc == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return rx.cookie = -EBUSY;
-	}
+	rx_cookie = prep_buffer(rx_chan, rx_dma_handle, dma_length, DMA_DEV_TO_MEM, &rx_cmp);
+	tx_cookie = prep_buffer(tx_chan, tx_dma_handle, dma_length, DMA_MEM_TO_DEV, &tx_cmp);
 
-	tx.chan_desc->callback = rx.chan_desc->callback = sync_callback;
-	tx.chan_desc->callback_param = &tx.cmp;
-	rx.chan_desc->callback_param = &rx.cmp;
-	tx.cookie = dmaengine_submit(tx.chan_desc);
-	rx.cookie = dmaengine_submit(rx.chan_desc);
-	
-	if (dma_submit_error(tx.cookie) || dma_submit_error(rx.cookie)) {
+	if (dma_submit_error(rx_cookie) || dma_submit_error(tx_cookie)) {
 		pr_err("prep_buffer(): dma_submit_error(): rx/tx cookie contains error!\n");
-		return -1;
+		return;
 	}
 
 	pr_info("starting transfers...\n");
 
 	/* Start both DMA transfers and wait for them to complete
 	 */
-	start_transfer(rx.chan, &rx.cmp, rx.cookie, NO_WAIT);
-	cc = start_transfer(tx.chan, &tx.cmp, tx.cookie, WAIT);
-	if (cc) pr_info("DMA size: %4d kiB, time: %7ld cycles, thoughput: %3ld MB/s\n", tx.size/1024, cc, CPU_FREQ*tx.size/cc);
+	start_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
+	cc = start_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);
+	if (cc) pr_info("DMA size: %4d kiB, time: %7ld cycles, thoughput: %3ld MB/s\n", dma_length/1024, cc, CPU_FREQ*dma_length/cc);
 	else pr_err("start_transfer(): returned zero cycle count!\n");
 
 	/* Step 10, the DMA is done with the buffers so transfer ownership back to the CPU so that
 	 * any cache operations needed are done
 	 */
 
-	dma_unmap_single(rx.chan->device->dev, rx.handle, rx.size, DMA_FROM_DEVICE);	
-	dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, DMA_TO_DEVICE);
+	dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);	
+	dma_unmap_single(tx_chan->device->dev, tx_dma_handle, dma_length, DMA_TO_DEVICE);
 
 	/* Verify the data in the destination buffer matches the source buffer 
 	 */
-	for (i = 0; i < tx.size/8; i++) if (((s64 *)rx.buf)[i] != ((s64 *)tx.buf)[i]) {
-		pr_err("transfer data check mismatch at i=%d\n", i);
-		break;
+	for (i = 0; i < dma_length/sizeof(dst_dma_buffer[0]); i++) {
+		if (dst_dma_buffer[i] != src_dma_buffer[i]) {
+			pr_err("transfer data check mismatch at i=%d\n", i);
+			break;	
+		}
 	}
-	return 0;
+
+	/* Step 11, free the buffers used for DMA back to the kernel
+	 */
+
+	kfree(src_dma_buffer);
+	kfree(dst_dma_buffer);	
+
 }
 
 static int malaperda_remove(struct platform_device *pdev)
 {
-	pr_info("module being removed...\n");
 //	struct device *dev = &pdev->dev;
 //	struct malaperda_local *lp = dev_get_drvdata(dev);
 //	free_irq(lp->irq, lp);
@@ -207,31 +238,44 @@ MODULE_DEVICE_TABLE(of, malaperda_of_match);
 
 static int malaperda_probe(struct platform_device *pdev)
 {
+	int i;
+//	dma_cap_mask_t mask;
+
 	pr_info("module probing...\n");
 
-	// Request the transmit and receive channels for the AXI DMA from the DMA engine
-	tx.chan = dma_request_slave_channel(&pdev->dev, "axidma_mm2s");
-	if (!tx.chan) { 
-		pr_err("dma_request_slave_channel() failed for TX channel (addr: %8p). "
-			"Did you load xilinx_dma?\n", tx.chan);
-		return -1;
-	}
+	/* Step 1, zero out the capability mask then initialize
+	 * it for a slave channel that is private
+	 */
 
-	rx.chan = dma_request_slave_channel(&pdev->dev, "axidma_s2mm");
-	if (!rx.chan) { 
-		pr_err("dma_request_slave_channel() failed for RX channel (addr: %8p). "
-			"Did you load xilinx_dma?\n", rx.chan);
-		dma_release_channel(tx.chan);
-		return -1;
-	}
-
-	pr_info("dma_request_slave_channel() done.\n");
+//	dma_cap_zero(mask);
+//	dma_cap_set(DMA_SLAVE | DMA_PRIVATE, mask);
 	
-	test_transfer();
+	/* Step 2, request the transmit and receive channels for the AXI DMA
+	 * from the DMA engine
+	 */
+	
+	tx_chan = dma_request_slave_channel(&pdev->dev, "axidma_mm2s");
+	if (tx_chan == NULL) { 
+		pr_err("dma_request_slave_channel() failed for TX channel (addr: %8p). Did you load xilinx_dma?\n", tx_chan);
+		return -1;
+	}
 
+	rx_chan = dma_request_slave_channel(&pdev->dev, "axidma_s2mm");
+	if (rx_chan == NULL) { 
+		pr_err("dma_request_slave_channel() failed for RX channel (addr: %8p). Did you load xilinx_dma?\n", rx_chan);
+		dma_release_channel(tx_chan);
+		return -1;
+	}
+
+
+	pr_info("dma_request_channel() done, calling test_transfer()...\n");
+	for (i = 1; i <= 1; i*=2) test_transfer(i*1024*1024);
+
+	/* Step 12, release the DMA channels back to the DMA engine
+	 */
 	pr_info("all tests complete, releasing channels...\n");
-	dma_release_channel(tx.chan);
-	dma_release_channel(rx.chan);
+	dma_release_channel(tx_chan);
+	dma_release_channel(rx_chan);
 	return 0;
 }
 
@@ -249,22 +293,13 @@ static struct platform_driver malaperda_driver = {
 static void __exit malaperda_exit(void)
 {
 	platform_driver_unregister(&malaperda_driver);
-	kfree(tx.buf);
-	kfree(rx.buf);
 	pr_info("module exiting...\n");
 }
 
 
 static int __init malaperda_init(void)
 {
-	pr_info("module starting...\n");
-	tx.size = rx.size = length;
-	tx.buf = kmalloc(length, GFP_KERNEL);
-	rx.buf = kmalloc(length, GFP_KERNEL);
-	if (tx.buf == NULL || rx.buf == NULL) {
-		pr_err("failed to allocate buffer memory!\n");
-		return -1;
-	}
+	pr_info("module started.\n");
 	return platform_driver_register(&malaperda_driver);
 }
 

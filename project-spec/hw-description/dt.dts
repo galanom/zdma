@@ -1,0 +1,10 @@
+/dts-v1/;
+/include/ "system-conf.dtsi"
+/ {
+	malapeos: malaperda@1 {
+		compatible ="peokroustis,malaperda";
+		dmas = <&axi_dma_0 0
+			&axi_dma_0 1>;
+		dma-names = "axidma_mm2s", "axidma_s2mm";
+	} ;
+};

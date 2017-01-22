@@ -106,7 +106,18 @@ static int test_transfer(void)
 	int i;
 	cycles_t cc;
 
-	pr_info("About start DMA: %8p -> %8p (size %d)\n", tx.buf, rx.buf, tx.size);
+	tx.buf = dma_alloc_coherent(tx.chan->device->dev, tx.size, &tx.handle, GFP_KERNEL);
+	if (tx.buf == NULL) {
+		pr_err("fatal: dma_alloc_coherent() returned NULL!\n");
+		return -1;
+	}
+	rx.buf = dma_alloc_coherent(rx.chan->device->dev, rx.size, &rx.handle, GFP_KERNEL);
+	if (rx.buf == NULL) {
+		pr_err("fatal: dma_alloc_coherent() returned NULL!\n");
+		dma_free_coherent(tx.chan->device->dev, tx.size, tx.buf, tx.handle);
+		return -1;
+	}
+	pr_info("dma_alloc_coherent(): tx.buf=%x, rx.buf=%x, tx.handle=%x, rx.handle=%x.\n", tx.buf, rx.buf, tx.handle, rx.handle);
 
 	/* Initialize the source buffer with known data to allow the destination buffer to
 	 * be checked for success
@@ -115,8 +126,9 @@ static int test_transfer(void)
 
 	/* Step 4, since the CPU is done with the buffers, transfer ownership to the DMA and don't
 	 * touch the buffers til the DMA is done, transferring ownership may involve cache operations
-	 */
-	tx.handle = dma_map_single(tx.chan->device->dev, tx.buf, tx.size, tx.dir = DMA_TO_DEVICE);	
+
+*/
+/*	tx.handle = dma_map_single(tx.chan->device->dev, tx.buf, tx.size, tx.dir = DMA_TO_DEVICE);	
 	if (dma_mapping_error(tx.chan->device->dev, tx.handle)) {
 		pr_err("dma_mapping_error() returned an error condition on TX buffer mapping!\n");
 		return -1;
@@ -128,8 +140,8 @@ static int test_transfer(void)
 		dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, tx.dir);
 		return -1;
 	};
-
-	pr_info("dma_map_single() handles: tx: %8x, rx: %8x (size %d)\n", tx.handle, rx.handle, sizeof(tx.handle));
+*/
+//	pr_info("dma_map_single() handles: tx: %8x, rx: %8x (size %d)\n", tx.handle, rx.handle, sizeof(tx.handle));
 
 	/* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
 	 * any errors
@@ -171,8 +183,10 @@ static int test_transfer(void)
 	 * any cache operations needed are done
 	 */
 
-	dma_unmap_single(rx.chan->device->dev, rx.handle, rx.size, DMA_FROM_DEVICE);	
-	dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, DMA_TO_DEVICE);
+	dma_free_coherent(tx.chan->device->dev, tx.size, tx.buf, tx.handle);
+	dma_free_coherent(rx.chan->device->dev, rx.size, rx.buf, rx.handle);
+//	dma_unmap_single(rx.chan->device->dev, rx.handle, rx.size, DMA_FROM_DEVICE);	
+//	dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, DMA_TO_DEVICE);
 
 	/* Verify the data in the destination buffer matches the source buffer 
 	 */
@@ -249,8 +263,8 @@ static struct platform_driver malaperda_driver = {
 static void __exit malaperda_exit(void)
 {
 	platform_driver_unregister(&malaperda_driver);
-	kfree(tx.buf);
-	kfree(rx.buf);
+//	kfree(tx.buf);
+//	kfree(rx.buf);
 	pr_info("module exiting...\n");
 }
 
@@ -259,12 +273,12 @@ static int __init malaperda_init(void)
 {
 	pr_info("module starting...\n");
 	tx.size = rx.size = length;
-	tx.buf = kmalloc(length, GFP_KERNEL);
-	rx.buf = kmalloc(length, GFP_KERNEL);
-	if (tx.buf == NULL || rx.buf == NULL) {
+//	tx.buf = kmalloc(length, GFP_KERNEL);
+//	rx.buf = kmalloc(length, GFP_KERNEL);
+/*	if (tx.buf == NULL || rx.buf == NULL) {
 		pr_err("failed to allocate buffer memory!\n");
 		return -1;
-	}
+	}*/
 	return platform_driver_register(&malaperda_driver);
 }
 

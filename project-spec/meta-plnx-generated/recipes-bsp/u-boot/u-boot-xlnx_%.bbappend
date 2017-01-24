@@ -8,6 +8,8 @@
 
 
 
+
+
 UBOOT_MAKE_TARGET_append = " EXT_DTB=${DEPLOY_DIR_IMAGE}/${MACHINE}-system.dtb"
 SRC_URI_append ="\
     file://config.cfg\

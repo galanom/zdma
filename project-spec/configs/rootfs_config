@@ -213,8 +213,8 @@ CONFIG_mtd-utils=y
 # bash 
 #
 CONFIG_bash=y
-# CONFIG_bash-dbg is not set
 # CONFIG_bash-dev is not set
+# CONFIG_bash-dbg is not set
 
 #
 # sysvinit 
@@ -246,8 +246,8 @@ CONFIG_bash=y
 # update-rc.d 
 #
 # CONFIG_update-rc.d is not set
-# CONFIG_update-rc.d-dev is not set
 # CONFIG_update-rc.d-dbg is not set
+# CONFIG_update-rc.d-dev is not set
 
 #
 # usbutils 
@@ -1576,12 +1576,12 @@ CONFIG_run-postinsts=y
 #
 # gcc-runtime-xilinx 
 #
+# CONFIG_libstdcPLUSPLUS-dev is not set
 # CONFIG_libstdcPLUSPLUS is not set
 # CONFIG_libitm is not set
-# CONFIG_libssp is not set
-# CONFIG_libstdcPLUSPLUS-dev is not set
-# CONFIG_libatomic is not set
 # CONFIG_libatomic-dev is not set
+# CONFIG_libssp is not set
+# CONFIG_libatomic is not set
 # CONFIG_libssp-dev is not set
 # CONFIG_libitm-dev is not set
 

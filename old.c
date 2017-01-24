@@ -1,1 +1,0 @@
-project-spec/meta-user/recipes-modules/malaperda/malaperda/mal.c

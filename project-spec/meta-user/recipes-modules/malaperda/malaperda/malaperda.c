@@ -25,7 +25,7 @@
 #define NO_WAIT 0
 #define DRIVER_NAME "malaperda"
 
-unsigned length = 4*1024*1024;
+unsigned length = 1024;
 //module_param(length, unsigned, S_IRUGO);
 
 struct dma_xfer {
@@ -103,9 +103,11 @@ static cycles_t start_transfer(struct dma_chan *chan, struct completion *cmp,
 
 static int test_transfer(void)
 {
+	u32 *p;
+	u32 d=0xdeadbeef;
 	int i;
 	cycles_t cc;
-
+/*
 	tx.buf = dma_alloc_coherent(tx.chan->device->dev, tx.size, &tx.handle, GFP_KERNEL);
 	if (tx.buf == NULL) {
 		pr_err("fatal: dma_alloc_coherent() returned NULL!\n");
@@ -116,13 +118,24 @@ static int test_transfer(void)
 		pr_err("fatal: dma_alloc_coherent() returned NULL!\n");
 		dma_free_coherent(tx.chan->device->dev, tx.size, tx.buf, tx.handle);
 		return -1;
-	}
+	}*/
+	tx.size = rx.size = 1024;
+	tx.handle = 0xC0000000;
+	rx.handle = tx.handle + tx.size;
+	tx.buf = ioremap(tx.handle, tx.size);
+	rx.buf = ioremap(rx.handle, rx.size);
+	p = ioremap(0x40000000, tx.size+rx.size);
+	pr_info("ioremap to %p\n", p);
+	iowrite32(d, p);
+	pr_info("iowrite32() ok\n");
+
+	pr_info("TX[0]=%d, RX[0]=%d\n", ioread32(p), ioread32(p+tx.size/4));
 	pr_info("dma_alloc_coherent(): tx.buf=%x, rx.buf=%x, tx.handle=%x, rx.handle=%x.\n", tx.buf, rx.buf, tx.handle, rx.handle);
 
 	/* Initialize the source buffer with known data to allow the destination buffer to
 	 * be checked for success
 	 */
-	for (i = 0; i < tx.size/8; i++) ((s64 *)tx.buf)[i] = i;
+////	for (i = 0; i < tx.size/8; i++) ((s64 *)tx.buf)[i] = i;
 
 	/* Step 4, since the CPU is done with the buffers, transfer ownership to the DMA and don't
 	 * touch the buffers til the DMA is done, transferring ownership may involve cache operations
@@ -146,6 +159,8 @@ static int test_transfer(void)
 	/* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
 	 * any errors
 	 */
+
+	 
 	tx.chan_desc = dmaengine_prep_slave_single(tx.chan, tx.handle, tx.size, 
 		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT);
 	if (tx.chan_desc == NULL) {
@@ -183,17 +198,19 @@ static int test_transfer(void)
 	 * any cache operations needed are done
 	 */
 
-	dma_free_coherent(tx.chan->device->dev, tx.size, tx.buf, tx.handle);
-	dma_free_coherent(rx.chan->device->dev, rx.size, rx.buf, rx.handle);
+	pr_info("TX[0]=%d, RX[0]=%d\n", ioread32(p), ioread32(p+tx.size/4));
+
+////	dma_free_coherent(tx.chan->device->dev, tx.size, tx.buf, tx.handle);
+////	dma_free_coherent(rx.chan->device->dev, rx.size, rx.buf, rx.handle);
 //	dma_unmap_single(rx.chan->device->dev, rx.handle, rx.size, DMA_FROM_DEVICE);	
 //	dma_unmap_single(tx.chan->device->dev, tx.handle, tx.size, DMA_TO_DEVICE);
 
 	/* Verify the data in the destination buffer matches the source buffer 
 	 */
-	for (i = 0; i < tx.size/8; i++) if (((s64 *)rx.buf)[i] != ((s64 *)tx.buf)[i]) {
-		pr_err("transfer data check mismatch at i=%d\n", i);
+/*	for (i = 0; i < tx.size/8; i++) if (((s64 *)rx.buf)[i] != ((s64 *)tx.buf)[i]) {
+		pr_err("data check mismatch at i=%d\n", i);
 		break;
-	}
+	} else	pr_info("data check ok.\n");*/
 	return 0;
 }
 
@@ -279,6 +296,11 @@ static int __init malaperda_init(void)
 		pr_err("failed to allocate buffer memory!\n");
 		return -1;
 	}*/
+//	p=ioremap(0x40000000, 128);
+//	iowrite32(d0, p);
+//	d1 = ioread32(p);
+//	pr_info("wrote %8x, read back %8x\n", d0, d1);	
+
 	return platform_driver_register(&malaperda_driver);
 }
 

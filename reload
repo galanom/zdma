@@ -1,0 +1,4 @@
+#!/bin/sh
+cp ../axidma_wrapper.hdf system.hdf
+cp ../../dma.runs/impl_1/axidma_wrapper.bit download.bit
+petalinux-config --get-hw-description .

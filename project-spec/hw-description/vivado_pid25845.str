@@ -1,0 +1,158 @@
+/*
+
+Vivado v2016.4 (64-bit)
+SW Build 1733598 on Wed Dec 14 22:35:42 MST 2016
+Process ID: 25845
+
+Current time: 	1/24/17 6:00:56 PM EET
+Time zone: 	Eastern European Time (Europe/Athens)
+
+OS: NAME="Linux Mint"
+Version: 4.4.0-21-generic
+Architecture: amd64
+Available processors (cores): 4
+
+DISPLAY: :0
+Screen size: 1920x1080
+Screen resolution (DPI): 96
+Available screens: 1
+Default font: family=Dialog,name=Dialog,style=plain,size=12
+
+Java version: 	1.8.0_66 64-bit
+Java home: 	/opt/Xilinx/Vivado/2016.4/tps/lnx64/jre
+
+User name: 	galanom
+User home directory: /home/galanom
+User working directory: /home/galanom/work/dma/dma.sdk/driver
+User country: 	US
+User language: 	en
+User locale: 	en_US
+
+RDI base root directory: /opt/Xilinx/Vivado
+RDI data directory: /opt/Xilinx/Vivado/2016.4/data
+RDI bin directory: /opt/Xilinx/Vivado/2016.4/bin
+
+Vivado preferences path: /home/galanom/.Xilinx/Vivado/2016.4/vivado.ini
+Vivado layouts directory: /home/galanom/.Xilinx/Vivado/2016.4/layouts
+
+GUI allocated memory:	165 MB
+GUI max memory:		3,052 MB
+Engine allocated memory: 4,847 MB
+
+*/
+
+// TclEventType: START_GUI
+// Tcl Message: start_gui 
+// [GUI Memory]: 30 MB (+29345kb) [00:00:08]
+// [Engine Memory]: 4,839 MB (+4922464kb) [00:00:08]
+selectList(PAResourceEtoH.GettingStartedView_RECENT_PROJECTS, "/home/galanom/work/dma/dma.xpr", 0); // q:k (JViewport:JComponent, cd:JFrame)
+// bt:g (cd:JFrame):  Open Project : addNotify
+// Opening Vivado Project: /home/galanom/work/dma/dma.xpr. Version: Vivado v2016.4 
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: MSGMGR_MOVEMSG
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_CURRENT
+// TclEventType: IP_LOCK_CHANGE
+// [GUI Memory]: 41 MB (+9947kb) [00:00:12]
+// HMemoryUtils.trashcanNow. Engine heap size: 4,891 MB. GUI used memory: 22 MB. Current time: 1/24/17 6:00:58 PM EET
+// TclEventType: IP_LOCK_CHANGE
+// TclEventType: PROJECT_NEW
+// [GUI Memory]: 44 MB (+441kb) [00:00:16]
+// [GUI Memory]: 61 MB (+15292kb) [00:00:19]
+// Tcl Message: open_project /home/galanom/work/dma/dma.xpr 
+// Tcl Message: Scanning sources... Finished scanning sources 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1704] No user IP repositories specified INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2016.4/data/ip'. 
+// Tcl Message: open_project: Time (s): cpu = 00:00:12 ; elapsed = 00:00:11 . Memory (MB): peak = 5900.062 ; gain = 163.938 ; free physical = 67 ; free virtual = 11546 
+// Project name: dma; location: /home/galanom/work/dma; part: xc7z020clg484-1
+// Elapsed time: 13 seconds
+dismissDialog("Open Project"); // bt:g (cd:JFrame)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: DG_UPDATE_GRAPH
+// TclEventType: DG_ANALYSIS_MSG_RESET
+// TclEventType: DG_UPDATE_GRAPH
+// TclEventType: DG_ANALYSIS_MSG_RESET
+// TclEventType: DG_UPDATE_GRAPH
+// HMemoryUtils.trashcanNow. Engine heap size: 5,032 MB. GUI used memory: 33 MB. Current time: 1/24/17 6:07:33 PM EET
+// Elapsed time: 633 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, IP Integrator, Open Block Design]", 7, false); // u:K (t:D, cd:JFrame)
+// Run Command: PAResourceCommand.PACommandNames_OPEN_BLOCK_DESIGN
+// bt:g (cd:JFrame):  Open Block Design : addNotify
+// TclEventType: LOAD_FEATURE
+// Tcl Message: open_bd_design {/home/galanom/work/dma/dma.srcs/sources_1/bd/axidma/axidma.bd} 
+// TclEventType: RSB_PROPERTY_CHANGE
+// TclEventType: LOAD_FEATURE
+// TclEventType: RSB_PROPERTY_CHANGE
+// Tcl Message: Adding cell -- xilinx.com:ip:processing_system7:5.5 - processing_system7_0 
+// TclEventType: RSB_PROPERTY_CHANGE
+// TclEventType: RSB_OPEN_DIAGRAM
+// TclEventType: RSB_CONNECTION_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 5,061 MB. GUI used memory: 38 MB. Current time: 1/24/17 6:11:46 PM EET
+// TclEventType: RSB_CONNECTION_CHANGE
+// TclEventType: RSB_LOCK_CHANGE
+// Tcl Message: open_bd_design: Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 5984.797 ; gain = 49.176 ; free physical = 1250 ; free virtual = 11603 
+// 'bu' command handler elapsed time: 7 seconds
+dismissDialog("Open Block Design"); // bt:g (cd:JFrame)
+// [GUI Memory]: 70 MB (+6998kb) [00:11:04]
+// [Engine Memory]: 5,081 MB (+613kb) [00:11:04]
+// Run Command: PAResourceCommand.PACommandNames_CUSTOMIZE_RSB_BLOC
+// L:bt (cd:JFrame):  Re-customize IP : addNotify
+// p:g (cd:JFrame): Re-customize IP: addNotify
+// cm:q (p:g): Configuration Presets: addNotify
+// [GUI Memory]: 76 MB (+2414kb) [00:11:08]
+dismissDialog("Re-customize IP"); // L:bt (cd:JFrame)
+// [GUI Memory]: 98 MB (+19175kb) [00:11:10]
+// Elapsed time: 14 seconds
+selectButton("PS-PL Configuration", "PS-PL Configuration"); // k:JideButton (ci:ButtonPanel, p:g)
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "DMA Controller ; DMA Controller ; DMA Controller", 5); // aA:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "GP Slave AXI Interface ; GP Slave AXI Interface ; GP Slave AXI Interface", 2); // aA:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "General ; General ; General", 0); // aA:cv (JViewport:JComponent, p:g)
+// Elapsed time: 47 seconds
+selectTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "PS-PL Debug interface ; 0 ; Enables PL debug signals to PS and vice-versa", 5, "0", 1, false); // aA:cv (JViewport:JComponent, p:g)
+selectTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "PS-PL Debug interface ; 1 ; Enables PL debug signals to PS and vice-versa", 5, "PS-PL Debug interface", 0, false); // aA:cv (JViewport:JComponent, p:g)
+selectTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "PS-PL Debug interface ; 1 ; Enables PL debug signals to PS and vice-versa", 5, "1", 1, false); // aA:cv (JViewport:JComponent, p:g)
+selectTreeTableHeader(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "Description", 2); // aA:cv (JViewport:JComponent, p:g)
+selectTreeTableHeader(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "Description", 2); // aA:cv (JViewport:JComponent, p:g)
+selectTreeTableHeader(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "Description", 2); // aA:cv (JViewport:JComponent, p:g)
+// Elapsed time: 12 seconds
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "Address Editor ; Address Editor ; Address Editor", 15); // aA:cv (JViewport:JComponent, p:g)
+// Elapsed time: 29 seconds
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "Allow access to PS/SLCR registers ; 0 ; Allow address mapping to PS and SLCR register space", 19); // aA:cv (JViewport:JComponent, p:g)
+// [GUI Memory]: 105 MB (+1387kb) [00:14:15]
+// [GUI Memory]: 111 MB (+640kb) [00:14:40]
+// Elapsed time: 743 seconds
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "HP Slave AXI Interface ; HP Slave AXI Interface ; HP Slave AXI Interface", 27); // aA:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "ACP Slave AXI Interface ; ACP Slave AXI Interface ; ACP Slave AXI Interface", 32); // aA:cv (JViewport:JComponent, p:g)
+// [GUI Memory]: 124 MB (+8756kb) [00:25:51]
+expandTreeTable(PAResourceEtoH.GenSettingTreeTablePanel_GEN_SETTING_TREE_TABLE, "PS-PL Cross Trigger interface ; 0 ; Enables PL cross trigger signals to PS and vice-versa", 40); // aA:cv (JViewport:JComponent, p:g)
+selectButton("Peripheral I/O Pins", "Peripheral I/O Pins"); // k:JideButton (ci:ButtonPanel, p:g)
+// Elapsed time: 11 seconds
+expandTreeTable(PAResourceItoN.MIOTablePagePanel_MIO_TABLE, (String) null, 1); // bv:ab (JViewport:JComponent, p:g)
+// Elapsed time: 10 seconds
+selectTreeTable(PAResourceItoN.MIOTablePagePanel_MIO_TABLE, (String) null, 1, (String) null, 0, true); // bv:ab (JViewport:JComponent, p:g) - Node
+selectTreeTable(PAResourceItoN.MIOTablePagePanel_MIO_TABLE, (String) null, 4, (String) null, 0, false); // bv:ab (JViewport:JComponent, p:g)
+selectButton("MIO Configuration", "MIO Configuration"); // k:JideButton (ci:ButtonPanel, p:g)
+// [GUI Memory]: 135 MB (+4674kb) [00:26:26]
+expandTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "Memory Interfaces ; Memory Interfaces ; Memory Interfaces ; Memory Interfaces ; Memory Interfaces ; Memory Interfaces ; Memory Interfaces ; Memory Interfaces", 0); // aX:cv (JViewport:JComponent, p:g)
+selectTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "SRAM/NOR Flash ;  ;  ;  ;  ;  ;  ; ", 2, "SRAM/NOR Flash", 0, true); // aX:cv (JViewport:JComponent, p:g) - Node
+expandTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "SRAM/NOR Flash ;  ;  ;  ;  ;  ;  ; ", 2); // aX:cv (JViewport:JComponent, p:g)
+selectTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "SRAM/NOR Flash ;  ;  ;  ;  ;  ;  ; ", 2, "SRAM/NOR Flash", 0, true, false, false, false, true, false); // aX:cv (JViewport:JComponent, p:g) - Popup Trigger - Node
+selectTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "SRAM/NOR Flash ;  ;  ;  ;  ;  ;  ; ", 2, "SRAM/NOR Flash", 0, true); // aX:cv (JViewport:JComponent, p:g) - Node
+selectTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "SRAM/NOR Flash ;  ;  ;  ;  ;  ;  ; ", 2, "SRAM/NOR Flash", 0, true); // aX:cv (JViewport:JComponent, p:g) - Node
+expandTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "I/O Peripherals ; I/O Peripherals ; I/O Peripherals ; I/O Peripherals ; I/O Peripherals ; I/O Peripherals ; I/O Peripherals ; I/O Peripherals", 10); // aX:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "Application Processor Unit ; Application Processor Unit ; Application Processor Unit ; Application Processor Unit ; Application Processor Unit ; Application Processor Unit ; Application Processor Unit ; Application Processor Unit", 26); // aX:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceItoN.MIOConfigTreeTablePanel_MIO_CONFIG_TREE_TABLE, "Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug ; Programmable Logic Test and Debug", 30); // aX:cv (JViewport:JComponent, p:g)
+selectButton("Clock Configuration", "Clock Configuration"); // k:JideButton (ci:ButtonPanel, p:g)
+expandTreeTable(PAResourceAtoD.ClkConfigTreeTablePanel_CLK_CONFIG_TREE_TABLE, "Processor/Memory Clocks ; Processor/Memory Clocks ; Processor/Memory Clocks ; Processor/Memory Clocks ; Processor/Memory Clocks ; Processor/Memory Clocks", 0); // A:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceAtoD.ClkConfigTreeTablePanel_CLK_CONFIG_TREE_TABLE, "IO Peripheral Clocks ; IO Peripheral Clocks ; IO Peripheral Clocks ; IO Peripheral Clocks ; IO Peripheral Clocks ; IO Peripheral Clocks", 3); // A:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceAtoD.ClkConfigTreeTablePanel_CLK_CONFIG_TREE_TABLE, "PL Fabric Clocks ; PL Fabric Clocks ; PL Fabric Clocks ; PL Fabric Clocks ; PL Fabric Clocks ; PL Fabric Clocks", 11); // A:cv (JViewport:JComponent, p:g)
+selectButton("DDR Configuration", "DDR Configuration"); // k:JideButton (ci:ButtonPanel, p:g)
+expandTreeTable(PAResourceAtoD.DDRConfigTreeTablePanel_DDR_CONFIG_TREE_TABLE, "Enable Advanced options ; 0 ;  Enable Advanced DDR QoS settings", 4); // P:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceAtoD.DDRConfigTreeTablePanel_DDR_CONFIG_TREE_TABLE, "Write Priority ; Write Priority ; Write Priority", 6); // P:cv (JViewport:JComponent, p:g)
+expandTreeTable(PAResourceAtoD.DDRConfigTreeTablePanel_DDR_CONFIG_TREE_TABLE, "Read Priority ; Read Priority ; Read Priority", 5); // P:cv (JViewport:JComponent, p:g)
+selectButton("SMC Timing Calculation", "SMC Timing Calculation"); // k:JideButton (ci:ButtonPanel, p:g)
+selectButton("Interrupts", "Interrupts"); // k:JideButton (ci:ButtonPanel, p:g)
+dismissDialog("Re-customize IP"); // p:g (cd:JFrame)
+// HMemoryUtils.trashcanNow. Engine heap size: 5,174 MB. GUI used memory: 91 MB. Current time: 1/24/17 6:41:49 PM EET
+// HMemoryUtils.trashcanNow. Engine heap size: 5,174 MB. GUI used memory: 88 MB. Current time: 1/24/17 7:11:48 PM EET
+// HMemoryUtils.trashcanNow. Engine heap size: 5,174 MB. GUI used memory: 87 MB. Current time: 1/24/17 7:41:49 PM EET

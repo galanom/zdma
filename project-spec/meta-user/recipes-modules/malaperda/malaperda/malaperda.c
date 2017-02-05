@@ -26,8 +26,9 @@
 #define WAIT 	1
 #define NO_WAIT 0
 #define DRIVER_NAME "malaperda"
+extern int xilinx_vdma_channel_set_config(void *, void *);
 
-unsigned length = 4096*1024;
+static unsigned length = 4096*1024;
 //module_param(length, unsigned, S_IRUGO);
 
 /*struct dma_xfer {
@@ -45,7 +46,7 @@ unsigned length = 4096*1024;
 	void *buf;
 } tx, rx;
 */
-struct dma_transaction {
+static struct dma_transaction {
 	struct platform_device *dmac;
 	bool coherent;			// coherent or streaming API
 	size_t size;
@@ -71,41 +72,6 @@ struct dma_transaction {
 static cycles_t start_transfer(struct dma_chan *chan, struct completion *cmp, 
 					dma_cookie_t cookie, int wait)
 {
-	unsigned long timeout = msecs_to_jiffies(3000);
-	enum dma_status status;
-	cycles_t t1=-1, t0=-1;
-
-	/* Step 7, initialize the completion before using it and then start the 
-	 * DMA transaction which was previously queued up in the DMA engine
-	 */
-
-	init_completion(cmp);
-	t0 = get_cycles();
-	dma_async_issue_pending(chan);
-	if (wait) {
-		pr_info("Waiting for DMA to complete...\n");
-
-		/* Step 8, wait for the transaction to complete, timeout, or get
-		 * get an error
-		 */
-
-		timeout = wait_for_completion_timeout(cmp, timeout);
-		t1 = get_cycles();
-		status = dma_async_is_tx_complete(chan, cookie, NULL, NULL);
-
-		/* Determine if the transaction completed without a timeout and
-		 * withtout any errors
-		 */
-		if (timeout == 0)  {
-			pr_err("wait_for_completion_timeout(): DMA timed out!\n");
-		} else if (status != DMA_COMPLETE) {
-			pr_err("dma_async_is_tx_complete(): DMA returned completion callback status of: %s\n",
-			       status == DMA_ERROR ? "error" : "in progress");
-		}
-		pr_info("leaving with time diff = %lu\n", t1-t0);
-		return t1-t0;
-	}
-	pr_info("leaving with no wait\n");
 	return 0;
 }
 
@@ -121,7 +87,7 @@ static void sync_callback(void *completion)
 }
 
 
-int dma_init(struct dma_transaction *tr, struct platform_device *pdev, bool coherent, size_t size)
+static int dma_init(struct dma_transaction *tr, struct platform_device *pdev, bool coherent, size_t size)
 {
 	if (tr == NULL) return -EINVAL;
 	tr->dmac = pdev;
@@ -130,7 +96,7 @@ int dma_init(struct dma_transaction *tr, struct platform_device *pdev, bool cohe
 	return 0;
 }
 
-int dma_reserve_channels(struct dma_transaction *tr)
+static int dma_reserve_channels(struct dma_transaction *tr)
 {
 	// Request the transmit and receive channels for the AXI DMA from the DMA engine
 	tr->tx.chan = dma_request_slave_channel(&tr->dmac->dev, "axidma_mm2s");
@@ -151,7 +117,7 @@ int dma_reserve_channels(struct dma_transaction *tr)
 	return 0;
 }
 
-int dma_reserve_memory(struct dma_transaction *tr)
+static int dma_reserve_memory(struct dma_transaction *tr)
 {
 	if (tr->coherent) {
 		tr->tx.buf = dma_alloc_coherent(tr->tx.chan->device->dev, tr->size, &tr->tx.handle, GFP_KERNEL);
@@ -167,16 +133,23 @@ int dma_reserve_memory(struct dma_transaction *tr)
 		}
 	} else {
 		tr->tx.buf = kmalloc(tr->size, GFP_KERNEL);
-		tr->rx.buf = kmalloc(tr->size, GFP_KERNEL);
+		if (tr->tx.buf == NULL) {
+			pr_err("kmalloc() failed to allocate TX buffer memory!\n");
+			return -EAGAIN;
+		}
 
-		if (tr->tx.buf == NULL || tr->rx.buf == NULL) {
-			pr_err("kmalloc() failed to allocate buffer memory!\n");
+		tr->rx.buf = kmalloc(tr->size, GFP_KERNEL);
+		if (tr->rx.buf == NULL) {
+			pr_err("kmalloc() failed to allocate RX buffer memory!\n");
+			kfree(tr->tx.buf);
 			return -EAGAIN;
 		}
 
 		tr->tx.handle = dma_map_single(tr->tx.chan->device->dev, tr->tx.buf, tr->size, DMA_TO_DEVICE);	
 		if (dma_mapping_error(tr->tx.chan->device->dev, tr->tx.handle)) {
 			pr_err("dma_mapping_error() returned an error condition on TX buffer mapping!\n");
+			kfree(tr->tx.buf);
+			kfree(tr->rx.buf);
 			return -EAGAIN;
 		};
 
@@ -184,6 +157,8 @@ int dma_reserve_memory(struct dma_transaction *tr)
 		if (dma_mapping_error(tr->rx.chan->device->dev, tr->rx.handle)) {
 			pr_err("dma_mapping_error() returned an error condition on RX buffer mapping!\n");
 			dma_unmap_single(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
+			kfree(tr->tx.buf);
+			kfree(tr->rx.buf);
 			return -EAGAIN;
 		};
 	}
@@ -192,14 +167,14 @@ int dma_reserve_memory(struct dma_transaction *tr)
 	return 0;
 }
 
-void dma_buffer_prepare(struct dma_transaction *tr, int seed)
+static void dma_buffer_fill(struct dma_transaction *tr, int seed)
 {
 	int i;
 	for (i = 0; i < tr->size/4; i++) ((s32 *)tr->tx.buf)[i] = seed+i;
 	return;
 }
 
-int dma_buffer_verify(struct dma_transaction *tr)
+static int dma_buffer_verify(struct dma_transaction *tr)
 {
 	int i, err_count = 0, err_first = -1;
 
@@ -219,7 +194,7 @@ int dma_buffer_verify(struct dma_transaction *tr)
 }
 
 
-int dma_setup(struct dma_transaction *tr)
+static int dma_setup(struct dma_transaction *tr)
 {
 	tr->tx.desc = dmaengine_prep_slave_single(tr->tx.chan, tr->tx.handle, tr->size, 
 		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT);
@@ -258,11 +233,10 @@ int dma_setup(struct dma_transaction *tr)
 	return 0;
 }
 
-int dma_fire(struct dma_transaction *tr)
+static int dma_issue(struct dma_transaction *tr)
 {
-		u32 *p;
-	u32 d=0xdeadbeef;
-	cycles_t cc;
+//	u32 *p;
+//	u32 d=0xdeadbeef;
 
 /*
 */
@@ -293,36 +267,47 @@ int dma_fire(struct dma_transaction *tr)
 	/* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
 	 * any errors
 	 */
+	unsigned long timeout = 3000;
+	enum dma_status status;
+	cycles_t t0, t1;
 
-	pr_info("starting transfers...\n");
+	// initialize the completion before using it and then start the DMA transaction
+	// which was previously queued up in the DMA engine
+	init_completion(&tr->tx.cmp);
+	init_completion(&tr->rx.cmp);
 
-	/* Start both DMA transfers and wait for them to complete
-	 */
-	start_transfer(tr->rx.chan, &tr->rx.cmp, tr->rx.cookie, NO_WAIT);
-	cc = start_transfer(tr->tx.chan, &tr->tx.cmp, tr->tx.cookie, WAIT);
-	if (cc) pr_info("DMA size: %4d kiB, time: %7ld cycles, thoughput: %3ld MB/s\n", 
-		tr->size/1024, cc, CPU_FREQ*(tr->size/1000)/(cc/1000));
-	else pr_err("start_transfer(): returned zero cycle count!\n");
-	/* Step 10, the DMA is done with the buffers so transfer ownership back to the CPU so that
-	 * any cache operations needed are done
-	 */
+	pr_info("Issueing DMA request...\n");
+	dma_async_issue_pending(tr->tx.chan);
+	dma_async_issue_pending(tr->rx.chan);
 	
+	t0 = get_cycles();
+	// wait for the transaction to complete, timeout, or get get an error
+	timeout = wait_for_completion_timeout(&tr->tx.cmp, msecs_to_jiffies(timeout));
+	t1 = get_cycles();
+	status = dma_async_is_tx_complete(tr->tx.chan, tr->tx.cookie, NULL, NULL);
+
+	// determine if the transaction completed without a timeout and withtout any errors
+	if (timeout == 0) {
+		pr_err("DMA timeout after %dms\n", 3000); //FIXME
+		return -ETIMEDOUT;
+	} else if (status != DMA_COMPLETE) {
+		pr_err("dma_async_is_tx_complete(): DMA returned completion callback status of: %s\n", 
+			status == DMA_ERROR ? "error" : "in progress");
+		return -EIO;
+	}
+
+	if (t1-t0) pr_info("DMA size: %4d kiB, time: %7ld cycles, thoughput: %3ld MB/s\n", 
+		tr->size/1024, t1-t0, CPU_FREQ*(tr->size/1000)/((t1-t0)/1000));
+	else pr_warn("this kernel does not support get_cycles()\n");
 ////	pr_info("TX[0]=%d, RX[0]=%d\n", ioread32(p), ioread32(p+tx.size/4));
-
-
+	mb();
+	if (tr->coherent) dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
+	outer_clean_range(virt_to_phys(tr->rx.buf), virt_to_phys(tr->rx.buf+tr->size));
+	__cpuc_flush_dcache_area(tr->rx.buf, tr->size);
 	return 0;
 }
 
-void dma_cleanup(struct dma_transaction *tr)
-{
-	mb();
-	dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
-	outer_clean_range(virt_to_phys(tr->rx.buf), virt_to_phys(tr->rx.buf+tr->size));
-	__cpuc_flush_dcache_area(tr->rx.buf, tr->size);
-	return;
-}
-
-void dma_release_memory(struct dma_transaction *tr)
+static void dma_release_memory(struct dma_transaction *tr)
 {
 	if (tr->coherent) {
 		dma_free_coherent(tr->tx.chan->device->dev, tr->size, tr->tx.buf, tr->tx.handle);
@@ -336,7 +321,7 @@ void dma_release_memory(struct dma_transaction *tr)
 	return;
 }
 
-void dma_release_channels(struct dma_transaction *tr)
+static void dma_release_channels(struct dma_transaction *tr)
 {
 	dma_release_channel(tr->tx.chan);
 	dma_release_channel(tr->rx.chan);
@@ -367,17 +352,25 @@ MODULE_DEVICE_TABLE(of, malaperda_of_match);
 static int malaperda_probe(struct platform_device *pdev)
 {
 	pr_info("module probing...\n");
-	dma_init(&dma, pdev, true, 4*1024*1024);
-	dma_reserve_channels(&dma);
-	dma_reserve_memory(&dma);
-	dma_buffer_prepare(&dma, 0);
-	dma_setup(&dma);
-	dma_fire(&dma);
-	dma_cleanup(&dma);
+	if (dma_init(&dma, pdev, true, 4*1024*1024) != 0) return -1;
+	if (dma_reserve_channels(&dma) != 0) return -1;
+	if (dma_reserve_memory(&dma) != 0) {
+		dma_release_channels(&dma);
+		return -1;
+	}
+	
+	dma_buffer_fill(&dma, 0);
+
+	if (dma_setup(&dma) != 0) {
+		dma_release_channels(&dma);
+		dma_release_memory(&dma);
+		return -1;
+	}
+	dma_issue(&dma);
 	dma_buffer_verify(&dma);
 	dma_release_memory(&dma);
 	dma_release_channels(&dma);
-
+	pr_info("module probe success.\n");
 	return 0;
 }
 
@@ -401,7 +394,7 @@ static void __exit malaperda_exit(void)
 
 static int __init malaperda_init(void)
 {
-	pr_info("module starting...\n");
+	pr_info("module initializing...\n");
 //	p=ioremap(0x40000000, 128);
 //	iowrite32(d0, p);
 //	d1 = ioread32(p);
@@ -414,4 +407,7 @@ static int __init malaperda_init(void)
 module_init(malaperda_init);
 module_exit(malaperda_exit);
 MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Ioannis Galanommatis");
+MODULE_DESCRIPTION("DMA client to xilinx_dma");
+MODULE_VERSION("0.1");
 

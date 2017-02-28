@@ -469,7 +469,7 @@
 
 		axi_bram_ctrl@40000000 {
 			compatible = "xlnx,axi-bram-ctrl-4.0";
-			reg = <0x40000000 0x2000>;
+			reg = <0x40000000 0x4000>;
 			xlnx,bram-addr-width = <0xb>;
 			xlnx,bram-inst-mode = "EXTERNAL";
 			xlnx,ecc = <0x0>;
@@ -483,6 +483,28 @@
 			xlnx,s-axi-supports-narrow-burst = <0x0>;
 			xlnx,select-xpm = <0x0>;
 			xlnx,single-port-bram = <0x1>;
+			linux,phandle = <0x6>;
+			phandle = <0x6>;
+		};
+
+		axi_bram_ctrl@40010000 {
+			compatible = "xlnx,axi-bram-ctrl-4.0";
+			reg = <0x40010000 0x8000>;
+			xlnx,bram-addr-width = <0xc>;
+			xlnx,bram-inst-mode = "EXTERNAL";
+			xlnx,ecc = <0x0>;
+			xlnx,ecc-onoff-reset-value = <0x0>;
+			xlnx,ecc-type = <0x0>;
+			xlnx,fault-inject = <0x0>;
+			xlnx,memory-depth = <0x1000>;
+			xlnx,s-axi-ctrl-addr-width = <0x20>;
+			xlnx,s-axi-ctrl-data-width = <0x20>;
+			xlnx,s-axi-id-width = <0x1>;
+			xlnx,s-axi-supports-narrow-burst = <0x0>;
+			xlnx,select-xpm = <0x0>;
+			xlnx,single-port-bram = <0x1>;
+			linux,phandle = <0x7>;
+			phandle = <0x7>;
 		};
 
 		dma@40400000 {
@@ -535,9 +557,21 @@
 		};
 	};
 
-	malaperda@1 {
-		compatible = "peokroustis,malaperda";
+	dma-client@0 {
+		compatible = "tuc,dma-client";
 		dmas = <0x5 0x0 0x5 0x1>;
-		dma-names = "axidma_mm2s", "axidma_s2mm";
+		dma-names = "tx", "rx";
+	};
+
+	bram@40000000 {
+		compatible = "tuc,bram";
+		reg = <0x40000000 0x4000>;
+		ctrl = <0x6>;
+	};
+
+	bram@40010000 {
+		compatible = "tuc,bram";
+		reg = <0x40010000 0x8000>;
+		ctrl = <0x7>;
 	};
 };

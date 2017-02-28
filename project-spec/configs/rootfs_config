@@ -97,7 +97,7 @@
 #
 # elfutils 
 #
-# CONFIG_elfutils is not set
+CONFIG_elfutils=y
 # CONFIG_libelf is not set
 # CONFIG_libasm is not set
 # CONFIG_elfutils-binutils is not set
@@ -116,9 +116,9 @@
 # i2c-tools 
 #
 CONFIG_i2c-tools=y
+# CONFIG_i2c-tools-dbg is not set
 # CONFIG_i2c-tools-dev is not set
 # CONFIG_i2c-tools-misc is not set
-# CONFIG_i2c-tools-dbg is not set
 
 #
 # init-ifupdown 
@@ -245,14 +245,14 @@ CONFIG_bash=y
 #
 # update-rc.d 
 #
-# CONFIG_update-rc.d is not set
+CONFIG_update-rc.d=y
 # CONFIG_update-rc.d-dbg is not set
 # CONFIG_update-rc.d-dev is not set
 
 #
 # usbutils 
 #
-# CONFIG_usbutils is not set
+CONFIG_usbutils=y
 # CONFIG_usbutils-dev is not set
 # CONFIG_usbutils-dbg is not set
 
@@ -260,6 +260,7 @@ CONFIG_bash=y
 # util-linux 
 #
 CONFIG_util-linux=y
+# CONFIG_util-linux-lscpu is not set
 # CONFIG_util-linux-agetty is not set
 # CONFIG_util-linux-fstrim is not set
 # CONFIG_util-linux-mcookie is not set
@@ -267,7 +268,6 @@ CONFIG_util-linux=y
 # CONFIG_util-linux-swaponoff is not set
 # CONFIG_util-linux-uuidgen is not set
 # CONFIG_util-linux-cfdisk is not set
-# CONFIG_util-linux-lscpu is not set
 # CONFIG_util-linux-mount is not set
 # CONFIG_util-linux-partx is not set
 # CONFIG_util-linux-bash-completion is not set
@@ -453,8 +453,8 @@ CONFIG_pciutils=y
 # sed 
 #
 # CONFIG_sed is not set
-# CONFIG_sed-dev is not set
 # CONFIG_sed-dbg is not set
+# CONFIG_sed-dev is not set
 
 #
 # smartmontools 
@@ -542,7 +542,7 @@ CONFIG_pciutils=y
 #
 # python 
 #
-# CONFIG_python is not set
+CONFIG_python=y
 # CONFIG_python-compile is not set
 # CONFIG_python-mime is not set
 # CONFIG_python-xml is not set
@@ -559,29 +559,29 @@ CONFIG_pciutils=y
 # CONFIG_python-shell is not set
 # CONFIG_python-zlib is not set
 # CONFIG_python-importlib is not set
-# CONFIG_python-sqlite3 is not set
 # CONFIG_python-io is not set
 # CONFIG_python-hotshot is not set
 # CONFIG_python-pickle is not set
-# CONFIG_python-stringold is not set
 # CONFIG_python-multiprocessing is not set
 # CONFIG_python-lang is not set
 # CONFIG_python-pkgutil is not set
 # CONFIG_python-textutils is not set
+# CONFIG_python-stringold is not set
 # CONFIG_python-dbg is not set
 # CONFIG_python-compression is not set
 # CONFIG_python-unixadmin is not set
 # CONFIG_python-bsddb is not set
 # CONFIG_python-pydoc is not set
-# CONFIG_python-sqlite3-tests is not set
 # CONFIG_python-man is not set
 # CONFIG_python-compiler is not set
 # CONFIG_python-core is not set
 # CONFIG_python-netclient is not set
 # CONFIG_python-2to3 is not set
+# CONFIG_python-threading is not set
 # CONFIG_python-syslog is not set
 # CONFIG_python-debugger is not set
 # CONFIG_python-gdbm is not set
+# CONFIG_python-sqlite3-tests is not set
 # CONFIG_python-contextlib is not set
 # CONFIG_python-resource is not set
 # CONFIG_python-numbers is not set
@@ -590,6 +590,7 @@ CONFIG_pciutils=y
 # CONFIG_python-profile is not set
 # CONFIG_python-logging is not set
 # CONFIG_python-plistlib is not set
+# CONFIG_python-db is not set
 # CONFIG_python-dev is not set
 # CONFIG_python-re is not set
 # CONFIG_python-math is not set
@@ -605,9 +606,8 @@ CONFIG_pciutils=y
 # CONFIG_python-modules is not set
 # CONFIG_python-xmlrpc is not set
 # CONFIG_python-email is not set
-# CONFIG_python-db is not set
+# CONFIG_python-sqlite3 is not set
 # CONFIG_python-mailbox is not set
-# CONFIG_python-threading is not set
 # CONFIG_python-json is not set
 # CONFIG_python-argparse is not set
 # CONFIG_python-audio is not set
@@ -821,10 +821,10 @@ CONFIG_run-postinsts=y
 # gdbm 
 #
 # CONFIG_gdbm is not set
-# CONFIG_gdbm-compat is not set
 # CONFIG_gdbm-dev is not set
 # CONFIG_gdbm-dbg is not set
 # CONFIG_gdbm-bin is not set
+# CONFIG_gdbm-compat is not set
 
 #
 # gdk-pixbuf 
@@ -1068,8 +1068,8 @@ CONFIG_run-postinsts=y
 # libtool 
 #
 # CONFIG_libtool is not set
-# CONFIG_libtool-dev is not set
 # CONFIG_libtool-dbg is not set
+# CONFIG_libtool-dev is not set
 # CONFIG_libltdl is not set
 
 #
@@ -1579,9 +1579,9 @@ CONFIG_run-postinsts=y
 # CONFIG_libstdcPLUSPLUS-dev is not set
 # CONFIG_libstdcPLUSPLUS is not set
 # CONFIG_libitm is not set
-# CONFIG_libatomic-dev is not set
 # CONFIG_libssp is not set
 # CONFIG_libatomic is not set
+# CONFIG_libatomic-dev is not set
 # CONFIG_libssp-dev is not set
 # CONFIG_libitm-dev is not set
 
@@ -1794,8 +1794,8 @@ CONFIG_packagegroup-core-ssh-dropbear=y
 # pixman 
 #
 # CONFIG_pixman is not set
-# CONFIG_pixman-dbg is not set
 # CONFIG_pixman-dev is not set
+# CONFIG_pixman-dbg is not set
 
 #
 # ptest-runner 
@@ -2772,8 +2772,8 @@ CONFIG_bridge-utils=y
 # libpthread-stubs 
 #
 # CONFIG_libpthread-stubs is not set
-# CONFIG_libpthread-stubs-dbg is not set
 # CONFIG_libpthread-stubs-dev is not set
+# CONFIG_libpthread-stubs-dbg is not set
 
 #
 # libxcb 
@@ -2925,12 +2925,19 @@ CONFIG_bridge-utils=y
 # xserver-nodm-init 
 #
 # CONFIG_xserver-nodm-init is not set
-# CONFIG_xserver-nodm-init-dbg is not set
 # CONFIG_xserver-nodm-init-dev is not set
+# CONFIG_xserver-nodm-init-dbg is not set
 
 #
 # apps 
 #
+
+#
+# bench 
+#
+CONFIG_bench=y
+# CONFIG_bench-dev is not set
+# CONFIG_bench-dbg is not set
 
 #
 # gpio-demo 

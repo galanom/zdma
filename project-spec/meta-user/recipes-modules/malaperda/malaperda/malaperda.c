@@ -16,36 +16,29 @@
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
 #include <linux/timex.h>
+//#include <linux/list.h>
+#include <linux/rculist.h>
+#include <linux/genalloc.h>
 
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
+
+// TODO FIXME Take care of this!
 #include <asm/cacheflush.h>
 #include <asm/outercache.h>
 
-#define WAIT 	1
-#define NO_WAIT 0
-#define DRIVER_NAME "malaperda"
+
+#ifndef CONFIG_OF
+#error "OpenFirmware is not configured in Linux kernel\n"
+#endif
+
+// FIXME dependency?
 extern int xilinx_vdma_channel_set_config(void *, void *);
 
 static unsigned length = 4096*1024;
 //module_param(length, unsigned, S_IRUGO);
 
-/*struct dma_xfer {
-	struct dma_chan *chan;
-	struct dma_async_tx_descriptor *chan_desc;
-	dma_addr_t handle;
-	dma_cookie_t cookie;
-	struct completion cmp;
-	enum dma_data_direction dir;
-	int irq;
-	unsigned long mem_start;
-	unsigned long mem_end;
-	void __iomem *base_addr;
-	size_t size;
-	void *buf;
-} tx, rx;
-*/
 static struct dma_transaction {
 	struct platform_device *dmac;
 	bool coherent;			// coherent or streaming API
@@ -58,32 +51,24 @@ static struct dma_transaction {
 //		unsigned long flags;
 		struct dma_chan *chan;			// Hardware DMA channel
 		struct dma_async_tx_descriptor *desc;	// Transfer descriptor
+		struct dma_slave_config conf;
 		dma_cookie_t cookie;
 		struct completion cmp;
 	} tx, rx;
 } dma;
+/*static struct {
+	void *base;
+	size_t size;
+	struct list_head list;
+} bram;*/
 
-/* Handle a callback and indicate the DMA transfer is complete to another
- * thread of control
- */
-/* Start a DMA transfer that was previously submitted to the DMA engine and then
- * wait for it complete, timeout or have an error
- */
-static cycles_t start_transfer(struct dma_chan *chan, struct completion *cmp, 
-					dma_cookie_t cookie, int wait)
-{
-	return 0;
-}
-
+static struct gen_pool *bram_pool = NULL;
 
 static void sync_callback(void *completion)
 {
-	/* Step 9, indicate the DMA transaction completed to allow the other
-	 * thread of control to finish processing
-	 */ 
-
+	// Indicate the DMA transaction completed to allow the other thread of control to finish processing
 	complete(completion);
-
+	return;
 }
 
 
@@ -93,27 +78,7 @@ static int dma_init(struct dma_transaction *tr, struct platform_device *pdev, bo
 	tr->dmac = pdev;
 	tr->coherent = coherent;
 	tr->size = size;
-	return 0;
-}
-
-static int dma_reserve_channels(struct dma_transaction *tr)
-{
-	// Request the transmit and receive channels for the AXI DMA from the DMA engine
-	tr->tx.chan = dma_request_slave_channel(&tr->dmac->dev, "axidma_mm2s");
-	if (!tr->tx.chan) { 
-		pr_err("dma_request_slave_channel() failed for TX channel (addr: %8p). "
-			"Did you load xilinx_dma kernel module?\n", tr->tx.chan);
-		return -EBUSY;
-	}
-
-	tr->rx.chan = dma_request_slave_channel(&tr->dmac->dev, "axidma_s2mm");
-	if (!tr->rx.chan) { 
-		pr_err("dma_request_slave_channel() failed for RX channel (addr: %8p) but not for TX!\n", tr->rx.chan);
-		dma_release_channel(tr->tx.chan);
-		return -EBUSY;
-	}
-
-	pr_info("DMA channel reservation successful.\n");
+	pr_info("DMAC init success\n");
 	return 0;
 }
 
@@ -162,10 +127,37 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 			return -EAGAIN;
 		};
 	}
-	pr_info("mapping: tx.buf=%p, rx.buf=%p, tx.handle=%x, rx.handle=%x.\n",
+	pr_info("DMA mapping: virt: %p->%p, phys: %x->%x.\n",
 		tr->tx.buf, tr->rx.buf, tr->tx.handle, tr->rx.handle);
 	return 0;
 }
+
+
+static int dma_reserve_channels(struct dma_transaction *tr)
+{
+	// Request the transmit and receive channels for the AXI DMA from the DMA engine
+	tr->tx.chan = dma_request_slave_channel(&tr->dmac->dev, "tx");
+	if (!tr->tx.chan) { 
+		pr_err("TX channel reservation failure. "
+			"Did you load xilinx_dma kernel module?\n");
+		return -EBUSY;
+	}
+
+	tr->rx.chan = dma_request_slave_channel(&tr->dmac->dev, "rx");
+	if (!tr->rx.chan) { 
+		pr_err("RX channel reservation failure (TX was successful).\n");
+		dma_release_channel(tr->tx.chan);
+		return -EBUSY;
+	}
+
+	pr_info("DMA channel reservation successful.\n");
+	
+//	tr->tx.conf.direction = DMA_MEM_TO_DEV;	// obsolete
+//	tr->tx.conf.src_addr = tr->tx.handle;
+//	tr->tx.conf.dst_addr
+	return 0;
+}
+
 
 static void dma_buffer_fill(struct dma_transaction *tr, int seed)
 {
@@ -184,7 +176,7 @@ static int dma_buffer_verify(struct dma_transaction *tr)
 	}
 
 	if (err_count != 0) {
-		pr_err("****** DATA MISMATCH ****** error count %d of %d, first at %d. ***\n", 
+		pr_err("****** DATA MISMATCH ****** error count %d of %d, first occurence at %d.\n", 
 			err_count, tr->size/4, err_first);
 		return -EIO;
 	}
@@ -214,14 +206,6 @@ static int dma_setup(struct dma_transaction *tr)
 	tr->tx.desc->callback_param = &tr->tx.cmp;
 	tr->rx.desc->callback_param = &tr->rx.cmp;
 
-	// DEBUG BLOCK
-	__cpuc_flush_dcache_area(tr, sizeof(*tr));
-	__cpuc_flush_dcache_area(tr->tx.buf, tr->size);
-	outer_clean_range(virt_to_phys(tr), virt_to_phys((void*)tr+sizeof(tr)));
-	outer_clean_range(virt_to_phys(tr->tx.buf), virt_to_phys(tr->tx.buf+tr->size));
-	mb();
-
-	dma_sync_single_for_device(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
 	tr->tx.cookie = dmaengine_submit(tr->tx.desc);
 	tr->rx.cookie = dmaengine_submit(tr->rx.desc);
 
@@ -229,7 +213,12 @@ static int dma_setup(struct dma_transaction *tr)
 		pr_err("prep_buffer(): dma_submit_error(): rx/tx cookie contains error!\n");
 		return -EIO;
 	}
-	
+
+	// initialize the completion before using it and then start the DMA transaction
+	// which was previously queued up in the DMA engine
+	init_completion(&tr->tx.cmp);
+	init_completion(&tr->rx.cmp);
+
 	return 0;
 }
 
@@ -270,12 +259,16 @@ static int dma_issue(struct dma_transaction *tr)
 	unsigned long timeout = 3000;
 	enum dma_status status;
 	cycles_t t0, t1;
+	// DEBUG BLOCK
+	//__cpuc_flush_dcache_area(tr, sizeof(*tr));
+	__cpuc_flush_dcache_area(tr->tx.buf, tr->size);
+	outer_clean_range(virt_to_phys(tr), virt_to_phys((void*)tr+sizeof(tr)));
+	outer_clean_range(virt_to_phys(tr->tx.buf), virt_to_phys(tr->tx.buf+tr->size));
+	mb();
 
-	// initialize the completion before using it and then start the DMA transaction
-	// which was previously queued up in the DMA engine
-	init_completion(&tr->tx.cmp);
-	init_completion(&tr->rx.cmp);
+	dma_sync_single_for_device(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
 
+	
 	pr_info("Issueing DMA request...\n");
 	dma_async_issue_pending(tr->tx.chan);
 	dma_async_issue_pending(tr->rx.chan);
@@ -301,7 +294,8 @@ static int dma_issue(struct dma_transaction *tr)
 	else pr_warn("this kernel does not support get_cycles()\n");
 ////	pr_info("TX[0]=%d, RX[0]=%d\n", ioread32(p), ioread32(p+tx.size/4));
 	mb();
-	if (tr->coherent) dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
+	//if (tr->coherent) 
+	dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
 	outer_clean_range(virt_to_phys(tr->rx.buf), virt_to_phys(tr->rx.buf+tr->size));
 	__cpuc_flush_dcache_area(tr->rx.buf, tr->size);
 	return 0;
@@ -312,6 +306,7 @@ static void dma_release_memory(struct dma_transaction *tr)
 	if (tr->coherent) {
 		dma_free_coherent(tr->tx.chan->device->dev, tr->size, tr->tx.buf, tr->tx.handle);
 		dma_free_coherent(tr->rx.chan->device->dev, tr->size, tr->rx.buf, tr->rx.handle);
+
 	} else {
 		dma_unmap_single(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);	
 		dma_unmap_single(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
@@ -327,38 +322,123 @@ static void dma_release_channels(struct dma_transaction *tr)
 	dma_release_channel(tr->rx.chan);
 	return;
 }
-static int malaperda_remove(struct platform_device *pdev)
+
+
+static int bram_remove(struct platform_device *pdev)
 {
-	pr_info("module being removed...\n");
-//	struct device *dev = &pdev->dev;
-//	struct malaperda_local *lp = dev_get_drvdata(dev);
-//	free_irq(lp->irq, lp);
-//	release_malaperda_region(lp->malaperda_start, lp->malaperda_end - lp->malaperda_start + 1);
-//	kfree(lp);
-	dev_set_drvdata(&pdev->dev, NULL);
+	int ret;
+	struct resource bram;
+	void *bram_virt;
+	struct gen_pool_chunk *chunk = NULL;
+
+	pr_info("BRAM controller going down...\n");
+
+	ret = of_address_to_resource(pdev->dev.of_node, 0, &bram);
+	if (ret) {
+		pr_err("failed to detect BRAM memory address\n");
+		return -ENOMEM;
+	}
+
+	// find relevant chunk in BRAM pool
+	rcu_read_lock();
+	list_for_each_entry_rcu(chunk, &bram_pool->chunks, next_chunk)
+		if (chunk->phys_addr == bram.start) break;
+	rcu_read_unlock();
+
+	// if chunk is found
+	if (chunk != NULL) {
+		bram_virt = chunk->start_addr;
+		list_del_rcu(chunk);
+		synchronize_rcu();
+		pr_info("BRAM pool chunk removed, current availabe BRAM: %d of %d bytes.\n", 
+			gen_pool_avail(bram_pool), gen_pool_size(bram_pool));
+	} else pr_err("Unable to associate BRAM controller with BRAM pool chunk! That should not happen.\n");
+
+	iounmap(bram_virt);
+	release_mem_region(bram.start, bram.end-bram.start+1);
+
+	if (gen_pool_size(bram_pool) == 0) {
+		gen_pool_destroy(bram_pool);
+		pr_info("All BRAM controllers are down, BRAM pool destroyed.\n");
+	}
+
 	return 0;
 }
 
-#ifdef CONFIG_OF
-static struct of_device_id malaperda_of_match[] = {
-	{ .compatible = "peokroustis,malaperda", },
-	{ /* end of list */ },
-};
-MODULE_DEVICE_TABLE(of, malaperda_of_match);
-#else
-# define malaperda_of_match
-#endif
-
-static int malaperda_probe(struct platform_device *pdev)
+static int dmac_remove(struct platform_device *pdev)
 {
-	pr_info("module probing...\n");
-	if (dma_init(&dma, pdev, true, 4*1024*1024) != 0) return -1;
+	pr_info("DMA controller going down...\n");
+//	struct device *dev = &pdev->dev;
+//	struct malaperda_local *lp = dev_get_drvdata(dev);
+	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
+	return 0;
+}
+
+static int bram_probe(struct platform_device *pdev)
+{
+	int ret;
+	struct resource bram;
+	void *bram_virt;
+	size_t bram_size;
+	
+	pr_info("BRAM controller detected, probing...\n");
+
+	ret = of_address_to_resource(pdev->dev.of_node, 0, &bram);
+	if (ret) {
+		pr_err("failed to detect BRAM memory address\n");
+		return -ENOMEM;
+	}
+
+	bram_size = bram.end-bram.start+1;
+	if  (!request_mem_region(bram.start, bram_size, "bram")) {
+		pr_err("error reserving BRAM address range\n");
+		return -EAGAIN;
+	}
+
+	bram_virt = ioremap(bram.start, bram_size);
+	if (bram_virt == NULL) {
+		pr_err("error mapping BRAM memory\n");
+		return -ENOMEM;
+	}
+
+	pr_info("Detected BRAM at %p, size %d, mapped at %p\n", 
+		(void *)bram.start, bram.end-bram.start+1, bram_virt);
+	if (bram_pool == NULL) bram_pool = gen_pool_create(5, -1);
+	if (bram_pool == NULL) {
+		pr_err("error allocating BRAM pool\n");
+		return -ENOMEM;
+	}
+	ret = gen_pool_add_virt(bram_pool, bram_virt, bram.start, bram.end-bram.start+1, -1);
+	if (ret != 0) {
+		pr_err("error adding to BRAM pool\n");
+		return -ENOMEM;
+	}
+
+	pr_info("BRAM pool chunk added, current availabe BRAM: %d of %d bytes.\n", 
+			gen_pool_avail(bram_pool), gen_pool_size(bram_pool));
+
+
+	/* p = gen_pool_alloc(bram_pool, 1024);
+	if (p == NULL) {
+		pr_err("error allocating bram pool\n");
+		return -ENOMEM;
+	}
+	pr_info("succefully allocated bram at virt: %p, phys: %x\n", 
+		p, gen_pool_virt_to_phys(bram_pool, (unsigned long)p));
+	*/
+	return 0;
+}
+
+static int dmac_probe(struct platform_device *pdev)
+{
+	pr_info("Probing for DMACs...\n");
+
+	if (dma_init(&dma, pdev, false, 4*1024*1024) != 0) return -1;
 	if (dma_reserve_channels(&dma) != 0) return -1;
 	if (dma_reserve_memory(&dma) != 0) {
 		dma_release_channels(&dma);
 		return -1;
 	}
-	
 	dma_buffer_fill(&dma, 0);
 
 	if (dma_setup(&dma) != 0) {
@@ -373,39 +453,78 @@ static int malaperda_probe(struct platform_device *pdev)
 	pr_info("module probe success.\n");
 	return 0;
 }
+static struct of_device_id bram_of_match[] = {
+//	{ .compatible = "xlnx,axi-bram-ctrl-4.0", },
+	{ .compatible = "tuc,bram", },
+	{},
+};
+MODULE_DEVICE_TABLE(of, bram_of_match);
 
-static struct platform_driver malaperda_driver = {
+static struct of_device_id dmac_of_match[] = {
+	{ .compatible = "tuc,dma-client", },
+	{ /* end of list */ },
+};
+MODULE_DEVICE_TABLE(of, dmac_of_match);
+
+
+static struct platform_driver dmac_driver = {
 	.driver = {
-		.name = DRIVER_NAME,
+		.name = "dmac",
 		.owner = THIS_MODULE,
-		.of_match_table = malaperda_of_match,
+		.of_match_table = dmac_of_match,
 
 	},
-	.probe = malaperda_probe,
-	.remove = malaperda_remove,
+	.probe = dmac_probe,
+	.remove = dmac_remove,
 };
 
-static void __exit malaperda_exit(void)
+
+static struct platform_driver bram_driver = {
+	.driver = {
+		.name = "bram",
+		.owner = THIS_MODULE,
+		.of_match_table = bram_of_match,
+
+	},
+	.probe = bram_probe,
+	.remove = bram_remove,
+};
+
+
+static void __exit mod_exit(void)
 {
-	platform_driver_unregister(&malaperda_driver);
+	platform_driver_unregister(&dmac_driver);
+	platform_driver_unregister(&bram_driver);
 	pr_info("module exiting...\n");
 }
 
 
-static int __init malaperda_init(void)
+static int __init mod_init(void)
 {
+	int err;
 	pr_info("module initializing...\n");
+	LIST_HEAD(bram);
 //	p=ioremap(0x40000000, 128);
 //	iowrite32(d0, p);
 //	d1 = ioread32(p);
 //	pr_info("wrote %8x, read back %8x\n", d0, d1);	
+	err = platform_driver_register(&bram_driver);
+	if (err) {
+		pr_err("error %d while registering BRAM platform driver\n", err);
+		return -1;
+	}
 
-	return platform_driver_register(&malaperda_driver);
+	err = platform_driver_register(&dmac_driver);
+	if (err) {
+		pr_err("error %d while registering DMAC platform driver\n", err);
+		return -1;
+	}
+	return 0;
 }
 
 
-module_init(malaperda_init);
-module_exit(malaperda_exit);
+module_init(mod_init);
+module_exit(mod_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");

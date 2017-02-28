@@ -1,0 +1,4 @@
+#!/bin/sh
+#petalinux-build
+petalinux-build -c bench
+petalinux-build -x package

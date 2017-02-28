@@ -24,12 +24,40 @@ def find_cfgs(d):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SRC_URI_append ="\
     file://plnx_kernel.cfg\
 "
 KERNEL_IMAGETYPE_zynq ?= "zImage"
 FILESEXTRAPATHS_append := ":${THISDIR}/configs"
 RDEPENDS_kernel-base = ""
+
+do_configure_append () {
+	merge_config.sh -m ${B}/.config ${@" ".join(find_cfgs(d))}
+	oe_runmake -C ${S} O=${B} oldconfig
+}
 
 do_deploy_append () {
 	install -m 0644 ${D}/boot/System.map-${KERNEL_VERSION} ${DEPLOY_DIR_IMAGE}/System.map.linux

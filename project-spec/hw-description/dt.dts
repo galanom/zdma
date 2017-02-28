@@ -1,10 +1,21 @@
 /dts-v1/;
 /include/ "system-conf.dtsi"
 / {
-	malapeos: malaperda@1 {
-		compatible ="peokroustis,malaperda";
+	dma-client@0 {
+		compatible = "tuc,dma-client";
 		dmas = <&axi_dma_0 0
 			&axi_dma_0 1>;
-		dma-names = "axidma_mm2s", "axidma_s2mm";
-	} ;
+		dma-names = "tx", "rx";
+	};
+	bram@40000000 {
+		compatible = "tuc,bram";
+		reg = <0x40000000 0x4000>;
+		ctrl = <&axi_bram_ctrl_0>;
+	};
+	bram@40010000 {
+		compatible = "tuc,bram";
+		reg = <0x40010000 0x8000>;
+		ctrl = <&axi_bram_ctrl_2>;
+	};
+
 };

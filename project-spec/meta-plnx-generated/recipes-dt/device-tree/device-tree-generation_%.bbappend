@@ -31,6 +31,38 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 XSCTH_WS = "${TOPDIR}/../components/plnx_workspace"
 sysconf = "${TOPDIR}/../project-spec/configs"
 padding_size = "0x1000"

@@ -19,15 +19,18 @@
 //#include <linux/list.h>
 #include <linux/rculist.h>
 #include <linux/genalloc.h>
+#include <linux/dma-contiguous.h>
 
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
+#include <linux/of_reserved_mem.h>
 
 // TODO FIXME Take care of this!
 #include <asm/cacheflush.h>
 #include <asm/outercache.h>
 
+#define DMAC_COUNT 4
 
 #ifndef CONFIG_OF
 #error "OpenFirmware is not configured in Linux kernel\n"
@@ -36,7 +39,6 @@
 // FIXME dependency?
 extern int xilinx_vdma_channel_set_config(void *, void *);
 
-static unsigned length = 4096*1024;
 //module_param(length, unsigned, S_IRUGO);
 
 static struct dma_transaction {
@@ -84,7 +86,24 @@ static int dma_init(struct dma_transaction *tr, struct platform_device *pdev, bo
 
 static int dma_reserve_memory(struct dma_transaction *tr)
 {
+	int res;
+	/*if (!dma_declare_contiguous(&tr->dmac->dev, 32*1024*1024, 0x18000000, 0)) {
+		pr_err(	"fatal: dma_declare_contiguous() failed to reclaim reserved memory!\n"
+			"Was it really reserved on machine initialization?\n");
+		return -ENOMEM;
+	}*/
+
 	if (tr->coherent) {
+		res = of_reserved_mem_device_init_by_idx(tr->tx.chan->device->dev, tr->dmac->dev.of_node, 0);
+		if (res != 0) {
+			pr_err("fatal: cannot initialize TX port memory region for DMAC\n");
+			return -ENOMEM;
+		}
+		res = of_reserved_mem_device_init_by_idx(tr->rx.chan->device->dev, tr->dmac->dev.of_node, 1);
+		if (res != 0) {
+			pr_err("fatal: cannot initialize RX port memory region for DMAC\n");
+			return -ENOMEM;
+		}
 		tr->tx.buf = dma_alloc_coherent(tr->tx.chan->device->dev, tr->size, &tr->tx.handle, GFP_KERNEL);
 		if (tr->tx.buf == NULL) {
 			pr_err("fatal: dma_alloc_coherent() returned NULL!\n");
@@ -96,6 +115,10 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 			dma_free_coherent(tr->tx.chan->device->dev, tr->size, tr->tx.buf, tr->tx.handle);
 			return -EAGAIN;
 		}
+/*		tr->tx.handle = 0x18000000;
+		tr->rx.handle = 0x18000000 + tr->size;
+		tr->tx.buf = ioremap(tr->tx.handle, tr->size);
+		tr->rx.buf = ioremap(tr->rx.handle, tr->size);*/
 	} else {
 		tr->tx.buf = kmalloc(tr->size, GFP_KERNEL);
 		if (tr->tx.buf == NULL) {
@@ -127,7 +150,7 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 			return -EAGAIN;
 		};
 	}
-	pr_info("DMA mapping: virt: %p->%p, phys: %x->%x.\n",
+	pr_info("DMA mapping: virt: %p->%p, phys: %p->%p.\n",
 		tr->tx.buf, tr->rx.buf, tr->tx.handle, tr->rx.handle);
 	return 0;
 }
@@ -261,12 +284,12 @@ static int dma_issue(struct dma_transaction *tr)
 	cycles_t t0, t1;
 	// DEBUG BLOCK
 	//__cpuc_flush_dcache_area(tr, sizeof(*tr));
-	__cpuc_flush_dcache_area(tr->tx.buf, tr->size);
-	outer_clean_range(virt_to_phys(tr), virt_to_phys((void*)tr+sizeof(tr)));
-	outer_clean_range(virt_to_phys(tr->tx.buf), virt_to_phys(tr->tx.buf+tr->size));
-	mb();
+//	__cpuc_flush_dcache_area(tr->tx.buf, tr->size);
+//	outer_clean_range(virt_to_phys(tr), virt_to_phys((void*)tr+sizeof(tr)));
+//	outer_clean_range(virt_to_phys(tr->tx.buf), virt_to_phys(tr->tx.buf+tr->size));
+//	mb();
 
-	dma_sync_single_for_device(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
+//	dma_sync_single_for_device(tr->tx.chan->device->dev, tr->tx.handle, tr->size, DMA_TO_DEVICE);
 
 	
 	pr_info("Issueing DMA request...\n");
@@ -283,7 +306,8 @@ static int dma_issue(struct dma_transaction *tr)
 	if (timeout == 0) {
 		pr_err("DMA timeout after %dms\n", 3000); //FIXME
 		return -ETIMEDOUT;
-	} else if (status != DMA_COMPLETE) {
+	} 
+	if (status != DMA_COMPLETE) {
 		pr_err("dma_async_is_tx_complete(): DMA returned completion callback status of: %s\n", 
 			status == DMA_ERROR ? "error" : "in progress");
 		return -EIO;
@@ -293,11 +317,11 @@ static int dma_issue(struct dma_transaction *tr)
 		tr->size/1024, t1-t0, CPU_FREQ*(tr->size/1000)/((t1-t0)/1000));
 	else pr_warn("this kernel does not support get_cycles()\n");
 ////	pr_info("TX[0]=%d, RX[0]=%d\n", ioread32(p), ioread32(p+tx.size/4));
-	mb();
+//	mb();
 	//if (tr->coherent) 
-	dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
-	outer_clean_range(virt_to_phys(tr->rx.buf), virt_to_phys(tr->rx.buf+tr->size));
-	__cpuc_flush_dcache_area(tr->rx.buf, tr->size);
+///	dma_sync_single_for_cpu(tr->rx.chan->device->dev, tr->rx.handle, tr->size, DMA_FROM_DEVICE);
+///	outer_clean_range(virt_to_phys(tr->rx.buf), virt_to_phys(tr->rx.buf+tr->size));
+//	__cpuc_flush_dcache_area(tr->rx.buf, tr->size);
 	return 0;
 }
 
@@ -328,7 +352,7 @@ static int bram_remove(struct platform_device *pdev)
 {
 	int ret;
 	struct resource bram;
-	void *bram_virt;
+	unsigned long bram_virt;
 	struct gen_pool_chunk *chunk = NULL;
 
 	pr_info("BRAM controller going down...\n");
@@ -378,7 +402,7 @@ static int bram_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource bram;
-	void *bram_virt;
+	unsigned long bram_virt;
 	size_t bram_size;
 	
 	pr_info("BRAM controller detected, probing...\n");
@@ -395,8 +419,8 @@ static int bram_probe(struct platform_device *pdev)
 		return -EAGAIN;
 	}
 
-	bram_virt = ioremap(bram.start, bram_size);
-	if (bram_virt == NULL) {
+	bram_virt = (unsigned long)ioremap(bram.start, bram_size); //TODO: double check
+	if (bram_virt == 0) {
 		pr_err("error mapping BRAM memory\n");
 		return -ENOMEM;
 	}
@@ -433,7 +457,7 @@ static int dmac_probe(struct platform_device *pdev)
 {
 	pr_info("Probing for DMACs...\n");
 
-	if (dma_init(&dma, pdev, false, 4*1024*1024) != 0) return -1;
+	if (dma_init(&dma, pdev, true, 4*1024*1024) != 0) return -1;
 	if (dma_reserve_channels(&dma) != 0) return -1;
 	if (dma_reserve_memory(&dma) != 0) {
 		dma_release_channels(&dma);
@@ -503,7 +527,6 @@ static int __init mod_init(void)
 {
 	int err;
 	pr_info("module initializing...\n");
-	LIST_HEAD(bram);
 //	p=ioremap(0x40000000, 128);
 //	iowrite32(d0, p);
 //	d1 = ioread32(p);

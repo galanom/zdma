@@ -17,5 +17,16 @@
 		reg = <0x40010000 0x8000>;
 		ctrl = <&axi_bram_ctrl_2>;
 	};
-
+	
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		linux,cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x18000000 0x8000000>;
+			linux,cma-default;
+		};
+	};
 };

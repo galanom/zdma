@@ -1,21 +1,50 @@
 /dts-v1/;
 /include/ "system-conf.dtsi"
-/ {
-	dma-client@0 {
-		compatible = "tuc,dma-client";
-		dmas = <&axi_dma_0 0
-			&axi_dma_0 1>;
-		dma-names = "tx", "rx";
-	};
-	bram@40000000 {
-		compatible = "tuc,bram";
-		reg = <0x40000000 0x4000>;
-		ctrl = <&axi_bram_ctrl_0>;
-	};
-	bram@40010000 {
-		compatible = "tuc,bram";
-		reg = <0x40010000 0x8000>;
-		ctrl = <&axi_bram_ctrl_2>;
+/  {
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		hp0: hp0@18000000 {
+			reg = <0x18000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		hp1: hp1@1A000000 {
+			reg = <0x1A000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		hp2: hp2@1C000000 {
+			reg = <0x1C000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		hp3: hp3@1E000000 {
+			reg = <0x1E000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
 	};
 
+	amba_pl {
+		dma-client@0 {
+			compatible = "tuc,dma-client";
+			dmas = <&axi_dma_0 0
+				&axi_dma_0 1>;
+			dma-names = "tx", "rx";
+			memory-region = <&hp0>, <&hp1>;
+		};
+		bram@40000000 {
+			compatible = "tuc,bram";
+			reg = <0x40000000 0x4000>;
+			ctrl = <&axi_bram_ctrl_0>;
+		};
+		bram@40010000 {
+			compatible = "tuc,bram";
+			reg = <0x40010000 0x8000>;
+			ctrl = <&axi_bram_ctrl_2>;
+		};
+	};
 };

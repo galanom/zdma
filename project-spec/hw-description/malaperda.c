@@ -28,6 +28,7 @@
 #include <asm/cacheflush.h>
 #include <asm/outercache.h>
 
+#define DMAC_COUNT 4
 
 #ifndef CONFIG_OF
 #error "OpenFirmware is not configured in Linux kernel\n"
@@ -127,7 +128,7 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 			return -EAGAIN;
 		};
 	}
-	pr_info("DMA mapping: virt: %p->%p, phys: %x->%x.\n",
+	pr_info("DMA mapping: virt: %p->%p, phys: %p->%p.\n",
 		tr->tx.buf, tr->rx.buf, tr->tx.handle, tr->rx.handle);
 	return 0;
 }
@@ -503,7 +504,6 @@ static int __init mod_init(void)
 {
 	int err;
 	pr_info("module initializing...\n");
-	LIST_HEAD(bram);
 //	p=ioremap(0x40000000, 128);
 //	iowrite32(d0, p);
 //	d1 = ioread32(p);

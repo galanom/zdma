@@ -2,8 +2,10 @@
 build/
 images/
 components/
+tmp/
 .petalinux/*
 !.petalinux/metadata
+
 *.o
 *.jou
 *.log

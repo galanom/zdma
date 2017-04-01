@@ -237,4 +237,25 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS=y
 CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/rel-v2016.4/arm/sstate-cache"
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="console=ttyPS0,115200 earlyprintk"

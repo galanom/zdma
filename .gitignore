@@ -6,9 +6,13 @@ tmp/
 .petalinux/*
 !.petalinux/metadata
 
+*.bit
+*.hdf*
+
 *.o
 *.jou
 *.log
+
 # Object files
 *.o
 *.ko

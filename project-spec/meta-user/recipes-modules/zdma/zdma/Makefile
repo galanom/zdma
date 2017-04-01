@@ -1,4 +1,4 @@
-obj-m := malaperda.o
+obj-m := zdma.o
 
 SRC := $(shell pwd)
 

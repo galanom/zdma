@@ -4,7 +4,7 @@
 	#address-cells = <0x1>;
 	#size-cells = <0x1>;
 	compatible = "xlnx,zynq-7000";
-	model = "malaperda";
+	model = "zdma";
 
 	chosen {
 		bootargs = "console=ttyPS0,115200 earlyprintk";

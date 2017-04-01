@@ -9,7 +9,7 @@ start ()
 stop ()
 {
 	echo " Stop Hello PetaLinux."
-	modprobe -r malaperda
+	modprobe -r zdma
 	modprobe -r xilinx_dma
 }
 

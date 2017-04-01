@@ -9,7 +9,7 @@
 /include/ "pl.dtsi"
 
 / {
-	model = "malaperda";
+	model = "zdma";
 	aliases {
 		serial0 = &uart1;
 		ethernet0 = &gem0;

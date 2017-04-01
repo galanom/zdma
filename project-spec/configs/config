@@ -200,7 +200,7 @@ CONFIG_SUBSYSTEM_TFTPBOOT_DIR="/srv/tftp"
 # Firmware Version Configuration
 #
 CONFIG_SUBSYSTEM_HOSTNAME="zed"
-CONFIG_SUBSYSTEM_PRODUCT="malaperda"
+CONFIG_SUBSYSTEM_PRODUCT="zdma"
 CONFIG_SUBSYSTEM_FW_VERSION="1.0"
 
 #
@@ -235,5 +235,4 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS=y
 # Network sstate feeds URL
 #
 CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/rel-v2016.4/arm/sstate-cache"
-
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="console=ttyPS0,115200 earlyprintk"

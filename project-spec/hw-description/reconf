@@ -1,4 +1,0 @@
-#!/bin/sh
-petalinux-config --get-hw-description .
-[ `grep EXTRA_IMAGE_FEATURES ./build/conf/local.conf` ] || echo 'EXTRA_IMAGE_FEATURES="debug-tweaks"' >> ./build/conf/local.conf
-sed '/inherit extrausers/d;/EXTRA_USERS_PARAMS/d' -i ./project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb

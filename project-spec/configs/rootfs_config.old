@@ -246,8 +246,8 @@ CONFIG_bash=y
 # update-rc.d 
 #
 CONFIG_update-rc.d=y
-# CONFIG_update-rc.d-dev is not set
 # CONFIG_update-rc.d-dbg is not set
+# CONFIG_update-rc.d-dev is not set
 
 #
 # usbutils 
@@ -940,8 +940,8 @@ CONFIG_run-postinsts=y
 # libfontenc 
 #
 # CONFIG_libfontenc is not set
-# CONFIG_libfontenc-dbg is not set
 # CONFIG_libfontenc-dev is not set
+# CONFIG_libfontenc-dbg is not set
 
 #
 # libgcc-xilinx 
@@ -1576,10 +1576,10 @@ CONFIG_run-postinsts=y
 #
 # gcc-runtime-xilinx 
 #
+# CONFIG_libstdcPLUSPLUS-dev is not set
 # CONFIG_libstdcPLUSPLUS is not set
 # CONFIG_libitm is not set
 # CONFIG_libssp is not set
-# CONFIG_libstdcPLUSPLUS-dev is not set
 # CONFIG_libatomic is not set
 # CONFIG_libatomic-dev is not set
 # CONFIG_libssp-dev is not set
@@ -2958,11 +2958,11 @@ CONFIG_bench=y
 #
 
 #
-# malaperda 
+# zdma 
 #
-CONFIG_malaperda=y
-# CONFIG_malaperda-dev is not set
-# CONFIG_malaperda-dbg is not set
+CONFIG_zdma=y
+# CONFIG_zdma-dbg is not set
+# CONFIG_zdma-dev is not set
 
 #
 # PetaLinux RootFS Settings

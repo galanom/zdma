@@ -21,7 +21,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/galanom/work/dma/dma.sdk/driver/components/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/galanom/work/zdma/components/ext_sources/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -200,7 +200,7 @@ CONFIG_SUBSYSTEM_TFTPBOOT_DIR="/srv/tftp"
 # Firmware Version Configuration
 #
 CONFIG_SUBSYSTEM_HOSTNAME="zed"
-CONFIG_SUBSYSTEM_PRODUCT="malaperda"
+CONFIG_SUBSYSTEM_PRODUCT="zdma"
 CONFIG_SUBSYSTEM_FW_VERSION="1.0"
 
 #
@@ -235,26 +235,6 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS=y
 # Network sstate feeds URL
 #
 CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/rel-v2016.4/arm/sstate-cache"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,15 +1,16 @@
 */config.old
+pre-built/
 build/
 images/
 components/
 tmp/
-.petalinux/*
+.petalinux/
+.Xil/
 !.petalinux/metadata
 
 *.bit
 *.hdf*
 
-*.o
 *.jou
 *.log
 

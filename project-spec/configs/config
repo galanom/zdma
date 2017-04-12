@@ -21,7 +21,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/galanom/work/zdma/components/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/components/ext_sources/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -210,12 +210,12 @@ CONFIG_SUBSYSTEM_FW_VERSION="1.0"
 #
 # TMPDIR Location
 #
-CONFIG_TMP_DIR_LOCATION="/var/tmp/yocto"
+CONFIG_TMP_DIR_LOCATION="/home/igalanommatis/work/zdma/build/tmp"
 
 #
 # Parallel thread execution
 #
-CONFIG_YOCTO_BB_NUMBER_THREADS="8"
+CONFIG_YOCTO_BB_NUMBER_THREADS="16"
 CONFIG_YOCTO_PARALLEL_MAKE=""
 CONFIG_YOCTO_SOURCE_MIRROR_URL_SELECT_PETALINUX_DOWNLOADS=y
 # CONFIG_YOCTO_SOURCE_MIRROR_URL_SELECT_EXTERNAL is not set

@@ -40,31 +40,38 @@ static struct dma_transaction {
 	} tx, rx;
 } dma;
 
-static int nrOpen = 0;
+static struct dma_driver {
+	dev_t dev;
+	int nrOpen;
+} driver = {.nrOpen = 0};
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
-	pr_info("zdma open()\'ed for client %d\n", ++nrOpen);
+	pr_info("zdma open()\'ed for client %d\n", ++driver.nrOpen);
+	return 0;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-	pr_info("zdma release()\'ed for client %d\n", nrOpen--);
+	pr_info("zdma release()\'ed for client %d\n", driver.nrOpen--);
+	return 0;
 }
-static long dev_unlocked_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
+static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	pr_info("zdma ioctl cmd=%d arg=%d\n");
+	pr_info("zdma ioctl cmd=%u arg=%lu\n", cmd, arg);
+	return 0l;
 }
 
 static struct file_operations fops = {
+	.owner = THIS_MODULE,
 	.open = dev_open,
-	.close = dev_close,
-	.unlocked_ioctl = dev_unlocked_ioctl,
+	.release = dev_release,
+	.unlocked_ioctl = dev_ioctl,
 };
 
 static void sync_callback(void *completion)
 {
-	// Indicate the DMA transaction completed to allow the other thread of control to finish processing
+	// Indicate the DMA transaction completed to allow the other thread to finish processing
 	complete(completion);
 	return;
 }
@@ -105,7 +112,7 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 		return -EAGAIN;
 	}
 	
-	pr_info("DMA mapping: virt: %p->%p, dma: %p->%p.\n",
+	pr_info("DMA mapping: virt: %p->%p, dma: %#x->%#x.\n",
 		tr->tx.buf, tr->rx.buf, tr->tx.handle, tr->rx.handle);
 	return 0;
 }
@@ -301,6 +308,7 @@ static struct platform_driver dmac_driver = {
 static void __exit mod_exit(void)
 {
 	platform_driver_unregister(&dmac_driver);
+	unregister_chrdev_region(driver.dev, 1 /* count */);
 	pr_info("module exiting...\n");
 }
 
@@ -309,8 +317,11 @@ static int __init mod_init(void)
 {
 	int err;
 	pr_info("module initializing...\n");
-	
-
+	err = alloc_chrdev_region(&driver.dev, 0 /* first minor */, 1 /* count */, "zdma");
+	if (err) {
+		pr_err("error registering /dev entry\n");
+		return -ENOSPC;
+	}
 
 	err = platform_driver_register(&dmac_driver);
 	if (err) {
@@ -327,4 +338,3 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("0.2");
-

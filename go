@@ -4,9 +4,9 @@ y="\e[39m"
 
 case $1 in
 "prep")
-	source "/opt/Xilinx/Vivado/2016.4/settings64.sh"
-	source "/opt/Xilinx/PetaLinux/2016.4/settings64.sh"
-	export PATH=$PATH:/home/galanom/work/zdma
+	#source "/opt/Xilinx/Vivado/2016.4/settings64.sh"
+	~/opt/petalinux/settings.sh
+	export PATH=$PATH:/home/igalanommatis/work/zdma
 	alias cdk="cd /var/tmp/yocto/work-shared/plnx_arm/kernel-source"
 	;;
 "reload")
@@ -25,10 +25,10 @@ case $1 in
 	;;
 "build")
 	petalinux-build
+	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	;;
 "run")
 	xsdb ./arm_reset.tcl
-	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	petalinux-boot --jtag --prebuilt 3
 	;;
 "con"*)

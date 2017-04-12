@@ -37,17 +37,11 @@ case $1 in
 "clean")
 	rm *.log *.jou
 	;;
-"edit"|"vim")
-	vim project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c
-	;;
 "dt")
 	vim project-spec/meta-user/recipes-dt/device-tree/files/system-top.dts
 	;;
 "dtpl")
 	vim components/plnx_workspace/device-tree-generation/pl.dtsi
-	;;
-"dttop")
-	vim components/plnx_workspace/device-tree-generation/system-top.dts
 	;;
 *)
 	echo -e ""\
@@ -58,7 +52,6 @@ case $1 in
 		"$x build$y:  build everything\n"				\
 		"$x run$y:    boot the project to the connected board\n"	\
 		"$x con$y:    launch serial terminal to target board.\n"	\
-		"$x edit$y:   edit module source\n"				\
 		"$x dt*$y:    edit device-tree nodes\n"
 	;;
 esac

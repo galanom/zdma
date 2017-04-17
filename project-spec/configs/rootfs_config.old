@@ -2947,11 +2947,25 @@ CONFIG_bench=y
 # CONFIG_gpio-demo-dev is not set
 
 #
+# ioctl 
+#
+CONFIG_ioctl=y
+# CONFIG_ioctl-dev is not set
+# CONFIG_ioctl-dbg is not set
+
+#
 # peekpoke 
 #
 # CONFIG_peekpoke is not set
 # CONFIG_peekpoke-dev is not set
 # CONFIG_peekpoke-dbg is not set
+
+#
+# zctl 
+#
+CONFIG_zctl=y
+# CONFIG_zctl-dev is not set
+# CONFIG_zctl-dbg is not set
 
 #
 # modules 
@@ -2968,3 +2982,4 @@ CONFIG_zdma=y
 # PetaLinux RootFS Settings
 #
 CONFIG_ROOTFS_ROOT_PASSWD="root"
+CONFIG_libzdma=y

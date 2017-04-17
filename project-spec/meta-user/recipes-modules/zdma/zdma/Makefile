@@ -1,4 +1,5 @@
 obj-m := zdma.o
+ccflags-y := -std=gnu11 -Wall -fdiagnostics-color=always
 
 SRC := $(shell pwd)
 

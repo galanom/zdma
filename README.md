@@ -8,5 +8,5 @@ The project consists of three parts:
   * A Linux 4.x+ kernel driver
   * A user-space library (to be created)
 
-Documentation is not here yet. You probably came here for `zdma.c`
+Documentation is not here yet. You probably came here for `project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c`
 

@@ -1,13 +1,18 @@
 #!/bin/sh
 x="\e[1;92m"
 y="\e[39m"
+RHOST=147.27.39.174
 
 case $1 in
 "prep")
-	#source "/opt/Xilinx/Vivado/2016.4/settings64.sh"
-	~/opt/petalinux/settings.sh
-	export PATH=$PATH:/home/igalanommatis/work/zdma
-	alias cdk="cd /var/tmp/yocto/work-shared/plnx_arm/kernel-source"
+	PL=/opt/Xilinx/PetaLinux/2016.4/tools
+	[ -e $PL ] || PL=/home/igalanommatis/opt/petalinux/tools
+	[ -e $PL ] || { echo "Cannot find PetaLinux!"; exit -1; }
+	export PATH="$PATH:$PL/linux-i386/petalinux/bin:$PL/common/petalinux/bin:$PL/linux-i386/microblaze-xilinx-elf/bin:$PL/linux-i386/microblazeel-xilinx-linux-gnu/bin:$PL/linux-i386/gcc-arm-none-eabi/bin:$PL/linux-i386/gcc-arm-linux-gnueabi/bin:$PL/linux-i386/aarch64-none-elf/bin:$PL/linux-i386/aarch64-linux-gnu/bin"
+	export PETALINUX=/home/igalanommatis/opt/petalinux PETALINUX_VER=2016.4 SETTINGS_FILE=settings.sh XIL_SCRIPT_LOC=/home/igalanommatis/opt/petalinux
+	#alias cdk="cd /var/tmp/yocto/work-shared/plnx_arm/kernel-source"
+	alias go="./go"
+	echo $PATH
 	;;
 "reload")
 	cp ../dma/dma.sdk/axidma_wrapper.hdf build/system.hdf
@@ -20,16 +25,24 @@ case $1 in
 	;;
 "cbuild")
 	petalinux-build -c zdma || exit
+	petalinux-build -c libzdma
 	petalinux-build -c bench
 	petalinux-build -x package
+	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	;;
 "build")
 	petalinux-build
 	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	;;
+"remote")
+	ssh -t $RHOST "cd work/zeus; source /opt/Xilinx/Vivado/2016.4/settings64.sh; source /opt/Xilinx/PetaLinux/2016.4/settings.sh ; ./go run && ./go con"
+	;;
 "run")
-	xsdb ./arm_reset.tcl
+	xsdb project-spec/arm_reset.tcl
 	petalinux-boot --jtag --prebuilt 3
+	;;
+"rcon")
+	ssh -t $RHOST "picocom -b115200 /dev/ttyACM0"
 	;;
 "con"*)
 	picocom -b115200 /dev/ttyACM0
@@ -48,9 +61,11 @@ case $1 in
 		"$x prep$y:   prepare shell environment\n"			\
 		"$x reload$y: refresh hardware project files (HDF and BIT)\n"	\
 		"$x reconf$y: reread HDF and run project configuration\n"	\
-		"$x cbuikd$y: build user components\n"				\
+		"$x cbuild$y: build user components\n"				\
 		"$x build$y:  build everything\n"				\
+		"$x remote$y: boot and connect to target at remote host\n"	\
 		"$x run$y:    boot the project to the connected board\n"	\
+		"$x rcon$y:   launch serial terminal to target board at remote host\n" \
 		"$x con$y:    launch serial terminal to target board.\n"	\
 		"$x dt*$y:    edit device-tree nodes\n"
 	;;

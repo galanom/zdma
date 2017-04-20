@@ -34,17 +34,29 @@
 			dmas = <&axi_dma_0 0
 				&axi_dma_0 1>;
 			dma-names = "tx", "rx";
-			memory-region = <&hp0>, <&hp1>;
+			memory-region = <&hp0>, <&hp1>, <&hp2>, <&hp3>;
 		};
-/*		bram@40000000 {
-			compatible = "tuc,bram";
-			reg = <0x40000000 0x4000>;
-			ctrl = <&axi_bram_ctrl_0>;
+		dma-client@1 {
+			compatible = "tuc,dma-client";
+			dmas = <&axi_dma_1 0
+				&axi_dma_1 1>;
+			dma-names = "tx", "rx";
+			memory-region = <&hp0>, <&hp1>, <&hp2>, <&hp3>;
 		};
-		bram@40010000 {
-			compatible = "tuc,bram";
-			reg = <0x40010000 0x8000>;
-			ctrl = <&axi_bram_ctrl_2>;
-		};*/
+		dma-client@2 {
+			compatible = "tuc,dma-client";
+			dmas = <&axi_dma_2 0
+				&axi_dma_2 1>;
+			dma-names = "tx", "rx";
+			memory-region = <&hp0>, <&hp1>, <&hp2>, <&hp3>;
+		};
+		dma-client@3 {
+			compatible = "tuc,dma-client";
+			dmas = <&axi_dma_3 0
+				&axi_dma_3 1>;
+			dma-names = "tx", "rx";
+			memory-region = <&hp0>, <&hp1>, <&hp2>, <&hp3>;
+		};
 	};
 };
+

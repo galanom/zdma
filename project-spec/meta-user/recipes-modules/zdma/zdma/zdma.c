@@ -26,9 +26,25 @@ extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
 //module_param(length, unsigned, S_IRUGO);
 
-static struct dma_transaction {
-	struct platform_device *dmac;
+struct dmac {
+	struct platform_device *pdev;
+	struct dma_chan *tx, *rx;
+};
+
+struct bank {
 	size_t size;
+	phys_addr_t phys;
+};
+
+struct {
+	int dmac_count, bank_count;
+	struct dmac *dmac;
+	struct bank *bank;
+} hw;
+
+static struct dma_transaction {
+	size_t size;
+	struct platform_device *dmac;
 	struct {
 		dma_addr_t handle;			// DMA address in bus address space
 		void *buf;				// DMA buffer address in virtual address space
@@ -40,26 +56,13 @@ static struct dma_transaction {
 	} tx, rx;
 } dma;
 
-static int dev_open(struct inode *inodep, struct file *filep);
-static int dev_release(struct inode *inodep, struct file *filep);
-static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg);
-static int dev_mmap(struct file *filep, struct vm_area_struct *vma);
-
-static struct dma_driver {
+static struct driver {
 	dev_t dev;
 	struct cdev cdev;
 	struct file_operations fops;
 	int nrOpen;
-} driver = {
-	.fops = {
-		.owner = THIS_MODULE,
-		.open = dev_open,
-		.release = dev_release,
-		.mmap = dev_mmap,
-		.unlocked_ioctl = dev_ioctl,
-	},
-	.nrOpen = 0,
-};
+} driver;
+
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
@@ -82,12 +85,12 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
 	*(u32 *)dma.tx.buf = 0xdeadbeef;
-	size_t off = vma->vm_pgoff << PAGE_SHIFT;
-	phys_addr_t phys = dma.tx.handle;
-	size_t vsize = vma->vm_end - vma->vm_start;
-	size_t psize = dma.size - off;
+	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
+		phys = dma.tx.handle,
+		vsize = vma->vm_end - vma->vm_start,
+		psize = dma.size - off;
 
-	pr_info("zdma mmap: off=%lu, phys=%#x, vsize=%lu, psize=%lu\n", off, phys, vsize, psize);
+	pr_info("zdma mmap: off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", off, phys, vsize, psize);
 	if (vsize > psize) {
 		pr_err("virtual space is larger than physical buffer!\n");
 		return -EINVAL;
@@ -142,6 +145,9 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 	}
 	
 	pr_info("DMA mapping: virt: %p->%p, dma: %#x->%#x.\n", tr->tx.buf, tr->rx.buf, tr->tx.handle, tr->rx.handle);
+	pr_info("tx.chanp=%p, tx.chanp->device=%p, tx.chanp->device->dev=%p\n", tr->tx.chanp, tr->tx.chanp->device, tr->tx.chanp->device->dev);
+	pr_info("rx.chanp=%p, rx.chanp->device=%p, rx.chanp->device->dev=%p\n", tr->rx.chanp, tr->rx.chanp->device, tr->rx.chanp->device->dev);
+	pr_info("dmac->dev=%p\n", &tr->dmac->dev);
 	return 0;
 }
 
@@ -286,7 +292,9 @@ static int dmac_remove(struct platform_device *pdev)
 static int dmac_probe(struct platform_device *pdev)
 {
 	pr_info("Probing for DMACs...\n");
-
+	int ret = of_property_count_elems_of_size(pdev->dev.of_node, "memory-region", 4);
+	pr_info("count=%d\n", ret);
+	/*
 	if (dma_init(&dma, pdev, 4*1024*1024) != 0) return -1;
 	if (dma_reserve_channels(&dma) != 0) return -1;
 	if (dma_reserve_memory(&dma) != 0) {
@@ -304,7 +312,7 @@ static int dmac_probe(struct platform_device *pdev)
 	dma_buffer_verify(&dma);
 	dma_release_memory(&dma);
 	dma_release_channels(&dma);
-	pr_info("module probe success.\n");
+	*/
 	return 0;
 }
 
@@ -332,6 +340,8 @@ static void __exit mod_exit(void)
 	platform_driver_unregister(&dmac_driver);
 	cdev_del(&driver.cdev);
 	unregister_chrdev_region(driver.dev, 1 /* count */);
+	kfree(hw.bank);
+	kfree(hw.dmac);
 	pr_info("module exiting...\n");
 }
 
@@ -339,7 +349,58 @@ static void __exit mod_exit(void)
 static int __init mod_init(void)
 {
 	pr_info("module initializing...\n");
-	
+
+	// find dma clients in device tree
+	struct device_node *np, *tmp_np;
+	for_each_compatible_node(np, NULL, "tuc,dma-client") ++hw.dmac_count;
+	if (!hw.dmac_count) {
+		pr_err("devicetree: unable to find any compatible DMA controller!\n");
+		return -ENODEV;
+	}
+	pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
+
+	if ((hw.dmac = kcalloc(hw.dmac_count, sizeof(struct dmac), GFP_KERNEL)) == NULL) {
+		pr_err("unable to allocate %d bytes for DMA-C hardware description structures!\n", hw.dmac_count*sizeof(struct dmac));
+		return -ENOMEM;
+	}
+
+	// find reserved memory regions
+	if ((tmp_np = np = of_find_node_by_name(NULL, "reserved-memory")) == NULL) {
+		pr_err("devicetree: unable to find reserved-memory node!\n");
+		return -ENODEV;
+	}
+
+	for_each_compatible_node(np, NULL, "shared-dma-pool") ++hw.bank_count;
+
+	if (!hw.bank_count) {
+		pr_err("devicetree: unable to find any memory regions in reserved-memory node!\n");
+		return -ENODEV;
+	}
+	pr_info("devicetree: found %d compatible reserved memory regions\n", hw.bank_count);
+
+	if ((hw.bank = kcalloc(hw.bank_count, sizeof(struct bank), GFP_KERNEL)) == NULL) {
+		pr_err("unable to allocate %d bytes for reserved memory description structures!\n", hw.bank_count*sizeof(struct bank));
+		return -ENOMEM;
+	}
+
+	// re-walk the reserved-memory region, now in order to save parameters 
+	int i;
+	u64 size;
+	for_each_compatible_node(tmp_np, NULL, "shared-dma-pool") {
+		BUG_ON(i >= hw.bank_count);
+		hw.bank[i].phys = of_translate_address(tmp_np, of_get_address(tmp_np, 0, &size, NULL));
+		hw.bank[i].size = size;
+		BUG_ON((u64)hw.bank[i].size != size);
+		pr_info("bank %d: addr: %#tx, size: %#tx\n", i, hw.bank[i].phys, hw.bank[i].size);
+	}
+
+	// create character device
+	driver.fops.owner = THIS_MODULE;
+	driver.fops.open = dev_open;
+	driver.fops.release = dev_release;
+	driver.fops.mmap = dev_mmap;
+	driver.fops.unlocked_ioctl = dev_ioctl;
+
 	if (alloc_chrdev_region(&driver.dev, 0 /* first minor */, 1 /* count */, KBUILD_MODNAME) < 0) {
 		pr_err("error registering /dev entry\n");
 		return -ENOSPC;
@@ -351,10 +412,13 @@ static int __init mod_init(void)
 		return -ENOSPC;
 	}
 
+	// register the driver to the kernel
 	if (platform_driver_register(&dmac_driver)) {
 		pr_err("error registering DMAC platform driver\n");
 		return -1;
 	}
+
+	
 	return 0;
 }
 

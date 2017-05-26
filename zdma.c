@@ -1,1 +1,0 @@
-project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c

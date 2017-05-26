@@ -11,12 +11,14 @@
 #include <linux/dma-mapping.h>
 #include <linux/dma-contiguous.h>
 
+#include <linux/of_dma.h>
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
 #include <linux/of_reserved_mem.h>
 
 #include "zdma.h"
+#include "zdma_ioctl.h"
 
 #ifndef CONFIG_OF
 #error "OpenFirmware is not configured in kernel\n"
@@ -26,20 +28,17 @@ extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
 //module_param(length, unsigned, S_IRUGO);
 
-struct dmac {
-	struct platform_device *pdev;
-	struct dma_chan *tx, *rx;
-};
-
-struct bank {
-	size_t size;
-	phys_addr_t phys;
-};
-
-struct {
-	int dmac_count, bank_count;
-	struct dmac *dmac;
-	struct bank *bank;
+static struct {
+	int dmac_count, zone_count;
+	struct {
+		struct platform_device *pdev;
+		struct dma_chan *txchanp, *rxchanp;
+		struct device txdev, rxdev;
+	} *dmac;
+	struct {
+		size_t size;
+		phys_addr_t phys;
+	} *zone;
 } hw;
 
 static struct dma_transaction {
@@ -78,23 +77,42 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	pr_info("zdma ioctl cmd=%u arg=%lu\n", cmd, arg);
+	pr_info("zdma ioctl cmd=%x arg=%lu\n", cmd, arg);
+	switch (cmd) {
+	case ZDMA_IO_DEBUG:
+		break;
+	case ZDMA_IO_SET_DMA_TX_SIZE:
+		pr_info("request to set DMA TX buffer size to %lu\n", arg);
+		break;
+	case ZDMA_IO_SET_DMA_RX_SIZE:
+		pr_info("request to set DMA RX buffer size to %lu\n", arg);
+		break;
+	default:
+		pr_err("uknown ioctl command (cmd: %x, arg: %lu\n", cmd, arg);
+		return -ENOTTY;
+	}
 	return 0l;
 }
 
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
-	*(u32 *)dma.tx.buf = 0xdeadbeef;
 	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
 		phys = dma.tx.handle,
 		vsize = vma->vm_end - vma->vm_start,
 		psize = dma.size - off;
 
+	if (!dma.tx.buf) {
+		pr_err("DMA buffers have not yet been allocated\n.");
+		return -ENOMEM;
+	}
+
+	*(u32 *)dma.tx.buf = 0xdeadbeef;
 	pr_info("zdma mmap: off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", off, phys, vsize, psize);
 	if (vsize > psize) {
 		pr_err("virtual space is larger than physical buffer!\n");
 		return -EINVAL;
 	}
+
 
 	if (dma_mmap_coherent(dma.tx.chanp->device->dev, vma, dma.tx.buf, dma.tx.handle, vsize) < 0) {
 		pr_err("failed to map user buffer!\n");
@@ -148,27 +166,6 @@ static int dma_reserve_memory(struct dma_transaction *tr)
 	pr_info("tx.chanp=%p, tx.chanp->device=%p, tx.chanp->device->dev=%p\n", tr->tx.chanp, tr->tx.chanp->device, tr->tx.chanp->device->dev);
 	pr_info("rx.chanp=%p, rx.chanp->device=%p, rx.chanp->device->dev=%p\n", tr->rx.chanp, tr->rx.chanp->device, tr->rx.chanp->device->dev);
 	pr_info("dmac->dev=%p\n", &tr->dmac->dev);
-	return 0;
-}
-
-
-static int dma_reserve_channels(struct dma_transaction *tr)
-{
-	// Request the transmit and receive channels for the AXI DMA from the DMA engine
-	if ((tr->tx.chanp = dma_request_slave_channel(&tr->dmac->dev, "tx")) == NULL) {
-		pr_err("TX channel reservation failure. "
-			"Did you load xilinx_dma kernel module?\n");
-		return -EBUSY;
-	}
-
-	if ((tr->rx.chanp = dma_request_slave_channel(&tr->dmac->dev, "rx")) == NULL) {
-		pr_err("RX channel reservation failure (TX was successful).\n");
-		dma_release_channel(tr->tx.chanp);
-		return -EBUSY;
-	}
-
-	pr_info("DMA channel reservation successful.\n");
-	
 	return 0;
 }
 
@@ -274,27 +271,122 @@ static void dma_release_memory(struct dma_transaction *tr)
 	return;
 }
 
-static void dma_release_channels(struct dma_transaction *tr)
+static int sched_remove(struct platform_device *pdev)
 {
-	dma_release_channel(tr->tx.chanp);
-	dma_release_channel(tr->rx.chanp);
-	return;
-}
-
-
-static int dmac_remove(struct platform_device *pdev)
-{
-	pr_info("DMA controller going down...\n");
-	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
+	pr_info("scheduler shutting down...\n");
+//	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
+	
+	while (hw.dmac_count--) {
+		pr_info("releasing dmac[%d]\n", hw.dmac_count);
+		dma_release_channel(hw.dmac[hw.dmac_count].rxchanp);
+		dma_release_channel(hw.dmac[hw.dmac_count].txchanp);
+		device_del(&hw.dmac[hw.dmac_count].rxdev);
+		device_del(&hw.dmac[hw.dmac_count].txdev);
+		put_device(&hw.dmac[hw.dmac_count].rxdev);
+		put_device(&hw.dmac[hw.dmac_count].txdev);
+	}
 	return 0;
 }
 
-static int dmac_probe(struct platform_device *pdev)
+static int sched_probe(struct platform_device *pdev)
 {
-	pr_info("Probing for DMACs...\n");
-	int ret = of_property_count_elems_of_size(pdev->dev.of_node, "memory-region", 4);
-	pr_info("count=%d\n", ret);
-	/*
+	int i, res;
+
+	pr_info("scheduler starting...\n");
+	// find dma clients in device tree
+	struct device_node *np = NULL, *tnp = NULL;
+	for_each_compatible_node(np, NULL, "tuc,dma-client") ++hw.dmac_count;
+	if (!hw.dmac_count) {
+		pr_err("devicetree: unable to find any compatible DMA controller!\n");
+		return -ENODEV;
+	}
+	pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
+
+	if ((hw.dmac = devm_kcalloc(&pdev->dev, hw.dmac_count, sizeof(*hw.dmac), GFP_KERNEL)) == NULL) {
+		pr_err("unable to allocate %d bytes for DMA controller hardware description structures!\n", hw.dmac_count*sizeof(*hw.dmac));
+		return -ENOMEM;
+	}
+
+	i = 0;
+	np = NULL;
+	for_each_compatible_node(np, NULL, "tuc,dma-client") {
+		device_initialize(&hw.dmac[i].txdev);
+		device_initialize(&hw.dmac[i].rxdev);
+		dev_set_name(&hw.dmac[i].txdev, "%s:dmac%d:tx", dev_name(&pdev->dev), i);
+		dev_set_name(&hw.dmac[i].rxdev, "%s:dmac%d:rx", dev_name(&pdev->dev), i);
+		hw.dmac[i].txdev.parent = hw.dmac[i].rxdev.parent = &pdev->dev;
+		hw.dmac[i].txdev.bus = hw.dmac[i].rxdev.bus = pdev->dev.bus;
+		hw.dmac[i].txdev.coherent_dma_mask = hw.dmac[i].rxdev.coherent_dma_mask = pdev->dev.coherent_dma_mask;
+		hw.dmac[i].txdev.dma_mask = hw.dmac[i].rxdev.dma_mask = pdev->dev.dma_mask;
+		hw.dmac[i].txdev.release = hw.dmac[i].rxdev.release = of_reserved_mem_device_release;
+		if ((res = device_add(&hw.dmac[i].txdev))) {
+			pr_err("dmac[%d]: error registering TX channel dev\n", i);
+			return res;
+		}
+		if ((res = device_add(&hw.dmac[i].rxdev))) {
+			pr_err("dmac[%d]: error registering RX channel dev\n", i);
+			return res;
+		}
+
+		hw.dmac[i].txchanp = of_dma_request_slave_channel(np, "tx");
+		if (IS_ERR_OR_NULL(hw.dmac[i].txchanp)) {
+			pr_err("dmac[%d]: failed to reserve TX channel.\nDevicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			while (i--) {
+				dma_release_channel(hw.dmac[i].txchanp);
+				dma_release_channel(hw.dmac[i].rxchanp);
+			}
+			return -ENODEV;
+		}
+		hw.dmac[i].rxchanp = of_dma_request_slave_channel(np, "rx");
+		if (IS_ERR_OR_NULL(hw.dmac[i].rxchanp)) {
+			pr_err("dmac[%d]: failed to reserve RX channel.\nDevicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			dma_release_channel(hw.dmac[i].txchanp);
+			while (i--) {
+				dma_release_channel(hw.dmac[i].txchanp);
+				dma_release_channel(hw.dmac[i].rxchanp);
+			}
+			return -ENODEV;
+		}
+		++i;
+	}
+	pr_info("%d channel pairs initialized\n", i);
+
+	// find reserved memory regions
+	np = NULL;
+	for_each_compatible_node(np, NULL, "tuc,zone") ++hw.zone_count;
+
+	if (!hw.zone_count) {
+		pr_err("devicetree: no suitable memory zones are defined!\n");
+		return -ENODEV;
+	}
+	pr_info("devicetree: found %d memory regions\n", hw.zone_count);
+
+	if ((hw.zone = devm_kcalloc(&pdev->dev, hw.zone_count, sizeof(*hw.zone), GFP_KERNEL)) == NULL) {
+		pr_err("unable to allocate %d bytes for memory region description structures!\n", hw.zone_count*sizeof(*hw.zone));
+		return -ENOMEM;
+	}
+
+	// re-walk the memory region, now in order to save parameters 
+	i = 0;
+	np = NULL;
+	u64 size;
+	for_each_compatible_node(np, NULL, "tuc,zone") {
+		BUG_ON(i >= hw.zone_count);
+		tnp = of_parse_phandle(np, "memory-region", 0);
+		if (!tnp) {
+			pr_err("devicetree: memory region node %d does not contain a phandle to a memory bank\n", i);
+			return -ENODEV;
+		}
+		hw.zone[i].phys = of_translate_address(tnp, of_get_address(tnp, 0, &size, NULL));
+		hw.zone[i].size = size;
+		BUG_ON((u64)hw.zone[i].size != size);
+		pr_info("memory region %d: %#tx-%#tx, size: %#tx (%6dkiB)\n", 
+			i, hw.zone[i].phys, hw.zone[i].phys+hw.zone[i].size-1, hw.zone[i].size, hw.zone[i].size/1024);
+		++i;
+	}
+
+
+	
 	if (dma_init(&dma, pdev, 4*1024*1024) != 0) return -1;
 	if (dma_reserve_channels(&dma) != 0) return -1;
 	if (dma_reserve_memory(&dma) != 0) {
@@ -312,36 +404,33 @@ static int dmac_probe(struct platform_device *pdev)
 	dma_buffer_verify(&dma);
 	dma_release_memory(&dma);
 	dma_release_channels(&dma);
-	*/
+	
 	return 0;
 }
 
-static struct of_device_id dmac_of_match[] = {
-	{ .compatible = "tuc,dma-client", },
+static struct of_device_id sched_of_match[] = {
+	{ .compatible = "tuc,sched", },
 	{ /* end of list */ },
 };
-MODULE_DEVICE_TABLE(of, dmac_of_match);
+MODULE_DEVICE_TABLE(of, sched_of_match);
 
 
-static struct platform_driver dmac_driver = {
+static struct platform_driver sched_driver = {
 	.driver = {
-		.name = "dmac",
+		.name = "sched",
 		.owner = THIS_MODULE,
-		.of_match_table = dmac_of_match,
-
+		.of_match_table = sched_of_match,
 	},
-	.probe = dmac_probe,
-	.remove = dmac_remove,
+	.probe = sched_probe,
+	.remove = sched_remove,
 };
 
 
 static void __exit mod_exit(void)
 {
-	platform_driver_unregister(&dmac_driver);
+	platform_driver_unregister(&sched_driver);
 	cdev_del(&driver.cdev);
 	unregister_chrdev_region(driver.dev, 1 /* count */);
-	kfree(hw.bank);
-	kfree(hw.dmac);
 	pr_info("module exiting...\n");
 }
 
@@ -349,50 +438,6 @@ static void __exit mod_exit(void)
 static int __init mod_init(void)
 {
 	pr_info("module initializing...\n");
-
-	// find dma clients in device tree
-	struct device_node *np, *tmp_np;
-	for_each_compatible_node(np, NULL, "tuc,dma-client") ++hw.dmac_count;
-	if (!hw.dmac_count) {
-		pr_err("devicetree: unable to find any compatible DMA controller!\n");
-		return -ENODEV;
-	}
-	pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
-
-	if ((hw.dmac = kcalloc(hw.dmac_count, sizeof(struct dmac), GFP_KERNEL)) == NULL) {
-		pr_err("unable to allocate %d bytes for DMA-C hardware description structures!\n", hw.dmac_count*sizeof(struct dmac));
-		return -ENOMEM;
-	}
-
-	// find reserved memory regions
-	if ((tmp_np = np = of_find_node_by_name(NULL, "reserved-memory")) == NULL) {
-		pr_err("devicetree: unable to find reserved-memory node!\n");
-		return -ENODEV;
-	}
-
-	for_each_compatible_node(np, NULL, "shared-dma-pool") ++hw.bank_count;
-
-	if (!hw.bank_count) {
-		pr_err("devicetree: unable to find any memory regions in reserved-memory node!\n");
-		return -ENODEV;
-	}
-	pr_info("devicetree: found %d compatible reserved memory regions\n", hw.bank_count);
-
-	if ((hw.bank = kcalloc(hw.bank_count, sizeof(struct bank), GFP_KERNEL)) == NULL) {
-		pr_err("unable to allocate %d bytes for reserved memory description structures!\n", hw.bank_count*sizeof(struct bank));
-		return -ENOMEM;
-	}
-
-	// re-walk the reserved-memory region, now in order to save parameters 
-	int i;
-	u64 size;
-	for_each_compatible_node(tmp_np, NULL, "shared-dma-pool") {
-		BUG_ON(i >= hw.bank_count);
-		hw.bank[i].phys = of_translate_address(tmp_np, of_get_address(tmp_np, 0, &size, NULL));
-		hw.bank[i].size = size;
-		BUG_ON((u64)hw.bank[i].size != size);
-		pr_info("bank %d: addr: %#tx, size: %#tx\n", i, hw.bank[i].phys, hw.bank[i].size);
-	}
 
 	// create character device
 	driver.fops.owner = THIS_MODULE;
@@ -413,12 +458,11 @@ static int __init mod_init(void)
 	}
 
 	// register the driver to the kernel
-	if (platform_driver_register(&dmac_driver)) {
-		pr_err("error registering DMAC platform driver\n");
+	if (platform_driver_register(&sched_driver)) {
+		pr_err("error registering scheduler platform driver\n");
 		return -1;
 	}
 
-	
 	return 0;
 }
 

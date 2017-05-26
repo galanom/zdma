@@ -2,18 +2,9 @@
 x="\e[1;92m"
 y="\e[39m"
 RHOST=147.27.39.174
+VERSION=2017.1
 
 case $1 in
-"prep")
-	PL=/opt/Xilinx/PetaLinux/2016.4/tools
-	[ -e $PL ] || PL=/home/igalanommatis/opt/petalinux/tools
-	[ -e $PL ] || { echo "Cannot find PetaLinux!"; exit -1; }
-	export PATH="$PATH:$PL/linux-i386/petalinux/bin:$PL/common/petalinux/bin:$PL/linux-i386/microblaze-xilinx-elf/bin:$PL/linux-i386/microblazeel-xilinx-linux-gnu/bin:$PL/linux-i386/gcc-arm-none-eabi/bin:$PL/linux-i386/gcc-arm-linux-gnueabi/bin:$PL/linux-i386/aarch64-none-elf/bin:$PL/linux-i386/aarch64-linux-gnu/bin"
-	export PETALINUX=/home/igalanommatis/opt/petalinux PETALINUX_VER=2016.4 SETTINGS_FILE=settings.sh XIL_SCRIPT_LOC=/home/igalanommatis/opt/petalinux
-	#alias cdk="cd /var/tmp/yocto/work-shared/plnx_arm/kernel-source"
-	alias go="./go"
-	echo $PATH
-	;;
 "reload")
 	cp ../dma/dma.sdk/axidma_wrapper.hdf build/system.hdf
 	cp ../dma/dma.runs/impl_1/axidma_wrapper.bit build/download.bit
@@ -22,6 +13,18 @@ case $1 in
 	petalinux-config --get-hw-description build/
 	[ `grep EXTRA_IMAGE_FEATURES ./build/conf/local.conf` ] || echo 'EXTRA_IMAGE_FEATURES="debug-tweaks"' >> ./build/conf/local.conf
 	sed '/inherit extrausers/d;/EXTRA_USERS_PARAMS/d' -i ./project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb
+	;;
+"ez")
+	vim project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c
+	;;
+"ezh")	
+	vim project-spec/meta-user/recipes-modules/zdma/zdma/zdma.h
+	;;
+"ezi")
+	vim project-spec/meta-user/recipes-modules/zdma/zdma/zdma_ioctl.h
+	;;
+"el")
+	vim project-spec/meta-user/recipes-apps/libzdma/libzdma/libzdma.c
 	;;
 "cbuild")
 	petalinux-build -c zdma || exit
@@ -35,7 +38,7 @@ case $1 in
 	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	;;
 "remote")
-	ssh -t $RHOST "cd work/zeus; source /opt/Xilinx/Vivado/2016.4/settings64.sh; source /opt/Xilinx/PetaLinux/2016.4/settings.sh ; ./go run && ./go con"
+	ssh -t $RHOST "cd work/zdma; source /opt/Xilinx/Vivado/$VERSION/settings64.sh; source /opt/Xilinx/PetaLinux/$VERSION/settings.sh ; ./go run && ./go con"
 	;;
 "run")
 	xsdb project-spec/arm_reset.tcl

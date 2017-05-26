@@ -1,0 +1,23 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+dev_ioctl	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)$/;"	f	file:
+dev_mmap	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dev_mmap(struct file *filep, struct vm_area_struct *vma)$/;"	f	file:
+dev_open	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dev_open(struct inode *inodep, struct file *filep)$/;"	f	file:
+dev_release	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dev_release(struct inode *inodep, struct file *filep)$/;"	f	file:
+dma_buffer_fill	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static void dma_buffer_fill(struct dma_transaction *tr, int seed)$/;"	f	file:
+dma_buffer_verify	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dma_buffer_verify(struct dma_transaction *tr)$/;"	f	file:
+dma_init	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dma_init(struct dma_transaction *tr, struct platform_device *pdev, size_t size)$/;"	f	file:
+dma_issue	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dma_issue(struct dma_transaction *tr)$/;"	f	file:
+dma_release_memory	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static void dma_release_memory(struct dma_transaction *tr)$/;"	f	file:
+dma_reserve_memory	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dma_reserve_memory(struct dma_transaction *tr)$/;"	f	file:
+dma_setup	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int dma_setup(struct dma_transaction *tr)$/;"	f	file:
+mod_exit	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static void __exit mod_exit(void)$/;"	f	file:
+mod_init	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int __init mod_init(void)$/;"	f	file:
+sched_probe	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int sched_probe(struct platform_device *pdev)$/;"	f	file:
+sched_remove	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static int sched_remove(struct platform_device *pdev)$/;"	f	file:
+sync_callback	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^static void sync_callback(void *completion)$/;"	f	file:
+xilinx_vdma_channel_set_config	project-spec/meta-user/recipes-modules/zdma/zdma/zdma.c	/^extern int xilinx_vdma_channel_set_config(void *, void *);	\/\/ FIXME dependency?$/;"	p	file:

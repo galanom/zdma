@@ -274,9 +274,9 @@ CONFIG_util-linux=y
 # CONFIG_util-linux-sulogin is not set
 # CONFIG_util-linux-mkfs is not set
 # CONFIG_util-linux-sfdisk is not set
+# CONFIG_util-linux-mkfs.cramfs is not set
 # CONFIG_util-linux-blkid is not set
 # CONFIG_util-linux-hwclock is not set
-# CONFIG_util-linux-mkfs.cramfs is not set
 # CONFIG_util-linux-dev is not set
 # CONFIG_util-linux-readprofile is not set
 # CONFIG_util-linux-reset is not set
@@ -575,7 +575,6 @@ CONFIG_python=y
 # CONFIG_python-man is not set
 # CONFIG_python-compiler is not set
 # CONFIG_python-core is not set
-# CONFIG_python-netclient is not set
 # CONFIG_python-2to3 is not set
 # CONFIG_python-threading is not set
 # CONFIG_python-syslog is not set
@@ -584,6 +583,7 @@ CONFIG_python=y
 # CONFIG_python-sqlite3-tests is not set
 # CONFIG_python-contextlib is not set
 # CONFIG_python-resource is not set
+# CONFIG_python-netclient is not set
 # CONFIG_python-numbers is not set
 # CONFIG_python-distutils is not set
 # CONFIG_python-codecs is not set
@@ -1354,8 +1354,8 @@ CONFIG_run-postinsts=y
 # CONFIG_ncurses is not set
 # CONFIG_ncurses-terminfo is not set
 # CONFIG_ncurses-dev is not set
-# CONFIG_ncurses-tools is not set
 # CONFIG_ncurses-dbg is not set
+# CONFIG_ncurses-tools is not set
 # CONFIG_ncurses-terminfo-base is not set
 
 #
@@ -2947,11 +2947,11 @@ CONFIG_bench=y
 # CONFIG_gpio-demo-dev is not set
 
 #
-# ioctl 
+# libzdma 
 #
-CONFIG_ioctl=y
-# CONFIG_ioctl-dev is not set
-# CONFIG_ioctl-dbg is not set
+CONFIG_libzdma=y
+# CONFIG_libzdma-dev is not set
+# CONFIG_libzdma-dbg is not set
 
 #
 # peekpoke 
@@ -2982,4 +2982,3 @@ CONFIG_zdma=y
 # PetaLinux RootFS Settings
 #
 CONFIG_ROOTFS_ROOT_PASSWD="root"
-CONFIG_libzdma=y

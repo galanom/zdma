@@ -2,7 +2,7 @@
 x="\e[1;92m"
 y="\e[39m"
 RHOST=147.27.39.174
-VERSION=2017.1
+VERSION=2016.4
 
 case $1 in
 "reload")
@@ -37,18 +37,13 @@ case $1 in
 	petalinux-build
 	petalinux-package --prebuilt --clean --fpga ./build/download.bit
 	;;
-"remote")
-	ssh -t $RHOST "cd work/zdma; source /opt/Xilinx/Vivado/$VERSION/settings64.sh; source /opt/Xilinx/PetaLinux/$VERSION/settings.sh ; ./go run && ./go con"
-	;;
 "run")
+	socat pty,link=zynq,b115200,raw,waitslave tcp:147.27.39.174:2000&
 	xsdb project-spec/arm_reset.tcl
-	petalinux-boot --jtag --prebuilt 3
-	;;
-"rcon")
-	ssh -t $RHOST "picocom -b115200 /dev/ttyACM0"
+	petalinux-boot --jtag --prebuilt 3 --hw_server-url 147.27.39.174:3121
 	;;
 "con"*)
-	picocom -b115200 /dev/ttyACM0
+	screen zynq 115200
 	;;
 "clean")
 	rm *.log *.jou

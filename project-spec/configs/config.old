@@ -21,7 +21,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/galanom/work/zdma/components/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/components/ext_sources/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -235,5 +235,7 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS=y
 # Network sstate feeds URL
 #
 CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/rel-v2016.4/arm/sstate-cache"
+
+
 
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="console=ttyPS0,115200 earlyprintk"

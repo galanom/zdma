@@ -1,0 +1,84 @@
+#-----------------------------------------------------------
+# Vivado v2017.1 (64-bit)
+# SW Build 1846317 on Fri Apr 14 18:54:47 MDT 2017
+# IP Build 1846188 on Fri Apr 14 20:52:08 MDT 2017
+# Start of session at: Thu Jun  8 19:33:47 2017
+# Process ID: 26392
+# Current directory: /home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.runs/quad_dma_xbar_1_synth_1
+# Command line: vivado -log quad_dma_xbar_1.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source quad_dma_xbar_1.tcl
+# Log file: /home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.runs/quad_dma_xbar_1_synth_1/quad_dma_xbar_1.vds
+# Journal file: /home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.runs/quad_dma_xbar_1_synth_1/vivado.jou
+#-----------------------------------------------------------
+source quad_dma_xbar_1.tcl -notrace
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 1198.883 ; gain = 79.996 ; free physical = 119 ; free virtual = 7835
+INFO: [Synth 8-638] synthesizing module 'quad_dma_xbar_1' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ip/quad_dma_xbar_1/synth/quad_dma_xbar_1.v:59]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_axi_crossbar' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4882]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_crossbar_sasd' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:1240]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_addr_decoder' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:794]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_comparator_static' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_carry_and' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:62]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_carry_and' (1#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:62]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_comparator_static' (2#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized0' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized0' (2#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized1' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized1' (2#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized2' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized2' (2#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized3' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_comparator_static__parameterized3' (2#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2133]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_addr_decoder' (3#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:794]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_decerr_slave' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:3500]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_decerr_slave' (4#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:3500]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_addr_arbiter_sasd' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:65]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_addr_arbiter_sasd' (5#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:65]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_splitter' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4459]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_splitter' (6#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4459]
+INFO: [Synth 8-638] synthesizing module 'axi_crossbar_v2_1_13_splitter__parameterized0' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4459]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_splitter__parameterized0' (6#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4459]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_mux_enc' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_mux_enc' (7#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized0' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized0' (7#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized1' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized1' (7#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-638] synthesizing module 'axi_register_slice_v2_1_12_axic_register_slice' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/0e33/hdl/axi_register_slice_v2_1_vl_rfs.v:85]
+INFO: [Synth 8-256] done synthesizing module 'axi_register_slice_v2_1_12_axic_register_slice' (8#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/0e33/hdl/axi_register_slice_v2_1_vl_rfs.v:85]
+INFO: [Synth 8-638] synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized2' [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-256] done synthesizing module 'generic_baseblocks_v2_1_0_mux_enc__parameterized2' (8#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/f9c1/hdl/generic_baseblocks_v2_1_vl_rfs.v:2452]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_crossbar_sasd' (9#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:1240]
+INFO: [Synth 8-256] done synthesizing module 'axi_crossbar_v2_1_13_axi_crossbar' (10#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ipshared/78eb/hdl/axi_crossbar_v2_1_vl_rfs.v:4882]
+INFO: [Synth 8-256] done synthesizing module 'quad_dma_xbar_1' (11#1) [/home/igalanommatis/work/zdma/zedboard/hardware/quad_dma/quad_dma.srcs/sources_1/bd/quad_dma/ip/quad_dma_xbar_1/synth/quad_dma_xbar_1.v:59]
+Finished RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 1319.383 ; gain = 200.496 ; free physical = 206 ; free virtual = 7509
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 1319.383 ; gain = 200.496 ; free physical = 207 ; free virtual = 7509
+INFO: [Device 21-403] Loading part xc7z020clg484-1
+Constraint Validation Runtime : Time (s): cpu = 00:00:00.04 ; elapsed = 00:00:00.24 . Memory (MB): peak = 1614.750 ; gain = 0.000 ; free physical = 86 ; free virtual = 7252
+Finished Constraint Validation : Time (s): cpu = 00:00:16 ; elapsed = 00:00:22 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 173 ; free virtual = 7333
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:22 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 173 ; free virtual = 7333
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:22 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 175 ; free virtual = 7335
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:23 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 167 ; free virtual = 7327
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:18 ; elapsed = 00:00:24 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 153 ; free virtual = 7314
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:24 ; elapsed = 00:00:32 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 87 ; free virtual = 7029
+Finished Timing Optimization : Time (s): cpu = 00:00:24 ; elapsed = 00:00:33 . Memory (MB): peak = 1614.750 ; gain = 495.863 ; free physical = 79 ; free virtual = 6920
+Finished Technology Mapping : Time (s): cpu = 00:00:24 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 96 ; free virtual = 6871
+Finished IO Insertion : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 92 ; free virtual = 6827
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 91 ; free virtual = 6826
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 90 ; free virtual = 6825
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 90 ; free virtual = 6825
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 90 ; free virtual = 6824
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 94 ; free virtual = 6828
+
+Report Cell Usage: 
++------+-----+------+
+|      |Cell |Count |
++------+-----+------+
+|1     |LUT1 |     2|
+|2     |LUT2 |    15|
+|3     |LUT3 |    49|
+|4     |LUT4 |    53|
+|5     |LUT5 |    38|
+|6     |LUT6 |    89|
+|7     |FDRE |   134|
++------+-----+------+
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 1615.758 ; gain = 496.871 ; free physical = 90 ; free virtual = 6825
+synth_design: Time (s): cpu = 00:00:26 ; elapsed = 00:00:35 . Memory (MB): peak = 1615.766 ; gain = 509.465 ; free physical = 175 ; free virtual = 6913

@@ -1,11 +1,11 @@
+linux-xlnx
 */config.old
-pre-built/
-build/
-images/
-components/
-tmp/
-.petalinux/
-.Xil/
+*/pre-built/
+*/build/
+*/images/
+*/components/
+*/tmp/
+*/.Xil/
 !.petalinux/metadata
 
 *.bit
@@ -47,3 +47,10 @@ tmp/
 # Debug files
 *.dSYM/
 *.su
+zedboard/hardware/quad_dma/quad_dma.cache
+zedboard/hardware/quad_dma/quad_dma.hw
+zedboard/hardware/quad_dma/quad_dma.ip_user_files
+zedboard/hardware/quad_dma/quad_dma.runs
+zedboard/hardware/quad_dma/quad_dma.sdk
+zedboard/hardware/quad_dma/quad_dma.sim
+zedboard/hardware/quad_dma/quad_dma.xpr

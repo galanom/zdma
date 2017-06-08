@@ -1,0 +1,60 @@
+{
+   guistr: "# # String gsaved with Nlview 6.6.8  2016-12-21 bk=1.3817 VDI=40 GEI=35 GUI=JA:1.6
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -y 550 -defaultsOSRD
+preplace port sws_8bits -pg 1 -y 400 -defaultsOSRD
+preplace port leds_8bits -pg 1 -y 380 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -y 570 -defaultsOSRD
+preplace inst axi_dma_0 -pg 1 -lvl 2 -y 160 -defaultsOSRD
+preplace inst axi_dma_1 -pg 1 -lvl 2 -y 380 -defaultsOSRD
+preplace inst axi_dma_2 -pg 1 -lvl 2 -y 600 -defaultsOSRD
+preplace inst axi_dma_3 -pg 1 -lvl 2 -y 820 -defaultsOSRD
+preplace inst xlconcat_0 -pg 1 -lvl 3 -y 120 -defaultsOSRD
+preplace inst axi_gpio_0 -pg 1 -lvl 4 -y 390 -defaultsOSRD
+preplace inst ps7_0_axi_periph -pg 1 -lvl 1 -y 750 -defaultsOSRD
+preplace inst rst_ps7_0_100M -pg 1 -lvl 1 -y 460 -defaultsOSRD
+preplace inst axi_mem_intercon -pg 1 -lvl 3 -y 610 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 4 -y 630 -defaultsOSRD
+preplace netloc ps7_0_axi_periph_M02_AXI 1 1 1 470
+preplace netloc processing_system7_0_DDR 1 4 1 NJ
+preplace netloc axi_mem_intercon_M01_AXI 1 3 1 N
+preplace netloc axi_dma_1_M_AXI_S2MM 1 2 1 N
+preplace netloc axi_dma_3_s2mm_introut 1 2 1 920
+preplace netloc axi_dma_2_s2mm_introut 1 2 1 870
+preplace netloc S06_AXI_1 1 2 1 930
+preplace netloc processing_system7_0_M_AXI_GP0 1 0 5 60 1020 NJ 1020 NJ 1020 NJ 1020 1840
+preplace netloc axi_mem_intercon_M03_AXI 1 3 1 N
+preplace netloc axi_dma_1_M_AXI_MM2S 1 2 1 N
+preplace netloc axi_dma_1_M_AXIS_MM2S 1 1 2 490 490 850
+preplace netloc rst_ps7_0_100M_peripheral_aresetn 1 0 4 50 550 460 50 950 1000 1360
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 20 1040 NJ 1040 NJ 1040 NJ 1040 1830
+preplace netloc axi_dma_1_s2mm_introut 1 2 1 980
+preplace netloc ps7_0_axi_periph_M03_AXI 1 1 1 N
+preplace netloc axi_mem_intercon_M00_AXI 1 3 1 N
+preplace netloc axi_dma_3_M_AXI_S2MM 1 2 1 940
+preplace netloc axi_dma_2_M_AXI_S2MM 1 2 1 900
+preplace netloc ps7_0_axi_periph_M01_AXI 1 1 1 450
+preplace netloc axi_mem_intercon_M02_AXI 1 3 1 N
+preplace netloc axi_dma_0_s2mm_introut 1 2 1 970
+preplace netloc axi_dma_0_M_AXI_MM2S 1 2 1 1020
+preplace netloc xlconcat_0_dout 1 3 1 1330
+preplace netloc axi_dma_3_mm2s_introut 1 2 1 910
+preplace netloc processing_system7_0_FIXED_IO 1 4 1 NJ
+preplace netloc axi_gpio_0_GPIO2 1 4 1 NJ
+preplace netloc axi_dma_3_M_AXIS_MM2S 1 1 2 490 710 850
+preplace netloc axi_dma_2_mm2s_introut 1 2 1 1000
+preplace netloc axi_dma_0_mm2s_introut 1 2 1 960
+preplace netloc axi_gpio_0_GPIO 1 4 1 NJ
+preplace netloc axi_dma_0_M_AXI_S2MM 1 2 1 990
+preplace netloc ps7_0_axi_periph_M04_AXI 1 1 3 420J 1030 NJ 1030 1340
+preplace netloc axi_dma_2_M_AXI_MM2S 1 2 1 890
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 5 30 360 440 30 1010 1010 1350 810 1820
+preplace netloc ps7_0_axi_periph_M00_AXI 1 1 1 430
+preplace netloc axi_dma_2_M_AXIS_MM2S 1 1 2 480 270 860
+preplace netloc axi_dma_0_M_AXIS_MM2S 1 1 2 490 20 870
+preplace netloc rst_ps7_0_100M_interconnect_aresetn 1 0 3 40 370 420 40 1030
+preplace netloc axi_dma_1_mm2s_introut 1 2 1 880
+levelinfo -pg 1 0 240 670 1180 1590 1860 -top 0 -bot 1050
+",
+}
+0

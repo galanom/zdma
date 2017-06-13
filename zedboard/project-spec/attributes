@@ -4,4 +4,4 @@
 
 #defconfigs
 
-UBOOT_DEFAULT_DEFCONFIG="zynq_zed_config"
+UBOOT_DEFAULT_DEFCONFIG="zynq_zc702_config"

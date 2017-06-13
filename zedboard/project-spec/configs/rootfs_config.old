@@ -4214,7 +4214,6 @@ CONFIG_bridge-utils=y
 # CONFIG_gpio-demo is not set
 CONFIG_libzdma=y
 # CONFIG_peekpoke is not set
-CONFIG_zctl=y
 
 #
 # modules 
@@ -4229,3 +4228,4 @@ CONFIG_zdma=y
 # PetaLinux RootFS Settings
 #
 CONFIG_ROOTFS_ROOT_PASSWD="root"
+CONFIG_zctl=y

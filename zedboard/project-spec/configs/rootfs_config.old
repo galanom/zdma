@@ -4209,10 +4209,20 @@ CONFIG_bridge-utils=y
 # CONFIG_xserver-nodm-init-dev is not set
 
 #
-# user packages 
+# apps 
 #
 # CONFIG_gpio-demo is not set
 # CONFIG_peekpoke is not set
+
+#
+# modules 
+#
+CONFIG_zdma=y
+
+#
+# user packages 
+#
+# CONFIG_lalala is not set
 
 #
 # PetaLinux RootFS Settings

@@ -31,7 +31,6 @@ extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 static struct {
 	int dmac_count, zone_count;
 	struct {
-		struct platform_device *pdev;
 		struct dma_chan *txchanp, *rxchanp;
 		struct device txdev, rxdev;
 		int load;
@@ -44,7 +43,8 @@ static struct {
 } hw;
 
 static struct driver {
-	dev_t dev;
+	dev_t dev_num;
+	struct platform_device *pdev;
 	struct cdev cdev;
 	struct file_operations fops;
 	int nrOpen;
@@ -67,16 +67,17 @@ struct client {
 static int dev_open(struct inode *inodep, struct file *filep)
 {
 	int idx = 0;
+	pr_info("step 1\n");
 	for (int i = 1, min = hw.dmac[0].load; i < hw.dmac_count; ++i) {
-		pr_info("iter i=%d, min=%d\n", i, min);
 		if (hw.dmac[i].load < min)
 			min = hw.dmac[idx=i].load;
 	}
-
-	if ((filep->private_data = devm_kzalloc(&hw.dmac[idx].pdev->dev, sizeof(struct client), GFP_KERNEL)) == NULL) {
+	pr_info("(%s) ptr: %p\n", driver.pdev->name, &driver.pdev->dev);
+	if ((filep->private_data = devm_kzalloc(&driver.pdev->dev, sizeof(struct client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
+	pr_info("pd=%p\n", filep->private_data);
 	((struct client *)filep->private_data)->dmac = idx;
 	++hw.dmac[idx].load;
 	pr_info("zdma open()\'ed for client %d, served by DMAC %d\n", ++driver.nrOpen, idx);
@@ -88,7 +89,7 @@ static int dev_release(struct inode *inodep, struct file *filep)
 {
 	pr_info("zdma release()\'ed for client %d\n", driver.nrOpen--);
 	--hw.dmac[((struct client *)filep->private_data)->dmac].load;
-	devm_kfree(&hw.dmac[((struct client *)filep->private_data)->dmac].pdev->dev, filep->private_data);
+	devm_kfree(&driver.pdev->dev, filep->private_data);
 	return 0;
 }
 
@@ -297,6 +298,8 @@ static int sched_probe(struct platform_device *pdev)
 	int i, res;
 
 	pr_info("scheduler starting...\n");
+	
+	driver.pdev = pdev;
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
 	for_each_compatible_node(np, NULL, "tuc,dma-client") ++hw.dmac_count;
@@ -339,7 +342,7 @@ static int sched_probe(struct platform_device *pdev)
 				dma_release_channel(hw.dmac[i].txchanp);
 				dma_release_channel(hw.dmac[i].rxchanp);
 			}
-			return -ENODEV;
+			return -ENODEV;	// FIXME DOES NOT EXIT GRACEFULLY FIXME
 		}
 		hw.dmac[i].rxchanp = of_dma_request_slave_channel(np, "rx");
 		if (IS_ERR_OR_NULL(hw.dmac[i].rxchanp)) {
@@ -437,7 +440,7 @@ static void __exit mod_exit(void)
 {
 	platform_driver_unregister(&sched_driver);
 	cdev_del(&driver.cdev);
-	unregister_chrdev_region(driver.dev, 1 /* count */);
+	unregister_chrdev_region(driver.dev_num, 1 /* count */);
 	pr_info("module exiting...\n");
 }
 
@@ -453,13 +456,13 @@ static int __init mod_init(void)
 	driver.fops.mmap = dev_mmap;
 	driver.fops.unlocked_ioctl = dev_ioctl;
 
-	if (alloc_chrdev_region(&driver.dev, 0 /* first minor */, 1 /* count */, KBUILD_MODNAME) < 0) {
+	if (alloc_chrdev_region(&driver.dev_num, 0 /* first minor */, 1 /* count */, KBUILD_MODNAME) < 0) {
 		pr_err("error registering /dev entry\n");
 		return -ENOSPC;
 	}
 	
 	cdev_init(&driver.cdev, &driver.fops);
-	if (cdev_add(&driver.cdev, driver.dev, 1 /* count */)) {
+	if (cdev_add(&driver.cdev, driver.dev_num, 1 /* count */)) {
 		pr_err("error registering character device\n");
 		return -ENOSPC;
 	}

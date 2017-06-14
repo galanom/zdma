@@ -24,14 +24,13 @@ case $1 in
 	petalinux-build -c zdma || exit
 	petalinux-build -c libzdma || exit
 	petalinux-build -x package
-	petalinux-package --prebuilt --clean --fpga ./hardware/download.bit
 	;;
 "build")
 	petalinux-build || exit
-	petalinux-package --prebuilt --clean --fpga ./hardware/download.bit
 	;;
 "boot"|"program")
 	#[ ! -e zynq ] && socat pty,link=zynq,b115200,raw,waitslave tcp:147.27.39.174:2000&
+	petalinux-package --prebuilt --clean --fpga ./hardware/download.bit
 	/opt/Xilinx/PetaLinux/$VERSION/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
 	petalinux-boot --jtag --prebuilt 3 --hw_server-url 147.27.39.174:3121
 	;;

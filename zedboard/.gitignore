@@ -1,4 +1,5 @@
 */config.old
+components/
 build/
 images/
 .petalinux/*

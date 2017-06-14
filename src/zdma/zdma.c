@@ -334,7 +334,7 @@ static int sched_probe(struct platform_device *pdev)
 
 		hw.dmac[i].txchanp = of_dma_request_slave_channel(np, "tx");
 		if (IS_ERR_OR_NULL(hw.dmac[i].txchanp)) {
-			pr_err("dmac[%d]: failed to reserve TX channel.\nDevicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			pr_err("dmac[%d]: failed to reserve TX channel -- devicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
 			while (i--) {
 				dma_release_channel(hw.dmac[i].txchanp);
 				dma_release_channel(hw.dmac[i].rxchanp);
@@ -343,7 +343,7 @@ static int sched_probe(struct platform_device *pdev)
 		}
 		hw.dmac[i].rxchanp = of_dma_request_slave_channel(np, "rx");
 		if (IS_ERR_OR_NULL(hw.dmac[i].rxchanp)) {
-			pr_err("dmac[%d]: failed to reserve RX channel.\nDevicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			pr_err("dmac[%d]: failed to reserve RX channel -- devicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
 			dma_release_channel(hw.dmac[i].txchanp);
 			while (i--) {
 				dma_release_channel(hw.dmac[i].txchanp);

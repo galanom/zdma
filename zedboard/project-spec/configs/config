@@ -26,7 +26,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanomma/home/igalanommatis/work/zdma/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -204,7 +204,7 @@ CONFIG_SUBSYSTEM_TFTPBOOT_DIR="/srv/tftp"
 CONFIG_SUBSYSTEM_HOSTNAME="zedboard"
 CONFIG_SUBSYSTEM_PRODUCT="zedboard"
 CONFIG_SUBSYSTEM_FW_VERSION="1.00"
-CONFIG_SUBSYSTEM_MACHINE_NAME="template"
+CONFIG_SUBSYSTEM_MACHINE_NAME="zedboard"
 
 #
 # Yocto Settings
@@ -244,5 +244,13 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/r
 # User Layers
 #
 CONFIG_USER_LAYER_0=""
+
+
+
+
+
+
+
+
 
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="console=ttyPS0,115200 earlyprintk"

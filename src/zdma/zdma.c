@@ -24,6 +24,9 @@
 #error "OpenFirmware is not configured in kernel\n"
 #endif
 
+#define Ki (1024)
+#define Mi (Ki*Ki)
+
 extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
 //module_param(length, unsigned, S_IRUGO);
@@ -36,7 +39,7 @@ static struct {
 		int load;
 	} *dmac;
 	struct {
-		size_t sz_total, sz_used;
+		size_t total, used;
 		struct device_node *nodep;
 		phys_addr_t phys;
 	} *zone;
@@ -53,6 +56,7 @@ static struct driver {
 struct client {
 	int dmac;
 	struct {
+		int zone;
 		size_t size;
 		void *buf;
 		dma_addr_t handle;
@@ -64,23 +68,120 @@ struct client {
 };
 
 
-static int dev_open(struct inode *inodep, struct file *filep)
+static int client_dmac_reserve(struct client *p)
 {
-	int idx = 0;
-	pr_info("step 1\n");
+	BUG_ON(IS_ERR_OR_NULL(p));
+
+	if (p->dmac != -1) {
+		// FIXME wait for pending transfers
+		// FIXME channel release?
+		--hw.dmac[p->dmac].load;
+	}
+
+	p->dmac = 0;
 	for (int i = 1, min = hw.dmac[0].load; i < hw.dmac_count; ++i) {
 		if (hw.dmac[i].load < min)
-			min = hw.dmac[idx=i].load;
+			min = hw.dmac[p->dmac=i].load;	// pick i-th DMAC
 	}
-	pr_info("(%s) ptr: %p\n", driver.pdev->name, &driver.pdev->dev);
-	if ((filep->private_data = devm_kzalloc(&driver.pdev->dev, sizeof(struct client), GFP_KERNEL)) == NULL) {
+	++hw.dmac[p->dmac].load;			// increase usage counter of selected DMAC
+
+	pr_info("reserved DMAC %d with load %d\n", p->dmac, hw.dmac[p->dmac].load);
+	return 0;
+}
+
+
+static int client_dmac_release(struct client *p)
+{
+	BUG_ON(IS_ERR_OR_NULL(p));
+
+	if (p->dmac < 0) return 0;
+
+	pr_info("releasing DMAC %d, new load %d\n", p->dmac, --hw.dmac[p->dmac].load);
+	p->dmac = -1;
+	return 0;
+}
+
+
+static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
+{
+	BUG_ON(IS_ERR_OR_NULL(p));
+	BUG_ON(p->dmac < 0);
+
+	pr_info("request to set DMA buffer size to TX: %uki, RX: %uki\n", tx_sz/Ki, rx_sz/Ki);
+
+	if (p->tx.size > 0) {
+		// FIXME flush TX channel
+		dmam_free_coherent(&hw.dmac[p->dmac].txdev, p->tx.size, p->tx.buf, p->tx.handle);
+		hw.zone[p->tx.zone].used -= p->tx.size;
+		pr_info("TX mapping freed\n");
+	}
+
+	if (p->rx.size > 0) {
+		// FIXME flush RX channel
+		dmam_free_coherent(&hw.dmac[p->dmac].rxdev, p->rx.size, p->rx.buf, p->rx.handle);
+		hw.zone[p->rx.zone].used -= p->rx.size;
+		pr_info("RX mapping freed\n");
+	}
+
+	if (tx_sz == 0 && rx_sz == 0) return 0;
+
+	p->tx.zone = p->rx.zone = 0;
+	for (int i = 1, max = hw.zone[0].total - hw.zone[0].used; i < hw.zone_count; ++i) {
+		if (hw.zone[i].total - hw.zone[i].used >= max) {	// keep equal for 2nd max
+			max = hw.zone[i].total - hw.zone[i].used;
+			p->tx.zone = p->rx.zone;
+			p->rx.zone = i;
+		}
+	}
+
+	if (tx_sz > 0) {
+		if (of_reserved_mem_device_init_by_idx(&hw.dmac[p->dmac].txdev, hw.zone[p->tx.zone].nodep, 0)) {
+			pr_err("fatal: cannot initialize TX port memory region for DMAC\n");
+			return -ENOMEM;
+		}
+		if ((p->tx.buf = dmam_alloc_coherent(&hw.dmac[p->dmac].txdev, tx_sz, &p->tx.handle, GFP_KERNEL)) == NULL) {
+			pr_err("error: unable to allocate memory for TX channel\n");
+			return -EAGAIN;
+		}
+	
+	}
+	p->tx.size = tx_sz;
+
+	if (rx_sz > 0) {
+		if (of_reserved_mem_device_init_by_idx(&hw.dmac[p->dmac].rxdev, hw.zone[p->rx.zone].nodep, 0)) {
+			pr_err("fatal: cannot initialize RX port memory region for DMAC\n");
+			return -ENOMEM;
+		}
+
+		if ((p->rx.buf = dmam_alloc_coherent(&hw.dmac[p->dmac].rxdev, rx_sz, &p->rx.handle, GFP_KERNEL)) == NULL) {
+			pr_err("error: unable to allocate memory for RX channel\n");
+			return -EAGAIN;
+		}
+	}
+	p->rx.size = rx_sz;
+
+	pr_info("DMA mapping: dmac=%d, zones=%d->%d, virt: %p->%p, dma: %#x->%#x.\n",
+		p->dmac, p->tx.zone, p->rx.zone, p->tx.buf, p->rx.buf, p->tx.handle, p->rx.handle);
+
+	return 0;
+}
+
+
+static int client_mem_release(struct client *p)
+{
+	return client_mem_reserve(p, 0, 0);
+}
+
+
+static int dev_open(struct inode *inodep, struct file *filep)
+{
+	struct client *p;
+	if ((p = filep->private_data = devm_kzalloc(&driver.pdev->dev, sizeof(struct client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
-	pr_info("pd=%p\n", filep->private_data);
-	((struct client *)filep->private_data)->dmac = idx;
-	++hw.dmac[idx].load;
-	pr_info("zdma open()\'ed for client %d, served by DMAC %d\n", ++driver.nrOpen, idx);
+	p->dmac = -1;
+	pr_info("zdma open()\'ed for client %d\n", ++driver.nrOpen);
 	return 0;
 }
 
@@ -88,7 +189,8 @@ static int dev_open(struct inode *inodep, struct file *filep)
 static int dev_release(struct inode *inodep, struct file *filep)
 {
 	pr_info("zdma release()\'ed for client %d\n", driver.nrOpen--);
-	--hw.dmac[((struct client *)filep->private_data)->dmac].load;
+	client_mem_release(filep->private_data);
+	client_dmac_release(filep->private_data);
 	devm_kfree(&driver.pdev->dev, filep->private_data);
 	return 0;
 }
@@ -96,38 +198,14 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	struct client *p = filep->private_data;
 	pr_info("zdma ioctl cmd=%x arg=%lu\n", cmd, arg);
 	switch (cmd) {
-	case ZDMA_IO_DEBUG:
+	case ZDMA_IOCTL_DEBUG:
 		break;
-	case ZDMA_IO_SET_DMA_SIZE:
-		// TODO FIXME WARNING !!! FREE ALREADY ALLOCATED MEMORY !!!
-		p->tx.size = 1024*(arg>>16);
-		p->rx.size = 1024*(arg && 0xffff);
-		pr_info("request to set DMA TX buffer size to TX: %u, RX: %u\n", p->tx.size, p->rx.size);
-		
-		if (of_reserved_mem_device_init_by_idx(&hw.dmac[p->dmac].txdev, hw.zone[0].nodep, 0)) {
-			pr_err("fatal: cannot initialize TX port memory region for DMAC\n");
-			return -ENOMEM;
-		}
-		if (of_reserved_mem_device_init_by_idx(&hw.dmac[p->dmac].rxdev, hw.zone[1].nodep, 0)) {
-			pr_err("fatal: cannot initialize RX port memory region for DMAC\n");
-			return -ENOMEM;
-		}
-		if ((p->tx.buf = dma_alloc_coherent(&hw.dmac[p->dmac].txdev, p->tx.size, &p->tx.handle, GFP_KERNEL)) == NULL) {
-			pr_err("error: unable to allocate memory for TX channel\n");
-			return -EAGAIN;
-		}
-	
-		if ((p->rx.buf = dma_alloc_coherent(&hw.dmac[p->dmac].rxdev, p->rx.size, &p->rx.handle, GFP_KERNEL)) == NULL) {
-			pr_err("error: unable to allocate memory for RX channel\n");
-			return -EAGAIN;
-		}
-	
-		pr_info("DMA mapping: dmac=%d, virt: %p->%p, dma: %#x->%#x.\n",
-			p->dmac, p->tx.buf, p->rx.buf, p->tx.handle, p->rx.handle);
-		break;
+	case ZDMA_IOCTL_SET_DMA_SIZE:
+		client_dmac_reserve(filep->private_data);
+		client_mem_reserve(filep->private_data, (arg >> 16)*Ki, (arg & 0xffff)*Ki);
+		break;	
 	default:
 		pr_err("uknown ioctl command (cmd: %x, arg: %lu\n", cmd, arg);
 		return -ENOTTY;
@@ -387,11 +465,11 @@ static int sched_probe(struct platform_device *pdev)
 		}
 		hw.zone[i].phys = of_translate_address(tnp, of_get_address(tnp, 0, &size, NULL));
 		hw.zone[i].nodep = np;
-		hw.zone[i].sz_used = 0;
-		hw.zone[i].sz_total = size;
-		BUG_ON((u64)hw.zone[i].sz_total != size);
+		hw.zone[i].used = 0;
+		hw.zone[i].total = size;
+		BUG_ON((u64)hw.zone[i].total != size);
 		pr_info("memory region %d: %#10tx-%#10tx, size: %#10tx (%6dkiB)\n", 
-			i, hw.zone[i].phys, hw.zone[i].phys+hw.zone[i].sz_total-1, hw.zone[i].sz_total, hw.zone[i].sz_total/1024);
+			i, hw.zone[i].phys, hw.zone[i].phys+hw.zone[i].total-1, hw.zone[i].total, hw.zone[i].total/Ki);
 		++i;
 	}
 

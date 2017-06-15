@@ -22,7 +22,6 @@ case $1 in
 	;;
 "cbuild")
 	petalinux-build -c zdma || exit
-	petalinux-build -c libzdma || exit
 	petalinux-build -x package
 	;;
 "build")

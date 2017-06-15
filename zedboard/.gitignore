@@ -1,6 +1,7 @@
 */config.old
 components/
 build/
+pre-built/
 images/
 .petalinux/*
 !.petalinux/metadata

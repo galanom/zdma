@@ -8,18 +8,22 @@
 
 int main(int argc, char **argv)
 {
-	int fd, len = 1024;
+	int fd, txlen = 1048576, rxlen = 1048576;
 	if ((fd = open("/dev/zdma", O_RDWR|O_SYNC)) < 0) {
 		perror("open");
 		exit(-1);
 	}
 	ioctl(fd, ZDMA_IOCTL_SET_DMA_SIZE, 1024<<16 | 1024);
-//	ioctl(fd, ZDMA_IO_SET_DMA_RX_SIZE, 512);
-/*	unsigned *kadr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd, 0);
-	if (kadr == MAP_FAILED) {
+	void *txbuf = mmap(0, txlen, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd, 0);
+	if (txbuf == MAP_FAILED) {
 		perror("mmap");
-		exit(-1);
-	}
-	printf("ret=%x\n", kadr[0]);*/
+	} else	printf("tx done\n");
+	void *rxbuf = mmap(0, rxlen, PROT_READ, MAP_SHARED|MAP_LOCKED, fd, 0);
+	if (rxbuf == MAP_FAILED) {
+		perror("mmap");
+	} else printf("rx done\n");
+
+	printf("ret=%x\n", ((unsigned *)rxbuf)[0]);
+	((unsigned *)txbuf)[0] = 0xfeeddead;
 	return 0;
 }

@@ -3,6 +3,7 @@ x="\e[1;92m"
 y="\e[39m"
 RHOST=147.27.39.174
 VERSION=2017.1
+PETADIR="/home/igalanommatis/petalinux"
 HW="zedboard"
 DESIGN="quad_dma"
 cd $HW
@@ -30,7 +31,7 @@ case $1 in
 "boot"|"program")
 	#[ ! -e zynq ] && socat pty,link=zynq,b115200,raw,waitslave tcp:147.27.39.174:2000&
 	petalinux-package --prebuilt --clean --fpga ./hardware/download.bit
-	/opt/Xilinx/PetaLinux/$VERSION/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
 	petalinux-boot --jtag --prebuilt 3 --hw_server-url 147.27.39.174:3121
 	;;
 "con"*)

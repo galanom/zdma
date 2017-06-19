@@ -107,7 +107,7 @@ static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
 	BUG_ON(IS_ERR_OR_NULL(p));
 	BUG_ON(p->dmac < 0);
 
-	pr_info("request to set DMA buffer size to TX: %uki, RX: %uki\n", tx_sz/Ki, rx_sz/Ki);
+	pr_info("request to set DMA buffer size to TX: %ukiB, RX: %ukiB\n", tx_sz/Ki, rx_sz/Ki);
 
 	if (p->tx.size > 0) {
 		// FIXME flush TX channel
@@ -198,7 +198,6 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	pr_info("zdma ioctl cmd=%x arg=%lu\n", cmd, arg);
 	switch (cmd) {
 	case ZDMA_IOCTL_DEBUG:
 		break;
@@ -207,7 +206,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		client_mem_reserve(filep->private_data, (arg >> 16)*Ki, (arg & 0xffff)*Ki);
 		break;	
 	default:
-		pr_err("uknown ioctl command (cmd: %x, arg: %lu\n", cmd, arg);
+		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
 		return -ENOTTY;
 	}
 	return 0l;
@@ -217,27 +216,43 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
 	struct client *p = filep->private_data;
-	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
-		phys = p->tx.handle,
-		vsize = vma->vm_end - vma->vm_start,
-		psize = p->tx.size - off;
+	bool tx = vma->vm_flags & VM_WRITE;
 
-	if (p->tx.buf == NULL) {
-		pr_err("DMA buffers have not yet been allocated\n.");
+	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
+		phys = tx ? p->tx.handle : p->rx.handle,
+		vsize = vma->vm_end - vma->vm_start,
+		psize = tx ? p->tx.size : p->rx.size - off;
+
+	pr_info("zdma mmap: [%s] off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", tx ? "TX" : "RX", off, phys, vsize, psize);
+
+	if (tx == (vma->vm_flags & VM_READ)) {
+		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
+		return -EINVAL;
+	}
+	
+	if ((tx ? p->tx.buf : p->rx.buf) == NULL) {
+		pr_err("%s DMA buffer have not yet been allocated\n.", tx ? "TX" : "RX");
 		return -ENOMEM;
 	}
 
-	*(u32 *)p->tx.buf = 0xdeadbeef;
-	pr_info("zdma mmap: off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", off, phys, vsize, psize);
+	if (tx) *(u32 *)p->tx.buf = 0xdeadbeef;
+	else pr_info("[%u]\n", *(u32 *)p->rx.buf);
+	
 	if (vsize > psize) {
 		pr_err("virtual space is larger than physical buffer!\n");
 		return -EINVAL;
 	}
 
-
-	if (dma_mmap_coherent(&hw.dmac[p->dmac].txdev, vma, p->tx.buf, p->tx.handle, vsize) < 0) {
-		pr_err("failed to map user buffer!\n");
-		return -ENOSPC;//FIXME
+	if (tx) {
+		if (dma_mmap_coherent(&hw.dmac[p->dmac].txdev, vma, p->tx.buf, p->tx.handle, vsize) < 0) {
+			pr_err("failed to map user TX buffer!\n");
+			return -ENOSPC;//FIXME
+		}
+	} else {
+		if (dma_mmap_coherent(&hw.dmac[p->dmac].rxdev, vma, p->rx.buf, p->rx.handle, vsize) < 0) {
+			pr_err("failed to map user RX buffer!\n");
+			return -ENOSPC;//FIXME
+		}
 	}
 
 	return 0;

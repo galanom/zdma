@@ -6,17 +6,23 @@ VERSION=2017.1
 PETADIR="/home/igalanommatis/petalinux"
 HW="zedboard"
 DESIGN="quad_dma"
-cd $HW
+
+
+for f in boards/*board/hardware/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
+	sed -e "s/myproj/hardware/g; s/project_1/`echo $f | cut -f2 -d/`/g" $f > boards/`echo $f | cut -f2 -d/`/${f##*/}
+done
+
+cd boards/$HW
 case $1 in
 "clean")
 	rm -rf build components pre-built
 	;;
 "reload")
-	[ -e hardware/${DESIGN}_wrapper.hdf ] && mv -f hardware/${DESIGN}_wrapper.hdf hardware/system.hdf
-	[ -e hardware/system.hdf ] && unzip -p hardware/system.hdf > hardware/download.bit || exit 1
+	mv -f hardware/${HW}.sdk/${DESIGN}_wrapper.hdf build/system.hdf || exit -1
+	unzip -p build/system.hdf > build/download.bit || exit 1
 	;;
 "reconf")
-	petalinux-config --get-hw-description hardware
+	petalinux-config --get-hw-description=build
 	;;
 "ez")
 	vim ../src/zdma/zdma.c
@@ -30,7 +36,9 @@ case $1 in
 	;;
 "boot"|"program")
 	#[ ! -e zynq ] && socat pty,link=zynq,b115200,raw,waitslave tcp:147.27.39.174:2000&
-	petalinux-package --prebuilt --clean --fpga ./hardware/download.bit
+	petalinux-package --prebuilt --clean --fpga build/download.bit
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
 	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
 	petalinux-boot --jtag --prebuilt 3 --hw_server-url 147.27.39.174:3121
 	;;

@@ -2,9 +2,10 @@
 ## ZDMA
 Middleware for data transport on Xilinx ZYNQ, MSc Thesis at TUC
 
-The project consists of three parts:
+The project comprises the following parts:
 
-  * Zynq-7000 hardware design (an UltraScale+ will come soon)
+  * An ARM-based, Zynq 7000 hardware design (zedboard)
+  * An ARM64-based, Zynq UltraScale+ hardware design (AXIOM board)
   * A Linux 4.x+ kernel driver
   * A user-space library (to be created)
 

@@ -45,6 +45,7 @@ static struct {
 	} *zone;
 } hw;
 
+
 static struct driver {
 	dev_t dev_num;
 	struct platform_device *pdev;
@@ -52,6 +53,7 @@ static struct driver {
 	struct file_operations fops;
 	int nrOpen;
 } driver;
+
 
 struct client {
 	int dmac;
@@ -66,6 +68,14 @@ struct client {
 		struct completion cmp;
 	} tx, rx;
 };
+
+
+static void sync_callback(void *completion)
+{
+	// Indicate the DMA transaction completed to allow the other thread to finish processing
+	complete(completion);
+	return;
+}
 
 
 static int client_dmac_reserve(struct client *p)
@@ -167,9 +177,79 @@ static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
 }
 
 
-static int client_mem_release(struct client *p)
+static inline int client_mem_release(struct client *p)
+	{ return client_mem_reserve(p, 0, 0); }
+
+
+static int dma_setup(struct file *filep)
 {
-	return client_mem_reserve(p, 0, 0);
+	struct client *p = filep->private_data;
+
+	if ((p->tx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].txchanp, p->tx.handle, p->tx.size, 
+		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
+		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
+		return p->tx.cookie = -EBUSY;
+	}
+
+	if ((p->rx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].rxchanp, p->rx.handle, p->rx.size,
+		DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
+		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
+		return p->rx.cookie = -EBUSY;
+	}
+
+	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
+	p->tx.descp->callback_param = &p->tx.cmp;
+	p->rx.descp->callback_param = &p->rx.cmp;
+
+	p->tx.cookie = dmaengine_submit(p->tx.descp);
+	p->rx.cookie = dmaengine_submit(p->rx.descp);
+
+	if (dma_submit_error(p->tx.cookie) || dma_submit_error(p->rx.cookie)) {
+		pr_err("cookie contains error!\n");
+		return -EIO;
+	}
+
+	// initialize the completion before using it and then start the DMA transaction
+	// which was previously queued up in the DMA engine
+	init_completion(&p->tx.cmp);
+	init_completion(&p->rx.cmp);
+	return 0;
+}
+
+
+static int dma_issue(struct file *filep)
+{
+	struct client *p = filep->private_data;
+
+	unsigned long timeout = 3000;
+	enum dma_status status;
+	cycles_t t0, t1;
+	
+	pr_info("Issueing DMA request...\n");
+	dma_async_issue_pending(hw.dmac[p->dmac].txchanp);
+	dma_async_issue_pending(hw.dmac[p->dmac].rxchanp);
+	
+	t0 = get_cycles();
+	// wait for the transaction to complete, timeout, or get get an error
+	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
+	t1 = get_cycles();
+	status = dma_async_is_tx_complete(hw.dmac[p->dmac].txchanp, p->tx.cookie, NULL, NULL);
+
+	// determine if the transaction completed without a timeout and withtout any errors
+	if (timeout == 0) {
+		pr_err("DMA timeout after %lums\n", timeout); //FIXME
+		return -ETIMEDOUT;
+	} 
+	if (status != DMA_COMPLETE) {
+		pr_err("DMA returned completion callback status of: %s\n", 
+			status == DMA_ERROR ? "error" : "in progress");
+		return -EIO;
+	}
+
+	if (t1-t0) pr_info("DMA size: %4d->%4d kiB, time: %7ld cycles\n", 
+		p->tx.size/Ki, p->rx.size/Ki, t1-t0);
+	else pr_warn("this kernel does not support get_cycles()\n");
+	return 0;
 }
 
 
@@ -201,10 +281,16 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	switch (cmd) {
 	case ZDMA_IOCTL_DEBUG:
 		break;
-	case ZDMA_IOCTL_SET_DMA_SIZE:
+	case ZDMA_IOCTL_SET_SIZE:
 		client_dmac_reserve(filep->private_data);
 		client_mem_reserve(filep->private_data, (arg >> 16)*Ki, (arg & 0xffff)*Ki);
 		break;	
+	case ZDMA_IOCTL_PREP:
+		dma_setup(filep);
+		break;
+	case ZDMA_IOCTL_ISSUE:
+		dma_issue(filep);
+		break;
 	default:
 		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
 		return -ENOTTY;
@@ -223,7 +309,8 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		vsize = vma->vm_end - vma->vm_start,
 		psize = tx ? p->tx.size : p->rx.size - off;
 
-	pr_info("zdma mmap: [%s] off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", tx ? "TX" : "RX", off, phys, vsize, psize);
+	pr_info("zdma mmap: [%s] off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", 
+		tx ? "TX" : "RX", off, phys, vsize, psize);
 
 	if (tx == (vma->vm_flags & VM_READ)) {
 		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
@@ -235,36 +322,25 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		return -ENOMEM;
 	}
 
-	if (tx) *(u32 *)p->tx.buf = 0xdeadbeef;
-	else pr_info("[%u]\n", *(u32 *)p->rx.buf);
+//	if (tx) pr_info("[%u]\n", *(u32 *)p->tx.buf);
+//	else *(u32 *)p->rx.buf = 0xdeadbeef;
 	
 	if (vsize > psize) {
 		pr_err("virtual space is larger than physical buffer!\n");
 		return -EINVAL;
 	}
 
-	if (tx) {
-		if (dma_mmap_coherent(&hw.dmac[p->dmac].txdev, vma, p->tx.buf, p->tx.handle, vsize) < 0) {
+	if (tx && (dma_mmap_coherent(&hw.dmac[p->dmac].txdev, vma, p->tx.buf, p->tx.handle, vsize) < 0)) {
 			pr_err("failed to map user TX buffer!\n");
 			return -ENOSPC;//FIXME
-		}
-	} else {
-		if (dma_mmap_coherent(&hw.dmac[p->dmac].rxdev, vma, p->rx.buf, p->rx.handle, vsize) < 0) {
+	}
+	if (!tx && (dma_mmap_coherent(&hw.dmac[p->dmac].rxdev, vma, p->rx.buf, p->rx.handle, vsize) < 0)) {
 			pr_err("failed to map user RX buffer!\n");
 			return -ENOSPC;//FIXME
-		}
 	}
-
 	return 0;
 }
 
-
-static void sync_callback(void *completion)
-{
-	// Indicate the DMA transaction completed to allow the other thread to finish processing
-	complete(completion);
-	return;
-}
 
 
 /*static void dma_buffer_fill(struct dma_transaction *tr, int seed)
@@ -292,82 +368,7 @@ static void sync_callback(void *completion)
 	return 0;
 }*/
 
-/*
-static int dma_setup(struct dma_transaction *tr)
-{
-	if ((tr->tx.descp = dmaengine_prep_slave_single(tr->tx.chanp, tr->tx.handle, tr->size, 
-		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return tr->tx.cookie = -EBUSY;
-	}
 
-	if ((tr->rx.descp = dmaengine_prep_slave_single(tr->rx.chanp, tr->rx.handle, tr->size,
-		DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return tr->rx.cookie = -EBUSY;
-	}
-
-	tr->tx.descp->callback = tr->rx.descp->callback = sync_callback;
-	tr->tx.descp->callback_param = &tr->tx.cmp;
-	tr->rx.descp->callback_param = &tr->rx.cmp;
-
-	tr->tx.cookie = dmaengine_submit(tr->tx.descp);
-	tr->rx.cookie = dmaengine_submit(tr->rx.descp);
-
-	if (dma_submit_error(tr->tx.cookie) || dma_submit_error(tr->rx.cookie)) {
-		pr_err("prep_buffer(): dma_submit_error(): rx/tx cookie contains error!\n");
-		return -EIO;
-	}
-
-	// initialize the completion before using it and then start the DMA transaction
-	// which was previously queued up in the DMA engine
-	init_completion(&tr->tx.cmp);
-	init_completion(&tr->rx.cmp);
-	return 0;
-}
-*//*
-
-
-static int dma_issue(struct dma_transaction *tr)
-{
-	unsigned long timeout = 3000;
-	enum dma_status status;
-	cycles_t t0, t1;
-	
-	pr_info("Issueing DMA request...\n");
-	dma_async_issue_pending(tr->tx.chanp);
-	dma_async_issue_pending(tr->rx.chanp);
-	
-	t0 = get_cycles();
-	// wait for the transaction to complete, timeout, or get get an error
-	timeout = wait_for_completion_timeout(&tr->tx.cmp, msecs_to_jiffies(timeout));
-	t1 = get_cycles();
-	status = dma_async_is_tx_complete(tr->tx.chanp, tr->tx.cookie, NULL, NULL);
-
-	// determine if the transaction completed without a timeout and withtout any errors
-	if (timeout == 0) {
-		pr_err("DMA timeout after %dms\n", 3000); //FIXME
-		return -ETIMEDOUT;
-	} 
-	if (status != DMA_COMPLETE) {
-		pr_err("dma_async_is_tx_complete(): DMA returned completion callback status of: %s\n", 
-			status == DMA_ERROR ? "error" : "in progress");
-		return -EIO;
-	}
-
-	if (t1-t0) pr_info("DMA size: %4d kiB, time: %7ld cycles, thoughput: %3ld MB/s\n", 
-		tr->size/1024, t1-t0, CPU_FREQ*(tr->size/1000)/((t1-t0)/1000));
-	else pr_warn("this kernel does not support get_cycles()\n");
-	return 0;
-}
-*/
-
-/*static void dma_release_memory(struct dma_transaction *tr)
-{
-	dma_free_coherent(tr->tx.chanp->device->dev, tr->size, tr->tx.buf, tr->tx.handle);
-	dma_free_coherent(tr->rx.chanp->device->dev, tr->size, tr->rx.buf, tr->rx.handle);
-	return;
-}*/
 
 static int sched_remove(struct platform_device *pdev)
 {
@@ -385,6 +386,7 @@ static int sched_remove(struct platform_device *pdev)
 	}
 	return 0;
 }
+
 
 static int sched_probe(struct platform_device *pdev)
 {

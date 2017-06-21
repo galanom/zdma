@@ -1,11 +1,11 @@
 #include <linux/ioctl.h>
 
-#define ZDMA_IO_MAGIC 'Z'
+#define MAGIC 'Z'
 
 enum module_ioctl {
-	ZDMA_IOCTL_DEBUG 	= _IO (ZDMA_IO_MAGIC, 0x01),
-	ZDMA_IOCTL_SET_DMA_SIZE	= _IOW(ZDMA_IO_MAGIC, 0x10, int),
-//	ZDMA_IO_SET_DMA_TX_SIZE	= _IOW(ZDMA_IO_MAGIC, 0x11, int),
-//	ZDMA_IO_SET_DMA_RX_SIZE	= _IOW(ZDMA_IO_MAGIC, 0x12, int),
+	ZDMA_IOCTL_DEBUG	= _IO (MAGIC, 0x01),
+	ZDMA_IOCTL_SET_SIZE	= _IOW(MAGIC, 0x10, int),
+	ZDMA_IOCTL_PREP		= _IO (MAGIC, 0x11),
+	ZDMA_IOCTL_ISSUE	= _IO (MAGIC, 0x12),
 };
 

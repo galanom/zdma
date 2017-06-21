@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 		perror("open");
 		exit(-1);
 	}
-	ioctl(fd, ZDMA_IOCTL_SET_DMA_SIZE, 1024<<16 | 1024);
+	ioctl(fd, ZDMA_IOCTL_SET_SIZE, 1024<<16 | 1024);
 	void *txbuf = mmap(0, txlen, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd, 0);
 	if (txbuf == MAP_FAILED) {
 		perror("mmap");
@@ -23,7 +23,10 @@ int main(int argc, char **argv)
 		perror("mmap");
 	} else printf("rx done\n");
 
-	printf("ret=%x\n", ((unsigned *)rxbuf)[0]);
 	((unsigned *)txbuf)[0] = 0xfeeddead;
+	ioctl(fd, ZDMA_IOCTL_PREP, 0);
+	ioctl(fd, ZDMA_IOCTL_ISSUE, 0);
+	printf("ret=%x\n", ((unsigned *)rxbuf)[0]);
+
 	return 0;
 }

@@ -1,8 +1,0 @@
-*/*.cache
-*/*.runs
-.Xil/
-*.jou
-*.log
-
-*.bit
-*.hdf

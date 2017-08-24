@@ -4422,12 +4422,19 @@ CONFIG_bridge-utils=y
 #
 # apps 
 #
-# CONFIG_gpio-demo is not set
-# CONFIG_peekpoke is not set
+CONFIG_libzdma=y
+CONFIG_zctl=y
+
+#
+# modules 
+#
+CONFIG_zdma=y
 
 #
 # user packages 
 #
+# CONFIG_gpio-demo is not set
+# CONFIG_peekpoke is not set
 
 #
 # PetaLinux RootFS Settings

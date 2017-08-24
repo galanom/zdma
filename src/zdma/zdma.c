@@ -117,7 +117,7 @@ static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
 	BUG_ON(IS_ERR_OR_NULL(p));
 	BUG_ON(p->dmac < 0);
 
-	pr_info("request to set DMA buffer size to TX: %ukiB, RX: %ukiB\n", tx_sz/Ki, rx_sz/Ki);
+	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_sz/Ki, rx_sz/Ki);
 
 	if (p->tx.size > 0) {
 		// FIXME flush TX channel
@@ -170,8 +170,9 @@ static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
 	}
 	p->rx.size = rx_sz;
 
-	pr_info("DMA mapping: dmac=%d, zones=%d->%d, virt: %p->%p, dma: %#x->%#x.\n",
-		p->dmac, p->tx.zone, p->rx.zone, p->tx.buf, p->rx.buf, p->tx.handle, p->rx.handle);
+	pr_info("DMA mapping: dmac=%d, tx=%lu, rx=%lu, zones=%d->%d, virt: %p->%p, dma: %p->%p.\n",
+		p->dmac, p->tx.size, p->rx.size, p->tx.zone, p->rx.zone, 
+		p->tx.buf, p->rx.buf, (void*)p->tx.handle, (void *)p->rx.handle);
 
 	return 0;
 }
@@ -184,18 +185,25 @@ static inline int client_mem_release(struct client *p)
 static int dma_setup(struct file *filep)
 {
 	struct client *p = filep->private_data;
+	cycles_t t0, t1;
 
+	t0 = get_cycles();
 	if ((p->tx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].txchanp, p->tx.handle, p->tx.size, 
 		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->tx.cookie = -EBUSY;
 	}
-
+	t1 = get_cycles();
+	pr_info("1st prep: %lu cycles\n", t1-t0);
+	t0 = get_cycles();
 	if ((p->rx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].rxchanp, p->rx.handle, p->rx.size,
 		DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->rx.cookie = -EBUSY;
 	}
+	t1 = get_cycles();
+	pr_info("2nd prep: %lu cycles\n", t1-t0);
+	t0 = get_cycles();
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -208,11 +216,15 @@ static int dma_setup(struct file *filep)
 		pr_err("cookie contains error!\n");
 		return -EIO;
 	}
-
+	t1 = get_cycles();
+	pr_info("two submit: %lu cycles\n", t1-t0);
+	t0 = get_cycles();
 	// initialize the completion before using it and then start the DMA transaction
 	// which was previously queued up in the DMA engine
 	init_completion(&p->tx.cmp);
 	init_completion(&p->rx.cmp);
+	t1 = get_cycles();
+	pr_info("two init compl %lu cycles\n", t1-t0);
 	return 0;
 }
 
@@ -226,13 +238,18 @@ static int dma_issue(struct file *filep)
 	cycles_t t0, t1;
 	
 	pr_info("Issueing DMA request...\n");
+	t0 = get_cycles();
 	dma_async_issue_pending(hw.dmac[p->dmac].txchanp);
 	dma_async_issue_pending(hw.dmac[p->dmac].rxchanp);
-	
+	t1 = get_cycles();
+	pr_info("issue %lu c\n", t1-t0);
+
 	t0 = get_cycles();
 	// wait for the transaction to complete, timeout, or get get an error
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
 	t1 = get_cycles();
+	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
+	t2 = get_cycles();
 	status = dma_async_is_tx_complete(hw.dmac[p->dmac].txchanp, p->tx.cookie, NULL, NULL);
 
 	// determine if the transaction completed without a timeout and withtout any errors
@@ -246,8 +263,8 @@ static int dma_issue(struct file *filep)
 		return -EIO;
 	}
 
-	if (t1-t0) pr_info("DMA size: %4d->%4d kiB, time: %7ld cycles\n", 
-		p->tx.size/Ki, p->rx.size/Ki, t1-t0);
+	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, time: tx %7lu total %7lu cycles\n", 
+		p->tx.size/Ki, p->rx.size/Ki, t1-t0, t2-t0);
 	else pr_warn("this kernel does not support get_cycles()\n");
 	return 0;
 }
@@ -278,6 +295,8 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
+	cycles_t t0, t1;
+	t0 = get_cycles();
 	switch (cmd) {
 	case ZDMA_IOCTL_DEBUG:
 		break;
@@ -295,6 +314,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
 		return -ENOTTY;
 	}
+	t1 = get_cycles();
+	pr_info("ioctl time: %luc\n", t1-t0);
 	return 0l;
 }
 
@@ -309,8 +330,9 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		vsize = vma->vm_end - vma->vm_start,
 		psize = tx ? p->tx.size : p->rx.size - off;
 
-	pr_info("zdma mmap: [%s] off=%tx, phys=%#tx, vsize=%#tx, psize=%#tx\n", 
-		tx ? "TX" : "RX", off, phys, vsize, psize);
+	pr_info("zdma mmap: [%s] off=%zu, phys=%p, vsize=%zu, psize=%zu\n", 
+		tx ? "TX" : "RX", (size_t)off, (void *)phys, (size_t)vsize, (size_t)psize); // FIXME
+	BUG_ON(vsize != psize);
 
 	if (tx == (vma->vm_flags & VM_READ)) {
 		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
@@ -405,7 +427,7 @@ static int sched_probe(struct platform_device *pdev)
 	pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
 
 	if ((hw.dmac = devm_kcalloc(&pdev->dev, hw.dmac_count, sizeof(*hw.dmac), GFP_KERNEL)) == NULL) {
-		pr_err("unable to allocate %d bytes for DMA controller hardware description structures!\n", hw.dmac_count*sizeof(*hw.dmac));
+		pr_err("unable to allocate %zu bytes for DMA controller hardware description structures!\n", hw.dmac_count*sizeof(*hw.dmac));
 		return -ENOMEM;
 	}
 
@@ -432,7 +454,8 @@ static int sched_probe(struct platform_device *pdev)
 
 		hw.dmac[i].txchanp = of_dma_request_slave_channel(np, "tx");
 		if (IS_ERR_OR_NULL(hw.dmac[i].txchanp)) {
-			pr_err("dmac[%d]: failed to reserve TX channel -- devicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			pr_err("dmac[%d]: failed to reserve TX channel -- devicetree misconfiguration, "
+				"DMA controller not present or driver not loaded.\n", i);
 			while (i--) {
 				dma_release_channel(hw.dmac[i].txchanp);
 				dma_release_channel(hw.dmac[i].rxchanp);
@@ -441,7 +464,8 @@ static int sched_probe(struct platform_device *pdev)
 		}
 		hw.dmac[i].rxchanp = of_dma_request_slave_channel(np, "rx");
 		if (IS_ERR_OR_NULL(hw.dmac[i].rxchanp)) {
-			pr_err("dmac[%d]: failed to reserve RX channel -- devicetree misconfiguration, DMA controller not present or driver not loaded.\n", i);
+			pr_err("dmac[%d]: failed to reserve RX channel -- devicetree misconfiguration, "
+				"DMA controller not present or driver not loaded.\n", i);
 			dma_release_channel(hw.dmac[i].txchanp);
 			while (i--) {
 				dma_release_channel(hw.dmac[i].txchanp);
@@ -465,7 +489,7 @@ static int sched_probe(struct platform_device *pdev)
 	pr_info("devicetree: found %d memory regions\n", hw.zone_count);
 
 	if ((hw.zone = devm_kcalloc(&pdev->dev, hw.zone_count, sizeof(*hw.zone), GFP_KERNEL)) == NULL) {
-		pr_err("unable to allocate %d bytes for memory region description structures!\n", hw.zone_count*sizeof(*hw.zone));
+		pr_err("unable to allocate %zu bytes for memory region description structures!\n", hw.zone_count*sizeof(*hw.zone));
 		return -ENOMEM;
 	}
 
@@ -485,8 +509,9 @@ static int sched_probe(struct platform_device *pdev)
 		hw.zone[i].used = 0;
 		hw.zone[i].total = size;
 		BUG_ON((u64)hw.zone[i].total != size);
-		pr_info("memory region %d: %#10tx-%#10tx, size: %#10tx (%6dkiB)\n", 
-			i, hw.zone[i].phys, hw.zone[i].phys+hw.zone[i].total-1, hw.zone[i].total, hw.zone[i].total/Ki);
+		pr_info("memory region %d: %p-%p, size: %zu (%6zukiB)\n", 
+			i, (void *)hw.zone[i].phys, (void *)hw.zone[i].phys+hw.zone[i].total-1, 
+			hw.zone[i].total, hw.zone[i].total/Ki);
 		++i;
 	}
 

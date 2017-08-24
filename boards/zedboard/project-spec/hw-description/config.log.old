@@ -1,0 +1,4 @@
+[INFO] generating Kconfig for project
+ERROR: Failed to generate /home/igalanommatis/work/zdma/boards/zedboard/build/misc/config/Kconfig.syshw
+ERROR: Failed to Kconfig project
+[INFO] successfully configured device-tree

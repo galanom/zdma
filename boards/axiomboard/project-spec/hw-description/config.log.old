@@ -1,0 +1,31 @@
+[INFO] generating Kconfig for project
+hsi::open_hw_design: Time (s): cpu = 00:00:07 ; elapsed = 00:00:07 . Memory (MB): peak = 519.496 ; gain = 157.840 ; free physical = 53182 ; free virtual = 76994
+[INFO] sourcing bitbake
+SDK environment now set up; additionally you may now run devtool to perform development tasks.
+Run devtool --help for further details.
+
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake <target>'
+
+Common targets are:
+    core-image-minimal
+    core-image-sato
+    meta-toolchain
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+INFO: Adding user layer: /home/igalanommatis/work/zdma/boards/axiomboard/project-spec/meta-user
+[INFO] generating plnxtool conf
+[INFO] generating meta-plnx-generated layer
+Specified layer /home/igalanommatis/work/zdma/boards/axiomboard/project-spec/meta-plnx-generated is already in BBLAYERS
+INFO: Layer Already Exists, using the same
+[INFO] generating machine configuration
+[INFO] configuring: device-tree
+[INFO] generating source for device-tree 
+[INFO] bitbake virtual/dtb -c configure
+NOTE: Resolving any missing task queue dependencies
+NOTE: Executing SetScene Tasks
+NOTE: Executing RunQueue Tasks
+NOTE: Tasks Summary: Attempted 324 tasks of which 324 didn't need to be rerun and all succeeded.
+[INFO] successfully configured device-tree

@@ -53,8 +53,6 @@
 #define CRL_APB_RPLL_CTRL_OFFSET                                                   0XFF5E0030
 #undef CRL_APB_RPLL_TO_FPD_CTRL_OFFSET 
 #define CRL_APB_RPLL_TO_FPD_CTRL_OFFSET                                            0XFF5E0048
-#undef CRL_APB_RPLL_FRAC_CFG_OFFSET 
-#define CRL_APB_RPLL_FRAC_CFG_OFFSET                                               0XFF5E0038
 #undef CRL_APB_IOPLL_CFG_OFFSET 
 #define CRL_APB_IOPLL_CFG_OFFSET                                                   0XFF5E0024
 #undef CRL_APB_IOPLL_CTRL_OFFSET 
@@ -69,8 +67,6 @@
 #define CRL_APB_IOPLL_CTRL_OFFSET                                                  0XFF5E0020
 #undef CRL_APB_IOPLL_TO_FPD_CTRL_OFFSET 
 #define CRL_APB_IOPLL_TO_FPD_CTRL_OFFSET                                           0XFF5E0044
-#undef CRL_APB_IOPLL_FRAC_CFG_OFFSET 
-#define CRL_APB_IOPLL_FRAC_CFG_OFFSET                                              0XFF5E0028
 #undef CRF_APB_APLL_CFG_OFFSET 
 #define CRF_APB_APLL_CFG_OFFSET                                                    0XFD1A0024
 #undef CRF_APB_APLL_CTRL_OFFSET 
@@ -85,8 +81,6 @@
 #define CRF_APB_APLL_CTRL_OFFSET                                                   0XFD1A0020
 #undef CRF_APB_APLL_TO_LPD_CTRL_OFFSET 
 #define CRF_APB_APLL_TO_LPD_CTRL_OFFSET                                            0XFD1A0048
-#undef CRF_APB_APLL_FRAC_CFG_OFFSET 
-#define CRF_APB_APLL_FRAC_CFG_OFFSET                                               0XFD1A0028
 #undef CRF_APB_DPLL_CFG_OFFSET 
 #define CRF_APB_DPLL_CFG_OFFSET                                                    0XFD1A0030
 #undef CRF_APB_DPLL_CTRL_OFFSET 
@@ -101,8 +95,6 @@
 #define CRF_APB_DPLL_CTRL_OFFSET                                                   0XFD1A002C
 #undef CRF_APB_DPLL_TO_LPD_CTRL_OFFSET 
 #define CRF_APB_DPLL_TO_LPD_CTRL_OFFSET                                            0XFD1A004C
-#undef CRF_APB_DPLL_FRAC_CFG_OFFSET 
-#define CRF_APB_DPLL_FRAC_CFG_OFFSET                                               0XFD1A0034
 #undef CRF_APB_VPLL_CFG_OFFSET 
 #define CRF_APB_VPLL_CFG_OFFSET                                                    0XFD1A003C
 #undef CRF_APB_VPLL_CTRL_OFFSET 
@@ -117,8 +109,6 @@
 #define CRF_APB_VPLL_CTRL_OFFSET                                                   0XFD1A0038
 #undef CRF_APB_VPLL_TO_LPD_CTRL_OFFSET 
 #define CRF_APB_VPLL_TO_LPD_CTRL_OFFSET                                            0XFD1A0050
-#undef CRF_APB_VPLL_FRAC_CFG_OFFSET 
-#define CRF_APB_VPLL_FRAC_CFG_OFFSET                                               0XFD1A0040
 
 /*
 * PLL loop filter resistor control
@@ -273,28 +263,6 @@
 #define CRL_APB_RPLL_TO_FPD_CTRL_DIVISOR0_MASK                 0x00003F00U
 
 /*
-* Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    * ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    * A of this register for the fractional portion of the feedback divider.
-*/
-#undef CRL_APB_RPLL_FRAC_CFG_ENABLED_DEFVAL 
-#undef CRL_APB_RPLL_FRAC_CFG_ENABLED_SHIFT 
-#undef CRL_APB_RPLL_FRAC_CFG_ENABLED_MASK 
-#define CRL_APB_RPLL_FRAC_CFG_ENABLED_DEFVAL                   0x00000000
-#define CRL_APB_RPLL_FRAC_CFG_ENABLED_SHIFT                    31
-#define CRL_APB_RPLL_FRAC_CFG_ENABLED_MASK                     0x80000000U
-
-/*
-* Fractional value for the Feedback value.
-*/
-#undef CRL_APB_RPLL_FRAC_CFG_DATA_DEFVAL 
-#undef CRL_APB_RPLL_FRAC_CFG_DATA_SHIFT 
-#undef CRL_APB_RPLL_FRAC_CFG_DATA_MASK 
-#define CRL_APB_RPLL_FRAC_CFG_DATA_DEFVAL                      0x00000000
-#define CRL_APB_RPLL_FRAC_CFG_DATA_SHIFT                       0
-#define CRL_APB_RPLL_FRAC_CFG_DATA_MASK                        0x0000FFFFU
-
-/*
 * PLL loop filter resistor control
 */
 #undef CRL_APB_IOPLL_CFG_RES_DEFVAL 
@@ -445,28 +413,6 @@
 #define CRL_APB_IOPLL_TO_FPD_CTRL_DIVISOR0_DEFVAL              0x00000400
 #define CRL_APB_IOPLL_TO_FPD_CTRL_DIVISOR0_SHIFT               8
 #define CRL_APB_IOPLL_TO_FPD_CTRL_DIVISOR0_MASK                0x00003F00U
-
-/*
-* Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    * ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    * A of this register for the fractional portion of the feedback divider.
-*/
-#undef CRL_APB_IOPLL_FRAC_CFG_ENABLED_DEFVAL 
-#undef CRL_APB_IOPLL_FRAC_CFG_ENABLED_SHIFT 
-#undef CRL_APB_IOPLL_FRAC_CFG_ENABLED_MASK 
-#define CRL_APB_IOPLL_FRAC_CFG_ENABLED_DEFVAL                  0x00000000
-#define CRL_APB_IOPLL_FRAC_CFG_ENABLED_SHIFT                   31
-#define CRL_APB_IOPLL_FRAC_CFG_ENABLED_MASK                    0x80000000U
-
-/*
-* Fractional value for the Feedback value.
-*/
-#undef CRL_APB_IOPLL_FRAC_CFG_DATA_DEFVAL 
-#undef CRL_APB_IOPLL_FRAC_CFG_DATA_SHIFT 
-#undef CRL_APB_IOPLL_FRAC_CFG_DATA_MASK 
-#define CRL_APB_IOPLL_FRAC_CFG_DATA_DEFVAL                     0x00000000
-#define CRL_APB_IOPLL_FRAC_CFG_DATA_SHIFT                      0
-#define CRL_APB_IOPLL_FRAC_CFG_DATA_MASK                       0x0000FFFFU
 
 /*
 * PLL loop filter resistor control
@@ -621,28 +567,6 @@
 #define CRF_APB_APLL_TO_LPD_CTRL_DIVISOR0_MASK                 0x00003F00U
 
 /*
-* Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    * ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    * A of this register for the fractional portion of the feedback divider.
-*/
-#undef CRF_APB_APLL_FRAC_CFG_ENABLED_DEFVAL 
-#undef CRF_APB_APLL_FRAC_CFG_ENABLED_SHIFT 
-#undef CRF_APB_APLL_FRAC_CFG_ENABLED_MASK 
-#define CRF_APB_APLL_FRAC_CFG_ENABLED_DEFVAL                   0x00000000
-#define CRF_APB_APLL_FRAC_CFG_ENABLED_SHIFT                    31
-#define CRF_APB_APLL_FRAC_CFG_ENABLED_MASK                     0x80000000U
-
-/*
-* Fractional value for the Feedback value.
-*/
-#undef CRF_APB_APLL_FRAC_CFG_DATA_DEFVAL 
-#undef CRF_APB_APLL_FRAC_CFG_DATA_SHIFT 
-#undef CRF_APB_APLL_FRAC_CFG_DATA_MASK 
-#define CRF_APB_APLL_FRAC_CFG_DATA_DEFVAL                      0x00000000
-#define CRF_APB_APLL_FRAC_CFG_DATA_SHIFT                       0
-#define CRF_APB_APLL_FRAC_CFG_DATA_MASK                        0x0000FFFFU
-
-/*
 * PLL loop filter resistor control
 */
 #undef CRF_APB_DPLL_CFG_RES_DEFVAL 
@@ -795,28 +719,6 @@
 #define CRF_APB_DPLL_TO_LPD_CTRL_DIVISOR0_MASK                 0x00003F00U
 
 /*
-* Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    * ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    * A of this register for the fractional portion of the feedback divider.
-*/
-#undef CRF_APB_DPLL_FRAC_CFG_ENABLED_DEFVAL 
-#undef CRF_APB_DPLL_FRAC_CFG_ENABLED_SHIFT 
-#undef CRF_APB_DPLL_FRAC_CFG_ENABLED_MASK 
-#define CRF_APB_DPLL_FRAC_CFG_ENABLED_DEFVAL                   0x00000000
-#define CRF_APB_DPLL_FRAC_CFG_ENABLED_SHIFT                    31
-#define CRF_APB_DPLL_FRAC_CFG_ENABLED_MASK                     0x80000000U
-
-/*
-* Fractional value for the Feedback value.
-*/
-#undef CRF_APB_DPLL_FRAC_CFG_DATA_DEFVAL 
-#undef CRF_APB_DPLL_FRAC_CFG_DATA_SHIFT 
-#undef CRF_APB_DPLL_FRAC_CFG_DATA_MASK 
-#define CRF_APB_DPLL_FRAC_CFG_DATA_DEFVAL                      0x00000000
-#define CRF_APB_DPLL_FRAC_CFG_DATA_SHIFT                       0
-#define CRF_APB_DPLL_FRAC_CFG_DATA_MASK                        0x0000FFFFU
-
-/*
 * PLL loop filter resistor control
 */
 #undef CRF_APB_VPLL_CFG_RES_DEFVAL 
@@ -967,28 +869,6 @@
 #define CRF_APB_VPLL_TO_LPD_CTRL_DIVISOR0_DEFVAL               0x00000400
 #define CRF_APB_VPLL_TO_LPD_CTRL_DIVISOR0_SHIFT                8
 #define CRF_APB_VPLL_TO_LPD_CTRL_DIVISOR0_MASK                 0x00003F00U
-
-/*
-* Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    * ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    * A of this register for the fractional portion of the feedback divider.
-*/
-#undef CRF_APB_VPLL_FRAC_CFG_ENABLED_DEFVAL 
-#undef CRF_APB_VPLL_FRAC_CFG_ENABLED_SHIFT 
-#undef CRF_APB_VPLL_FRAC_CFG_ENABLED_MASK 
-#define CRF_APB_VPLL_FRAC_CFG_ENABLED_DEFVAL                   0x00000000
-#define CRF_APB_VPLL_FRAC_CFG_ENABLED_SHIFT                    31
-#define CRF_APB_VPLL_FRAC_CFG_ENABLED_MASK                     0x80000000U
-
-/*
-* Fractional value for the Feedback value.
-*/
-#undef CRF_APB_VPLL_FRAC_CFG_DATA_DEFVAL 
-#undef CRF_APB_VPLL_FRAC_CFG_DATA_SHIFT 
-#undef CRF_APB_VPLL_FRAC_CFG_DATA_MASK 
-#define CRF_APB_VPLL_FRAC_CFG_DATA_DEFVAL                      0x00000000
-#define CRF_APB_VPLL_FRAC_CFG_DATA_SHIFT                       0
-#define CRF_APB_VPLL_FRAC_CFG_DATA_MASK                        0x0000FFFFU
 #undef CRL_APB_GEM0_REF_CTRL_OFFSET 
 #define CRL_APB_GEM0_REF_CTRL_OFFSET                                               0XFF5E0050
 #undef CRL_APB_GEM_TSU_REF_CTRL_OFFSET 

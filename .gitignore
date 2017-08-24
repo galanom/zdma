@@ -1,1 +1,4 @@
-ext_sources/
+src/external/
+*.jou
+*.log
+.Xil

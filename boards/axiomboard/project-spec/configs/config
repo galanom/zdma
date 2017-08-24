@@ -19,7 +19,7 @@ CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT__LOCAL__SRC=y
 #
 # External u-boot local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/u-boot-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/u-boot-xlnx"
 CONFIG_SUBSYSTEM_COMPONENT_ARM__TRUSTED__FIRMWARE_NAME_ARM__TRUSTED__FIRMWARE=y
 # CONFIG_SUBSYSTEM_COMPONENT_ARM__TRUSTED__FIRMWARE_NAME_REMOTE is not set
 # CONFIG_SUBSYSTEM_COMPONENT_ARM__TRUSTED__FIRMWARE_NAME_EXT__LOCAL__SRC is not set
@@ -30,7 +30,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -193,7 +193,7 @@ CONFIG_SUBSYSTEM_ZYNQMP_PRELOADED_BL33_BASE=0x8000000
 #
 # PMU FIRMWARE Configuration
 #
-# CONFIG_SUBSYSTEM_PMUFW_POWER_KERNEL_CONFIGURATIONS is not set
+CONFIG_SUBSYSTEM_PMUFW_POWER_KERNEL_CONFIGURATIONS=y
 
 #
 # u-boot Configuration
@@ -232,7 +232,7 @@ CONFIG_SUBSYSTEM_MACHINE_NAME="template"
 #
 # TMPDIR Location
 #
-CONFIG_TMP_DIR_LOCATION="/home/igalanommatis/work/zdma/axiomboard/build/tmp"
+CONFIG_TMP_DIR_LOCATION="/home/igalanommatis/work/zdma/boards/axiomboard/build/tmp"
 
 #
 # Parallel thread execution
@@ -263,4 +263,13 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/r
 # User Layers
 #
 CONFIG_USER_LAYER_0=""
+
+
+
+
+
+
+
+
+
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="earlycon clk_ignore_unused"

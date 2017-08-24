@@ -18,7 +18,7 @@ CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT__LOCAL__SRC=y
 #
 # External u-boot local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/u-boot-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/u-boot-xlnx"
 # CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_LINUX__XLNX is not set
 CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 # CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_REMOTE is not set
@@ -26,7 +26,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -198,7 +198,8 @@ CONFIG_SUBSYSTEM_ROOTFS_INITRAMFS=y
 # CONFIG_SUBSYSTEM_ROOTFS_OTHER is not set
 CONFIG_SUBSYSTEM_UIMAGE_NAME="image.ub"
 CONFIG_SUBSYSTEM_DTB_PADDING_SIZE=0x1000
-# CONFIG_SUBSYSTEM_COPY_TO_TFTPBOOT is not set
+CONFIG_SUBSYSTEM_COPY_TO_TFTPBOOT=y
+CONFIG_SUBSYSTEM_TFTPBOOT_DIR="/srv/tftp"
 
 #
 # Firmware Version Configuration
@@ -246,10 +247,4 @@ CONFIG_YOCTO_NETWORK_SSTATE_FEEDS_URL="http://petalinux.xilinx.com/sswreleases/r
 # User Layers
 #
 CONFIG_USER_LAYER_0=""
-
-
-
-
-
-
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED="console=ttyPS0,115200 earlyprintk"

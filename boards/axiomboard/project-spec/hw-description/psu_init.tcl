@@ -14,7 +14,7 @@ set psu_pll_init_data {
 		# PSU_CRL_APB_RPLL_CFG_RES                                                        0x2
 
 		# PLL charge pump control
-		# PSU_CRL_APB_RPLL_CFG_CP                                                         0x3
+		# PSU_CRL_APB_RPLL_CFG_CP                                                         0x4
 
 		# PLL loop filter high frequency capacitor control
 		# PSU_CRL_APB_RPLL_CFG_LFHF                                                       0x3
@@ -26,8 +26,8 @@ set psu_pll_init_data {
 		# PSU_CRL_APB_RPLL_CFG_LOCK_DLY                                                   0x3f
 
 		# Helper data. Values are to be looked up in a table from Data Sheet
-		#(OFFSET, MASK, VALUE)      (0XFF5E0034, 0xFE7FEDEFU ,0x7E4B0C62U)  */
-    mask_write 0XFF5E0034 0xFE7FEDEF 0x7E4B0C62
+		#(OFFSET, MASK, VALUE)      (0XFF5E0034, 0xFE7FEDEFU ,0x7E4B0C82U)  */
+    mask_write 0XFF5E0034 0xFE7FEDEF 0x7E4B0C82
 		# : UPDATE FB_DIV
 		# Register : RPLL_CTRL @ 0XFF5E0030</p>
 
@@ -37,15 +37,15 @@ set psu_pll_init_data {
 		# PSU_CRL_APB_RPLL_CTRL_PRE_SRC                                                   0x0
 
 		# The integer portion of the feedback divider to the PLL
-		# PSU_CRL_APB_RPLL_CTRL_FBDIV                                                     0x48
+		# PSU_CRL_APB_RPLL_CTRL_FBDIV                                                     0x5a
 
 		# This turns on the divide by 2 that is inside of the PLL. This does not c
     # hange the VCO frequency, just the output frequency
 		# PSU_CRL_APB_RPLL_CTRL_DIV2                                                      0x1
 
 		# PLL Basic Control
-		#(OFFSET, MASK, VALUE)      (0XFF5E0030, 0x00717F00U ,0x00014800U)  */
-    mask_write 0XFF5E0030 0x00717F00 0x00014800
+		#(OFFSET, MASK, VALUE)      (0XFF5E0030, 0x00717F00U ,0x00015A00U)  */
+    mask_write 0XFF5E0030 0x00717F00 0x00015A00
 		# : BY PASS PLL
 		# Register : RPLL_CTRL @ 0XFF5E0030</p>
 
@@ -106,40 +106,27 @@ set psu_pll_init_data {
 		#(OFFSET, MASK, VALUE)      (0XFF5E0048, 0x00003F00U ,0x00000300U)  */
     mask_write 0XFF5E0048 0x00003F00 0x00000300
 		# : RPLL FRAC CFG
-		# Register : RPLL_FRAC_CFG @ 0XFF5E0038</p>
-
-		# Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    # ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    # A of this register for the fractional portion of the feedback divider.
-		# PSU_CRL_APB_RPLL_FRAC_CFG_ENABLED                                               0x0
-
-		# Fractional value for the Feedback value.
-		# PSU_CRL_APB_RPLL_FRAC_CFG_DATA                                                  0x0
-
-		# Fractional control for the PLL
-		#(OFFSET, MASK, VALUE)      (0XFF5E0038, 0x8000FFFFU ,0x00000000U)  */
-    mask_write 0XFF5E0038 0x8000FFFF 0x00000000
 		# : IOPLL INIT
 		# Register : IOPLL_CFG @ 0XFF5E0024</p>
 
 		# PLL loop filter resistor control
-		# PSU_CRL_APB_IOPLL_CFG_RES                                                       0xc
+		# PSU_CRL_APB_IOPLL_CFG_RES                                                       0x2
 
 		# PLL charge pump control
-		# PSU_CRL_APB_IOPLL_CFG_CP                                                        0x3
+		# PSU_CRL_APB_IOPLL_CFG_CP                                                        0x4
 
 		# PLL loop filter high frequency capacitor control
 		# PSU_CRL_APB_IOPLL_CFG_LFHF                                                      0x3
 
 		# Lock circuit counter setting
-		# PSU_CRL_APB_IOPLL_CFG_LOCK_CNT                                                  0x339
+		# PSU_CRL_APB_IOPLL_CFG_LOCK_CNT                                                  0x258
 
 		# Lock circuit configuration settings for lock windowsize
 		# PSU_CRL_APB_IOPLL_CFG_LOCK_DLY                                                  0x3f
 
 		# Helper data. Values are to be looked up in a table from Data Sheet
-		#(OFFSET, MASK, VALUE)      (0XFF5E0024, 0xFE7FEDEFU ,0x7E672C6CU)  */
-    mask_write 0XFF5E0024 0xFE7FEDEF 0x7E672C6C
+		#(OFFSET, MASK, VALUE)      (0XFF5E0024, 0xFE7FEDEFU ,0x7E4B0C82U)  */
+    mask_write 0XFF5E0024 0xFE7FEDEF 0x7E4B0C82
 		# : UPDATE FB_DIV
 		# Register : IOPLL_CTRL @ 0XFF5E0020</p>
 
@@ -149,15 +136,15 @@ set psu_pll_init_data {
 		# PSU_CRL_APB_IOPLL_CTRL_PRE_SRC                                                  0x0
 
 		# The integer portion of the feedback divider to the PLL
-		# PSU_CRL_APB_IOPLL_CTRL_FBDIV                                                    0x2d
+		# PSU_CRL_APB_IOPLL_CTRL_FBDIV                                                    0x5a
 
 		# This turns on the divide by 2 that is inside of the PLL. This does not c
     # hange the VCO frequency, just the output frequency
-		# PSU_CRL_APB_IOPLL_CTRL_DIV2                                                     0x0
+		# PSU_CRL_APB_IOPLL_CTRL_DIV2                                                     0x1
 
 		# PLL Basic Control
-		#(OFFSET, MASK, VALUE)      (0XFF5E0020, 0x00717F00U ,0x00002D00U)  */
-    mask_write 0XFF5E0020 0x00717F00 0x00002D00
+		#(OFFSET, MASK, VALUE)      (0XFF5E0020, 0x00717F00U ,0x00015A00U)  */
+    mask_write 0XFF5E0020 0x00717F00 0x00015A00
 		# : BY PASS PLL
 		# Register : IOPLL_CTRL @ 0XFF5E0020</p>
 
@@ -218,19 +205,6 @@ set psu_pll_init_data {
 		#(OFFSET, MASK, VALUE)      (0XFF5E0044, 0x00003F00U ,0x00000300U)  */
     mask_write 0XFF5E0044 0x00003F00 0x00000300
 		# : IOPLL FRAC CFG
-		# Register : IOPLL_FRAC_CFG @ 0XFF5E0028</p>
-
-		# Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    # ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    # A of this register for the fractional portion of the feedback divider.
-		# PSU_CRL_APB_IOPLL_FRAC_CFG_ENABLED                                              0x0
-
-		# Fractional value for the Feedback value.
-		# PSU_CRL_APB_IOPLL_FRAC_CFG_DATA                                                 0x0
-
-		# Fractional control for the PLL
-		#(OFFSET, MASK, VALUE)      (0XFF5E0028, 0x8000FFFFU ,0x00000000U)  */
-    mask_write 0XFF5E0028 0x8000FFFF 0x00000000
 		# : APU_PLL INIT
 		# Register : APLL_CFG @ 0XFD1A0024</p>
 
@@ -261,15 +235,15 @@ set psu_pll_init_data {
 		# PSU_CRF_APB_APLL_CTRL_PRE_SRC                                                   0x0
 
 		# The integer portion of the feedback divider to the PLL
-		# PSU_CRF_APB_APLL_CTRL_FBDIV                                                     0x42
+		# PSU_CRF_APB_APLL_CTRL_FBDIV                                                     0x48
 
 		# This turns on the divide by 2 that is inside of the PLL. This does not c
     # hange the VCO frequency, just the output frequency
 		# PSU_CRF_APB_APLL_CTRL_DIV2                                                      0x1
 
 		# PLL Basic Control
-		#(OFFSET, MASK, VALUE)      (0XFD1A0020, 0x00717F00U ,0x00014200U)  */
-    mask_write 0XFD1A0020 0x00717F00 0x00014200
+		#(OFFSET, MASK, VALUE)      (0XFD1A0020, 0x00717F00U ,0x00014800U)  */
+    mask_write 0XFD1A0020 0x00717F00 0x00014800
 		# : BY PASS PLL
 		# Register : APLL_CTRL @ 0XFD1A0020</p>
 
@@ -330,19 +304,6 @@ set psu_pll_init_data {
 		#(OFFSET, MASK, VALUE)      (0XFD1A0048, 0x00003F00U ,0x00000300U)  */
     mask_write 0XFD1A0048 0x00003F00 0x00000300
 		# : APLL FRAC CFG
-		# Register : APLL_FRAC_CFG @ 0XFD1A0028</p>
-
-		# Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    # ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    # A of this register for the fractional portion of the feedback divider.
-		# PSU_CRF_APB_APLL_FRAC_CFG_ENABLED                                               0x0
-
-		# Fractional value for the Feedback value.
-		# PSU_CRF_APB_APLL_FRAC_CFG_DATA                                                  0x0
-
-		# Fractional control for the PLL
-		#(OFFSET, MASK, VALUE)      (0XFD1A0028, 0x8000FFFFU ,0x00000000U)  */
-    mask_write 0XFD1A0028 0x8000FFFF 0x00000000
 		# : DDR_PLL INIT
 		# Register : DPLL_CFG @ 0XFD1A0030</p>
 
@@ -435,26 +396,13 @@ set psu_pll_init_data {
 		# Register : DPLL_TO_LPD_CTRL @ 0XFD1A004C</p>
 
 		# Divisor value for this clock.
-		# PSU_CRF_APB_DPLL_TO_LPD_CTRL_DIVISOR0                                           0x3
+		# PSU_CRF_APB_DPLL_TO_LPD_CTRL_DIVISOR0                                           0x2
 
 		# Control for a clock that will be generated in the FPD, but used in the L
     # PD as a clock source for the peripheral clock muxes.
-		#(OFFSET, MASK, VALUE)      (0XFD1A004C, 0x00003F00U ,0x00000300U)  */
-    mask_write 0XFD1A004C 0x00003F00 0x00000300
+		#(OFFSET, MASK, VALUE)      (0XFD1A004C, 0x00003F00U ,0x00000200U)  */
+    mask_write 0XFD1A004C 0x00003F00 0x00000200
 		# : DPLL FRAC CFG
-		# Register : DPLL_FRAC_CFG @ 0XFD1A0034</p>
-
-		# Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    # ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    # A of this register for the fractional portion of the feedback divider.
-		# PSU_CRF_APB_DPLL_FRAC_CFG_ENABLED                                               0x0
-
-		# Fractional value for the Feedback value.
-		# PSU_CRF_APB_DPLL_FRAC_CFG_DATA                                                  0x0
-
-		# Fractional control for the PLL
-		#(OFFSET, MASK, VALUE)      (0XFD1A0034, 0x8000FFFFU ,0x00000000U)  */
-    mask_write 0XFD1A0034 0x8000FFFF 0x00000000
 		# : VIDEO_PLL INIT
 		# Register : VPLL_CFG @ 0XFD1A003C</p>
 
@@ -468,14 +416,14 @@ set psu_pll_init_data {
 		# PSU_CRF_APB_VPLL_CFG_LFHF                                                       0x3
 
 		# Lock circuit counter setting
-		# PSU_CRF_APB_VPLL_CFG_LOCK_CNT                                                   0x28a
+		# PSU_CRF_APB_VPLL_CFG_LOCK_CNT                                                   0x258
 
 		# Lock circuit configuration settings for lock windowsize
 		# PSU_CRF_APB_VPLL_CFG_LOCK_DLY                                                   0x3f
 
 		# Helper data. Values are to be looked up in a table from Data Sheet
-		#(OFFSET, MASK, VALUE)      (0XFD1A003C, 0xFE7FEDEFU ,0x7E514C62U)  */
-    mask_write 0XFD1A003C 0xFE7FEDEF 0x7E514C62
+		#(OFFSET, MASK, VALUE)      (0XFD1A003C, 0xFE7FEDEFU ,0x7E4B0C62U)  */
+    mask_write 0XFD1A003C 0xFE7FEDEF 0x7E4B0C62
 		# : UPDATE FB_DIV
 		# Register : VPLL_CTRL @ 0XFD1A0038</p>
 
@@ -485,15 +433,15 @@ set psu_pll_init_data {
 		# PSU_CRF_APB_VPLL_CTRL_PRE_SRC                                                   0x0
 
 		# The integer portion of the feedback divider to the PLL
-		# PSU_CRF_APB_VPLL_CTRL_FBDIV                                                     0x39
+		# PSU_CRF_APB_VPLL_CTRL_FBDIV                                                     0x40
 
 		# This turns on the divide by 2 that is inside of the PLL. This does not c
     # hange the VCO frequency, just the output frequency
 		# PSU_CRF_APB_VPLL_CTRL_DIV2                                                      0x1
 
 		# PLL Basic Control
-		#(OFFSET, MASK, VALUE)      (0XFD1A0038, 0x00717F00U ,0x00013900U)  */
-    mask_write 0XFD1A0038 0x00717F00 0x00013900
+		#(OFFSET, MASK, VALUE)      (0XFD1A0038, 0x00717F00U ,0x00014000U)  */
+    mask_write 0XFD1A0038 0x00717F00 0x00014000
 		# : BY PASS PLL
 		# Register : VPLL_CTRL @ 0XFD1A0038</p>
 
@@ -547,26 +495,13 @@ set psu_pll_init_data {
 		# Register : VPLL_TO_LPD_CTRL @ 0XFD1A0050</p>
 
 		# Divisor value for this clock.
-		# PSU_CRF_APB_VPLL_TO_LPD_CTRL_DIVISOR0                                           0x3
+		# PSU_CRF_APB_VPLL_TO_LPD_CTRL_DIVISOR0                                           0x2
 
 		# Control for a clock that will be generated in the FPD, but used in the L
     # PD as a clock source for the peripheral clock muxes.
-		#(OFFSET, MASK, VALUE)      (0XFD1A0050, 0x00003F00U ,0x00000300U)  */
-    mask_write 0XFD1A0050 0x00003F00 0x00000300
+		#(OFFSET, MASK, VALUE)      (0XFD1A0050, 0x00003F00U ,0x00000200U)  */
+    mask_write 0XFD1A0050 0x00003F00 0x00000200
 		# : VIDEO FRAC CFG
-		# Register : VPLL_FRAC_CFG @ 0XFD1A0040</p>
-
-		# Fractional SDM bypass control. When 0, PLL is in integer mode and it ign
-    # ores all fractional data. When 1, PLL is in fractional mode and uses DAT
-    # A of this register for the fractional portion of the feedback divider.
-		# PSU_CRF_APB_VPLL_FRAC_CFG_ENABLED                                               0x0
-
-		# Fractional value for the Feedback value.
-		# PSU_CRF_APB_VPLL_FRAC_CFG_DATA                                                  0x0
-
-		# Fractional control for the PLL
-		#(OFFSET, MASK, VALUE)      (0XFD1A0040, 0x8000FFFFU ,0x00000000U)  */
-    mask_write 0XFD1A0040 0x8000FFFF 0x00000000
 }
 
 set psu_clock_init_data {
@@ -596,7 +531,7 @@ set psu_clock_init_data {
 		# Register : GEM_TSU_REF_CTRL @ 0XFF5E0100</p>
 
 		# 6 bit divider
-		# PSU_CRL_APB_GEM_TSU_REF_CTRL_DIVISOR0                                           0x4
+		# PSU_CRL_APB_GEM_TSU_REF_CTRL_DIVISOR0                                           0x6
 
 		# 000 = IOPLL; 010 = RPLL; 011 = DPLL; (This signal may only be toggled af
     # ter 4 cycles of the old clock and 4 cycles of the new clock. This is not
@@ -610,8 +545,8 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_GEM_TSU_REF_CTRL_CLKACT                                             0x1
 
 		# This register controls this reference clock
-		#(OFFSET, MASK, VALUE)      (0XFF5E0100, 0x013F3F07U ,0x01010400U)  */
-    mask_write 0XFF5E0100 0x013F3F07 0x01010400
+		#(OFFSET, MASK, VALUE)      (0XFF5E0100, 0x013F3F07U ,0x01010600U)  */
+    mask_write 0XFF5E0100 0x013F3F07 0x01010600
 		# Register : USB0_BUS_REF_CTRL @ 0XFF5E0060</p>
 
 		# Clock active signal. Switch to 0 to disable the clock
@@ -697,7 +632,7 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_SDIO0_REF_CTRL_DIVISOR1                                             0x1
 
 		# 6 bit divider
-		# PSU_CRL_APB_SDIO0_REF_CTRL_DIVISOR0                                             0x6
+		# PSU_CRL_APB_SDIO0_REF_CTRL_DIVISOR0                                             0x1e
 
 		# 000 = IOPLL; 010 = RPLL; 011 = VPLL; (This signal may only be toggled af
     # ter 4 cycles of the old clock and 4 cycles of the new clock. This is not
@@ -705,8 +640,8 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_SDIO0_REF_CTRL_SRCSEL                                               0x2
 
 		# This register controls this reference clock
-		#(OFFSET, MASK, VALUE)      (0XFF5E006C, 0x013F3F07U ,0x01010602U)  */
-    mask_write 0XFF5E006C 0x013F3F07 0x01010602
+		#(OFFSET, MASK, VALUE)      (0XFF5E006C, 0x013F3F07U ,0x01011E02U)  */
+    mask_write 0XFF5E006C 0x013F3F07 0x01011E02
 		# Register : SDIO1_REF_CTRL @ 0XFF5E0070</p>
 
 		# Clock active signal. Switch to 0 to disable the clock
@@ -716,7 +651,7 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_SDIO1_REF_CTRL_DIVISOR1                                             0x1
 
 		# 6 bit divider
-		# PSU_CRL_APB_SDIO1_REF_CTRL_DIVISOR0                                             0x6
+		# PSU_CRL_APB_SDIO1_REF_CTRL_DIVISOR0                                             0x1e
 
 		# 000 = IOPLL; 010 = RPLL; 011 = VPLL; (This signal may only be toggled af
     # ter 4 cycles of the old clock and 4 cycles of the new clock. This is not
@@ -724,8 +659,8 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_SDIO1_REF_CTRL_SRCSEL                                               0x2
 
 		# This register controls this reference clock
-		#(OFFSET, MASK, VALUE)      (0XFF5E0070, 0x013F3F07U ,0x01010602U)  */
-    mask_write 0XFF5E0070 0x013F3F07 0x01010602
+		#(OFFSET, MASK, VALUE)      (0XFF5E0070, 0x013F3F07U ,0x01011E02U)  */
+    mask_write 0XFF5E0070 0x013F3F07 0x01011E02
 		# Register : SDIO_CLK_CTRL @ 0XFF18030C</p>
 
 		# MIO pad selection for sdio0_rx_clk (feedback clock from the PAD) 00: MIO
@@ -855,7 +790,7 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_PCAP_CTRL_CLKACT                                                    0x1
 
 		# 6 bit divider
-		# PSU_CRL_APB_PCAP_CTRL_DIVISOR0                                                  0x6
+		# PSU_CRL_APB_PCAP_CTRL_DIVISOR0                                                  0x9
 
 		# 000 = IOPLL; 010 = RPLL; 011 = DPLL; (This signal may only be toggled af
     # ter 4 cycles of the old clock and 4 cycles of the new clock. This is not
@@ -863,8 +798,8 @@ set psu_clock_init_data {
 		# PSU_CRL_APB_PCAP_CTRL_SRCSEL                                                    0x2
 
 		# This register controls this reference clock
-		#(OFFSET, MASK, VALUE)      (0XFF5E00A4, 0x01003F07U ,0x01000602U)  */
-    mask_write 0XFF5E00A4 0x01003F07 0x01000602
+		#(OFFSET, MASK, VALUE)      (0XFF5E00A4, 0x01003F07U ,0x01000902U)  */
+    mask_write 0XFF5E00A4 0x01003F07 0x01000902
 		# Register : LPD_SWITCH_CTRL @ 0XFF5E00A8</p>
 
 		# Clock active signal. Switch to 0 to disable the clock
@@ -13384,15 +13319,15 @@ set psu_peripherals_init_data {
 		# Register : SD_CONFIG_REG1 @ 0XFF18031C</p>
 
 		# Base Clock Frequency for SD Clock. This is the frequency of the xin_clk.
-		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD0_BASECLK                                         0xc8
+		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD0_BASECLK                                         0x32
 
 		# Configures the Number of Taps (Phases) of the rxclk_in that is supported
     #  for auto tuning mode
 		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD0_TUNIGCOUNT                                      0x28
 
 		# SD Config Register 1
-		#(OFFSET, MASK, VALUE)      (0XFF18031C, 0x00007FFEU ,0x00006450U)  */
-    mask_write 0XFF18031C 0x00007FFE 0x00006450
+		#(OFFSET, MASK, VALUE)      (0XFF18031C, 0x00007FFEU ,0x00001950U)  */
+    mask_write 0XFF18031C 0x00007FFE 0x00001950
 		# Register : SD_DLL_CTRL @ 0XFF180358</p>
 
 		# Reserved.
@@ -13405,15 +13340,15 @@ set psu_peripherals_init_data {
 		# Register : SD_CONFIG_REG1 @ 0XFF18031C</p>
 
 		# Base Clock Frequency for SD Clock. This is the frequency of the xin_clk.
-		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD1_BASECLK                                         0xc8
+		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD1_BASECLK                                         0x32
 
 		# Configures the Number of Taps (Phases) of the rxclk_in that is supported
     # .
 		# PSU_IOU_SLCR_SD_CONFIG_REG1_SD1_TUNIGCOUNT                                      0x28
 
 		# SD Config Register 1
-		#(OFFSET, MASK, VALUE)      (0XFF18031C, 0x7FFE0000U ,0x64500000U)  */
-    mask_write 0XFF18031C 0x7FFE0000 0x64500000
+		#(OFFSET, MASK, VALUE)      (0XFF18031C, 0x7FFE0000U ,0x19500000U)  */
+    mask_write 0XFF18031C 0x7FFE0000 0x19500000
 		# Register : SD_DLL_CTRL @ 0XFF180358</p>
 
 		# Reserved.

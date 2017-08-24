@@ -18,7 +18,7 @@ CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT__LOCAL__SRC=y
 #
 # External u-boot local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/u-boot-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_U__BOOT_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/u-boot-xlnx"
 # CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_LINUX__XLNX is not set
 CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 # CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_REMOTE is not set
@@ -26,7 +26,7 @@ CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT__LOCAL__SRC=y
 #
 # External linux-kernel local source settings
 #
-CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/ext_sources/linux-xlnx"
+CONFIG_SUBSYSTEM_COMPONENT_LINUX__KERNEL_NAME_EXT_LOCAL_SRC_PATH="/home/igalanommatis/work/zdma/src/external/linux-xlnx"
 
 #
 # Auto Config Settings
@@ -216,7 +216,7 @@ CONFIG_SUBSYSTEM_MACHINE_NAME="zedboard"
 #
 # TMPDIR Location
 #
-CONFIG_TMP_DIR_LOCATION="/home/igalanommatis/work/zdma/zedboard/build/tmp"
+CONFIG_TMP_DIR_LOCATION="/home/igalanommatis/work/zdma/boards/zedboard/build/tmp"
 
 #
 # Parallel thread execution

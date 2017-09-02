@@ -19,13 +19,11 @@
 
 #include "zdma.h"
 #include "zdma_ioctl.h"
+#include "macro.h"
 
 #ifndef CONFIG_OF
 #error "OpenFirmware is not configured in kernel\n"
 #endif
-
-#define Ki (1024)
-#define Mi (Ki*Ki)
 
 extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
@@ -89,10 +87,12 @@ static int client_dmac_reserve(struct client *p)
 	}
 
 	p->dmac = 0;
-	for (int i = 1, min = hw.dmac[0].load; i < hw.dmac_count; ++i) {
-		if (hw.dmac[i].load < min)
-			min = hw.dmac[p->dmac=i].load;	// pick i-th DMAC
-	}
+/*	for (int i = 1, min = hw.dmac[0].load; i < hw.dmac_count; ++i) {
+		if (hw.dmac[i].load < min) {
+			p->dmac = i;
+			min = hw.dmac[i].load;	// pick i-th DMAC
+		}
+	}*/
 	++hw.dmac[p->dmac].load;			// increase usage counter of selected DMAC
 
 	pr_info("reserved DMAC %d with load %d\n", p->dmac, hw.dmac[p->dmac].load);
@@ -170,8 +170,8 @@ static int client_mem_reserve(struct client *p, size_t tx_sz, size_t rx_sz)
 	}
 	p->rx.size = rx_sz;
 
-	pr_info("DMA mapping: dmac=%d, tx=%lu, rx=%lu, zones=%d->%d, virt: %p->%p, dma: %p->%p.\n",
-		p->dmac, p->tx.size, p->rx.size, p->tx.zone, p->rx.zone, 
+	pr_info("DMA mapping: dmac=%d, tx=%zuKi, rx=%zuKi, zones=%d->%d, virt: %p->%p, dma: %p->%p.\n",
+		p->dmac, p->tx.size/Ki, p->rx.size/Ki, p->tx.zone, p->rx.zone, 
 		p->tx.buf, p->rx.buf, (void*)p->tx.handle, (void *)p->rx.handle);
 
 	return 0;
@@ -185,25 +185,18 @@ static inline int client_mem_release(struct client *p)
 static int dma_setup(struct file *filep)
 {
 	struct client *p = filep->private_data;
-	cycles_t t0, t1;
 
-	t0 = get_cycles();
 	if ((p->tx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].txchanp, p->tx.handle, p->tx.size, 
-		DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
+			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->tx.cookie = -EBUSY;
 	}
-	t1 = get_cycles();
-	pr_info("1st prep: %lu cycles\n", t1-t0);
-	t0 = get_cycles();
+	
 	if ((p->rx.descp = dmaengine_prep_slave_single(hw.dmac[p->dmac].rxchanp, p->rx.handle, p->rx.size,
-		DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
+			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->rx.cookie = -EBUSY;
 	}
-	t1 = get_cycles();
-	pr_info("2nd prep: %lu cycles\n", t1-t0);
-	t0 = get_cycles();
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -216,15 +209,11 @@ static int dma_setup(struct file *filep)
 		pr_err("cookie contains error!\n");
 		return -EIO;
 	}
-	t1 = get_cycles();
-	pr_info("two submit: %lu cycles\n", t1-t0);
-	t0 = get_cycles();
+	
 	// initialize the completion before using it and then start the DMA transaction
 	// which was previously queued up in the DMA engine
 	init_completion(&p->tx.cmp);
 	init_completion(&p->rx.cmp);
-	t1 = get_cycles();
-	pr_info("two init compl %lu cycles\n", t1-t0);
 	return 0;
 }
 
@@ -237,24 +226,21 @@ static int dma_issue(struct file *filep)
 	enum dma_status status;
 	cycles_t t0, t1;
 	
-	pr_info("Issueing DMA request...\n");
-	t0 = get_cycles();
+//	pr_info("Issueing DMA request...\n");
 	dma_async_issue_pending(hw.dmac[p->dmac].txchanp);
 	dma_async_issue_pending(hw.dmac[p->dmac].rxchanp);
-	t1 = get_cycles();
-	pr_info("issue %lu c\n", t1-t0);
 
-	t0 = get_cycles();
 	// wait for the transaction to complete, timeout, or get get an error
+	t0 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
-	t1 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
-	t2 = get_cycles();
+	t1 = get_cycles();
+
 	status = dma_async_is_tx_complete(hw.dmac[p->dmac].txchanp, p->tx.cookie, NULL, NULL);
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (timeout == 0) {
-		pr_err("DMA timeout after %lums\n", timeout); //FIXME
+		pr_crit("*** DMA OPERATION TIMED OUT ***\n");
 		return -ETIMEDOUT;
 	} 
 	if (status != DMA_COMPLETE) {
@@ -263,8 +249,8 @@ static int dma_issue(struct file *filep)
 		return -EIO;
 	}
 
-	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, time: tx %7lu total %7lu cycles\n", 
-		p->tx.size/Ki, p->rx.size/Ki, t1-t0, t2-t0);
+	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, time (cycles): %lu\n", 
+		p->tx.size/Ki, p->rx.size/Ki, t1-t0);
 	else pr_warn("this kernel does not support get_cycles()\n");
 	return 0;
 }
@@ -295,8 +281,6 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	cycles_t t0, t1;
-	t0 = get_cycles();
 	switch (cmd) {
 	case ZDMA_IOCTL_DEBUG:
 		break;
@@ -314,8 +298,6 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
 		return -ENOTTY;
 	}
-	t1 = get_cycles();
-	pr_info("ioctl time: %luc\n", t1-t0);
 	return 0l;
 }
 
@@ -332,7 +314,7 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 
 	pr_info("zdma mmap: [%s] off=%zu, phys=%p, vsize=%zu, psize=%zu\n", 
 		tx ? "TX" : "RX", (size_t)off, (void *)phys, (size_t)vsize, (size_t)psize); // FIXME
-	BUG_ON(vsize != psize);
+	BUG_ON(vsize != ALIGN(psize, PAGE_SIZE));
 
 	if (tx == (vma->vm_flags & VM_READ)) {
 		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
@@ -342,14 +324,6 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 	if ((tx ? p->tx.buf : p->rx.buf) == NULL) {
 		pr_err("%s DMA buffer have not yet been allocated\n.", tx ? "TX" : "RX");
 		return -ENOMEM;
-	}
-
-//	if (tx) pr_info("[%u]\n", *(u32 *)p->tx.buf);
-//	else *(u32 *)p->rx.buf = 0xdeadbeef;
-	
-	if (vsize > psize) {
-		pr_err("virtual space is larger than physical buffer!\n");
-		return -EINVAL;
 	}
 
 	if (tx && (dma_mmap_coherent(&hw.dmac[p->dmac].txdev, vma, p->tx.buf, p->tx.handle, vsize) < 0)) {
@@ -362,34 +336,6 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 	}
 	return 0;
 }
-
-
-
-/*static void dma_buffer_fill(struct dma_transaction *tr, int seed)
-{
-	for (int i = 0; i < tr->size/4; i++) ((s32 *)tr->tx.buf)[i] = seed+i;
-	return;
-}*/
-
-/*static int dma_buffer_verify(struct dma_transaction *tr)
-{
-	int err_count = 0, err_first = -1;
-
-	for (int i = 0; i < tr->size/4; i++) if (((s32 *)tr->rx.buf)[i] != ((s32 *)tr->tx.buf)[i]) {
-		err_count++;
-		if (err_first == -1) err_first = i;
-	}
-
-	if (err_count != 0) {
-		pr_err("****** DATA MISMATCH ****** error count %d of %d, first occurence at %d.\n", 
-			err_count, tr->size/4, err_first);
-		return -EIO;
-	}
-
-	pr_info("Data check successful.\n");
-	return 0;
-}*/
-
 
 
 static int sched_remove(struct platform_device *pdev)
@@ -515,26 +461,6 @@ static int sched_probe(struct platform_device *pdev)
 		++i;
 	}
 
-
-	
-/*	if (dma_init(&dma, pdev, 4*1024*1024) != 0) return -1;
-	if (dma_reserve_channels(&dma) != 0) return -1;
-	if (dma_reserve_memory(&dma) != 0) {
-//		dma_release_channels(&dma);
-		return -1;
-	}
-	dma_buffer_fill(&dma, 0);
-
-	if (dma_setup(&dma) != 0) {
-//		dma_release_channels(&dma);
-		dma_release_memory(&dma);
-		return -1;
-	}
-	dma_issue(&dma);
-	dma_buffer_verify(&dma);
-//	dma_release_memory(&dma);
-//	dma_release_channels(&dma);
-*/	
 	return 0;
 }
 

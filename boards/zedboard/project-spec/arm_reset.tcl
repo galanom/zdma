@@ -1,4 +1,4 @@
-connect -url 147.27.39.174:3121
+connect -url 127.0.0.1:3121
 set items [split [targets] \n]
 foreach line $items {
 	set index [ scan $line %d]

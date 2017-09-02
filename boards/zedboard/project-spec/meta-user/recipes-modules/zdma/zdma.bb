@@ -8,6 +8,7 @@ inherit module
 SRC_URI = "file://Makefile \
            file://zdma.c \
            file://zdma.h \
+           file://macro.h \
            file://zdma_ioctl.h \
 	   file://COPYING \
           "

@@ -1,9 +1,9 @@
 #!/bin/sh
 x="\e[1;92m"
 y="\e[39m"
-RHOST=147.27.39.174
-VERSION=2017.1
-PETADIR="/home/igalanommatis/petalinux"
+RHOST=127.0.0.1
+VERSION=2017.2
+PETADIR="/opt/Xilinx/PetaLinux/2017.2"
 HW="zedboard"
 #FW="--pmufw components/plnx_workspace/pmu-firmware/Release/pmu-firmware.elf"
 DESIGN="quad_dma"
@@ -28,6 +28,7 @@ case $1 in
 	petalinux-config -c device-tree
 #	sed '/misc_clk_0: misc_clk_0 {/a\\t\t\tcompatible = "fixed-clock";\n\t\t\t#clock-cells = <0>;\n\t\t\tclock-frequency = <100000000>;' \
 #		-i components/plnx_workspace/device-tree-generation/pl.dtsi
+	petalinux-config -c rootfs
 	;;
 "ez")
 	vim src/zdma/zdma.c
@@ -42,10 +43,15 @@ case $1 in
 "boot")
 	#[ ! -e zynq ] && socat pty,link=zynq,b115200,raw,waitslave tcp:147.27.39.174:2000&
 	petalinux-package --prebuilt --clean --fpga build/download.bit
-	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
-	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
-	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl --hw-server-url ${RHOST}:3121
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl --hw-server-url ${RHOST}:3121
+	$PETADIR/tools/hsm/bin/xsdb project-spec/arm_reset.tcl --hw-server-url ${RHOST}:3121
 	petalinux-boot --jtag --prebuilt 3 $FW --hw_server-url ${RHOST}:3121
+	;;
+"bb")
+	cd ../../
+	./go build && ./go boot
+	cd -
 	;;
 "con"*)
 	[ ! -e zynq ] && socat pty,link=zynq,b115200,raw,waitslave tcp:${RHOST}:2000&

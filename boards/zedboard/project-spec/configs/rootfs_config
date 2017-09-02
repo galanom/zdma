@@ -405,7 +405,7 @@ CONFIG_mtd-utils=y
 #
 # canutils 
 #
-CONFIG_canutils=y
+# CONFIG_canutils is not set
 # CONFIG_canutils-dbg is not set
 # CONFIG_canutils-dev is not set
 
@@ -473,7 +473,7 @@ CONFIG_canutils=y
 # CONFIG_openssh-ssh is not set
 # CONFIG_openssh-dev is not set
 # CONFIG_openssh-sftp is not set
-CONFIG_openssh-sftp-server=y
+# CONFIG_openssh-sftp-server is not set
 # CONFIG_openssh-scp is not set
 
 #
@@ -603,7 +603,7 @@ CONFIG_openssh-sftp-server=y
 #
 # file 
 #
-# CONFIG_file is not set
+CONFIG_file=y
 # CONFIG_file-dbg is not set
 # CONFIG_file-dev is not set
 
@@ -2393,7 +2393,7 @@ CONFIG_run-postinsts=y
 # CONFIG_gdb is not set
 # CONFIG_gdb-dbg is not set
 # CONFIG_gdb-dev is not set
-# CONFIG_gdbserver is not set
+CONFIG_gdbserver=y
 
 #
 # glib-2.0 
@@ -4212,7 +4212,7 @@ CONFIG_bridge-utils=y
 # apps 
 #
 CONFIG_libzdma=y
-CONFIG_zctl=y
+CONFIG_zinit=y
 
 #
 # modules 
@@ -4223,8 +4223,8 @@ CONFIG_zdma=y
 # user packages 
 #
 # CONFIG_gpio-demo is not set
-# CONFIG_lalala is not set
 # CONFIG_peekpoke is not set
+# CONFIG_zctl is not set
 
 #
 # PetaLinux RootFS Settings

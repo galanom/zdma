@@ -1,4 +1,4 @@
-src/external/
+ext/
 *.jou
 *.log
 .Xil

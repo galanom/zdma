@@ -1,4 +1,0 @@
-TMP=/tmp/petalinux
-CC=$TMP/sysroots/x86_64-linux/usr/bin/arm-xilinx-linux-gnueabi/arm-xilinx-linux-gnueabi-gcc
-$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -std=gnu11 -ggdb -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror -Wno-declaration-after-statement -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0   -c -o libzdma.o src/libzdma/libzdma.c
-$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -o libzdma libzdma.o 

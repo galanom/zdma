@@ -7,6 +7,8 @@ PETADIR="/opt/Xilinx/PetaLinux/2017.2"
 HW="zedboard"
 #FW="--pmufw components/plnx_workspace/pmu-firmware/Release/pmu-firmware.elf"
 DESIGN="quad_dma"
+TMP=/tmp/petalinux
+CC=$TMP/sysroots/x86_64-linux/usr/bin/arm-xilinx-linux-gnueabi/arm-xilinx-linux-gnueabi-gcc
 
 # Create vivado project backup for git
 for f in boards/*board/hardware/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
@@ -17,6 +19,7 @@ cd boards/$HW
 case $1 in
 "clean")
 	rm -rf build components pre-built ../../*.{log,jou}
+	make clean -C=../../src M=`pwd`
 	;;
 "reload")
 	mkdir -p build
@@ -50,7 +53,7 @@ case $1 in
 	;;
 "bb")
 	cd ../../
-	./go build && ./go boot
+	./go cbuild && ./go boot
 	cd -
 	;;
 "con"*)
@@ -58,10 +61,24 @@ case $1 in
 	screen zynq 115200
 	;;
 "dt")
-	vim project-spec/meta-user/recipes-dt/device-tree/files/system-top.dts
+	vim project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi
 	;;
 "dtpl")
 	vim components/plnx_workspace/device-tree-generation/pl.dtsi
+	;;
+"test")
+	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -std=gnu11 -ggdb -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror -Wno-declaration-after-statement -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0   -c -o build/tst.o ../../src/libzdma.c
+	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -o build/tst build/tst.o
+	make ARCH=arm -C ../../src M=`pwd` O=/tmp/petalinux/work-shared/plnx_arm/kernel-build-artifacts
+	;;
+"gdb")
+	arm-linux-gnueabihf-gdb build/tst -iex "target remote 192.168.2.2:1234"
+	;;
+"kgdb")
+	#/tmp/petalinux/deploy/images/plnx_arm/vmlinux
+	cp ../../src/zdma.c /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
+	arm-linux-gnueabihf-gdb /tmp/petalinux/sysroots/plnx_arm/lib/modules/4.9.0-xilinx/extra/zdma.ko
+	rm /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
 	;;
 *)
 	echo -e ""\
@@ -74,3 +91,4 @@ case $1 in
 	;;
 esac
 cd ../..
+

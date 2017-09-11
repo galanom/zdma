@@ -35,16 +35,17 @@ static struct {
 	int dmac_count, zone_count;
 	struct dma_controller {
 		struct dma_chan *txchanp, *rxchanp;
-		int load;
-		unsigned id;
+		int id;
+		atomic_t load;
 	} *dmac;
 	struct dma_zone {
 		int id;
 		dma_addr_t dma_addr;	// FIXME drop this
 		phys_addr_t phys_addr;
 		unsigned long virt_addr;
-		size_t size, limit, used;
-		struct platform_device *pdev;
+		size_t size, limit;
+		atomic_long_t used;
+		struct device dev;
 	} *zone;
 } hw;
 
@@ -52,7 +53,7 @@ static struct {
 static struct driver {
 	struct gen_pool *mempool;
 	dev_t dev_num;
-	struct platform_device *pdev;
+	struct device *devp;
 	struct cdev cdev;
 	struct file_operations fops;
 	int clients;
@@ -90,18 +91,19 @@ static void client_dmac_alloc(struct client *p)
 	if (p->dmac != NULL) {
 		// FIXME wait for pending transfers
 		// FIXME channel release?
-		p->dmac->load--;
+		atomic_dec(&p->dmac->load);
 	}
 
 	p->dmac = &hw.dmac[0];
-	for (int i = 1, min = hw.dmac[0].load; i < hw.dmac_count; ++i) {
-		if (hw.dmac[i].load < min) {
+	for (int i = 1, min = atomic_read(&hw.dmac[0].load); i < hw.dmac_count; ++i) {
+		int curr = atomic_read(&hw.dmac[i].load);
+		if (curr < min) {
 			p->dmac = &hw.dmac[i];
-			min = hw.dmac[i].load;	// pick i-th DMAC
+			min = curr;	// FIXME hmm...
 		}
 	}
-	p->dmac->load++;			// increase usage counter of selected DMAC
-	pr_info("reserved DMAC %d with load %d\n", p->dmac->id, p->dmac->load);
+	atomic_inc(&p->dmac->load);			// increase usage counter of selected DMAC
+	pr_info("reserved DMAC %d with load %d\n", p->dmac->id, atomic_read(&p->dmac->load));
 	return;
 }
 
@@ -117,23 +119,24 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 
 	if (p->tx.zone) {
 		gen_pool_free(driver.mempool, p->tx.virt_addr, p->conf.tx_size);
-		p->tx.zone->used -= p->conf.tx_size;
+		atomic_long_sub(p->conf.tx_size, &p->tx.zone->used);
 	}
 	if (p->rx.zone) {
 		gen_pool_free(driver.mempool, p->rx.virt_addr, p->conf.rx_size);
-		p->rx.zone->used -= p->conf.rx_size; /* ATOMIC FIXME */
+		atomic_long_sub(p->conf.rx_size, &p->rx.zone->used);
 	}
 
 	if (tx_size == 0 && rx_size == 0) {
-		p->dmac->load--;
+		atomic_dec(&p->dmac->load);
 		return 0;
 	}
 
 	// step 1: pick zone
 	p->tx.zone = p->rx.zone = &hw.zone[0];
-	for (int i = 1, max = hw.zone[0].limit - hw.zone[0].used; i < hw.zone_count; ++i) {
-		if (hw.zone[i].limit - hw.zone[i].used >= max) {	// keep equal for 2nd max
-			max = hw.zone[i].limit - hw.zone[i].used;
+	for (int i = 1, max = hw.zone[0].limit - atomic_long_read(&hw.zone[0].used); i < hw.zone_count; ++i) {
+		int curr = hw.zone[i].limit - atomic_long_read(&hw.zone[i].used);
+		if (curr >= max) {	// keep equal for 2nd max
+			max = curr;
 			p->tx.zone = p->rx.zone;
 			p->rx.zone = &hw.zone[i];
 		}
@@ -154,11 +157,11 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 		return -ENOMEM;
 	}
 	
-	p->tx.phys_addr = dma_to_phys(&p->tx.zone->pdev->dev, p->tx.dma_addr);
-	p->rx.phys_addr = dma_to_phys(&p->rx.zone->pdev->dev, p->rx.dma_addr);
+	p->tx.phys_addr = dma_to_phys(&p->tx.zone->dev, p->tx.dma_addr);
+	p->rx.phys_addr = dma_to_phys(&p->rx.zone->dev, p->rx.dma_addr);
 
-	p->tx.zone->used += tx_size;
-	p->rx.zone->used += rx_size;
+	atomic_long_add(tx_size, &p->tx.zone->used);
+	atomic_long_add(rx_size, &p->rx.zone->used);
 	
 	// if no error...
 	p->conf.tx_size = tx_size;
@@ -167,55 +170,83 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 	return 0;
 }
 
+static int dma_controller_add(struct device_node *np)
+{
+	void *q = devm_kcalloc(driver.devp, hw.dmac_count+1, sizeof(*hw.dmac), GFP_KERNEL);
+	if (q == NULL) {
+		pr_err("unable to allocate %zu bytes for DMA-C description structures!\n", 
+			(hw.dmac_count+1)*sizeof(*hw.dmac));
+		return -ENOMEM;
+	}
+	memcpy(q, hw.dmac, hw.dmac_count*sizeof(*hw.dmac));
+	devm_kfree(driver.devp, hw.dmac);
+	hw.dmac = q;
+	hw.dmac_count++;
+	struct dma_controller *dmac = &hw.dmac[hw.dmac_count - 1];
+	dmac->id = hw.dmac_count - 1;
+	atomic_set(&dmac->load, 0);
+	//
+	dmac->txchanp = of_dma_request_slave_channel(np, "tx");
+	if (IS_ERR_OR_NULL(dmac->txchanp)) {
+		pr_err("dmac[%d]: failed to reserve TX channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", dmac->id);
+		return -ENODEV;	// FIXME DOES NOT EXIT GRACEFULLY FIXME // (later) TODO why not?
+	}
+	dmac->rxchanp = of_dma_request_slave_channel(np, "rx");
+	if (IS_ERR_OR_NULL(dmac->rxchanp)) {
+		pr_err("dmac[%d]: failed to reserve RX channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", dmac->id);
+		dma_release_channel(dmac->txchanp);
+		return -ENODEV;
+	}
+	return 0;
+}
+
 static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit, size_t size)
 {
 	// reserve new memory
-	void *q = devm_kcalloc(&driver.pdev->dev, hw.zone_count+1, sizeof(*hw.zone), GFP_KERNEL);
+	void *q = devm_kcalloc(driver.devp, hw.zone_count+1, sizeof(*hw.zone), GFP_KERNEL);
 	if (q == NULL) {
 		pr_err("unable to allocate %zu bytes for memory region description structures!\n", 
-			hw.zone_count*sizeof(*hw.zone));
+			(hw.zone_count+1)*sizeof(*hw.zone));
 		return -ENOMEM;
 	}
 	memcpy(q, hw.zone, hw.zone_count*sizeof(*hw.zone));
-	devm_kfree(&driver.pdev->dev, hw.zone);
+	devm_kfree(driver.devp, hw.zone);
 	hw.zone = q;
 	hw.zone_count++;
 	struct dma_zone *zone = &hw.zone[hw.zone_count - 1];
 	
 	// create zone structure
+	// Attention: Should dma_zone_add() is ever implemented to be called anywhere except for initialization,
+	// proper locking is needed for whole structure, not just zone->used.
 	zone->id = hw.zone_count-1;
 	zone->phys_addr = paddr;
-	zone->used = 0;
+	atomic_long_set(&zone->used, 0l);
 	zone->limit = limit;
 	zone->size = size;
 
 	// create pseudo device structure
-	zone->pdev = platform_device_alloc("zone", zone->id);
-	if (zone->pdev == NULL) {
-		pr_err("unable to allocate memory for platform device\n");
-		return -ENOMEM;
-	}
-
-	dev_set_name(&zone->pdev->dev, "%s@%d", "zone", zone->id);
-	zone->pdev->dev.parent			= &driver.pdev->dev;
-	zone->pdev->dev.bus			= driver.pdev->dev.bus;
-	zone->pdev->dev.coherent_dma_mask	= driver.pdev->dev.coherent_dma_mask;
-	zone->pdev->dev.dma_mask		= driver.pdev->dev.dma_mask;
-	zone->pdev->dev.release			= of_reserved_mem_device_release;
-	int res = device_add(&zone->pdev->dev);
+	device_initialize(&zone->dev);
+	dev_set_name(&zone->dev, "%s@%d", "zone", zone->id);
+	zone->dev.parent		= driver.devp; // do not inherit bus!
+	zone->dev.coherent_dma_mask	= driver.devp->coherent_dma_mask;
+	zone->dev.dma_mask		= driver.devp->dma_mask;
+	zone->dev.release		= of_reserved_mem_device_release;
+	int res = device_add(&zone->dev);
 	if (res != 0) {
 		pr_err("error %d while registering device for zone %d\n", res, zone->id);
 		return res;
 	}
 	
 	// seek to desired zone...
-	if (of_reserved_mem_device_init_by_idx(&zone->pdev->dev, np, 0)) {
+	if (of_reserved_mem_device_init_by_idx(&zone->dev, np, 0)) {
 		pr_err("error: cannot initialize detected zone reserved memory!\n");
 		return -ENOMEM;
 	}
 
 	// dmam_alloc_attrs() is implemented in 4.13, port when possible -- FIXME look for release
-	zone->virt_addr = (unsigned long)dma_alloc_attrs(&zone->pdev->dev, limit, &zone->dma_addr, 
+	zone->virt_addr = (unsigned long)dma_alloc_attrs(&zone->dev, limit, &zone->dma_addr, 
 		GFP_KERNEL, DMA_ATTR_NO_KERNEL_MAPPING);
 	if (!zone->virt_addr) {
 		pr_err("error: cannot claim reserved memory of size %zuKiB\n", limit/Ki);
@@ -226,15 +257,6 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit,
 	BUG_ON(IS_ERR_OR_NULL(driver.mempool));
 	gen_pool_add_virt(driver.mempool, zone->virt_addr, zone->phys_addr, zone->limit, -1);
 
-/*	pr_info("memory region %d: %zx-%zx, mapped at %p, dma handle %x, size: %zu (%zuKiB)\n", 
-		hw.zone_count-1,
-		zone->phys_addr, 
-		zone->phys_addr + zone->limit - 1,
-		(void *)zone->virt_addr, 
-		zone->dma_addr, 
-		zone->limit, 
-		zone->limit/Ki);
-*/
 	return 0;
 }
 
@@ -309,7 +331,7 @@ static int dma_issue(struct client *p)
 static int dev_open(struct inode *inodep, struct file *filep)
 {
 	struct client *p;
-	if ((p = filep->private_data = devm_kzalloc(&driver.pdev->dev, sizeof(struct client), GFP_KERNEL)) == NULL) {
+	if ((p = filep->private_data = devm_kzalloc(driver.devp, sizeof(struct client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
@@ -323,7 +345,7 @@ static int dev_release(struct inode *inodep, struct file *filep)
 {
 	pr_info("zdma release()\'ed for client %d\n", driver.clients--);
 	client_mem_alloc(filep->private_data, 0, 0);
-	devm_kfree(&driver.pdev->dev, filep->private_data);
+	devm_kfree(driver.devp, filep->private_data);
 	return 0;
 }
 
@@ -348,7 +370,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		p->conf.flags = conf.flags;
 		break;	
 	case ZDMA_IOCTL_ISSUE:
-		dma_issue(p);
+		return dma_issue(p);
 		break;
 	default:
 		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
@@ -382,12 +404,12 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		return -ENOMEM;
 	}
 
-	if ( tx && (dma_mmap_attrs(&p->tx.zone->pdev->dev, vma, (void *)p->tx.virt_addr, p->tx.dma_addr, 
+	if ( tx && (dma_mmap_attrs(&p->tx.zone->dev, vma, (void *)p->tx.virt_addr, p->tx.dma_addr, 
 		vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0)) {
 			pr_err("failed to map user TX buffer!\n");
 			return -ENOSPC;//FIXME
 	}
-	if (!tx && (dma_mmap_attrs(&p->rx.zone->pdev->dev, vma, (void *)p->rx.virt_addr, p->rx.dma_addr, 
+	if (!tx && (dma_mmap_attrs(&p->rx.zone->dev, vma, (void *)p->rx.virt_addr, p->rx.dma_addr, 
 		vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0)) {
 			pr_err("failed to map user RX buffer!\n");
 			return -ENOSPC;//FIXME
@@ -396,9 +418,9 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 }
 
 
-static int sched_remove(struct platform_device *pdev)
+static int zdma_remove(struct platform_device *pdev)
 {
-	pr_info("scheduler shutting down...\n");
+	pr_info("zdma shutting down...\n");
 //	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
 	
 	while (hw.dmac_count--) {
@@ -409,8 +431,8 @@ static int sched_remove(struct platform_device *pdev)
 	while (hw.zone_count--) {
 		pr_info("releasing zone[%d]\n", hw.zone_count);
 		// FIXME delete zones
-		device_del(&hw.zone[hw.zone_count].pdev->dev);
-		put_device(&hw.zone[hw.zone_count].pdev->dev);
+		device_del(&hw.zone[hw.zone_count].dev);
+		put_device(&hw.zone[hw.zone_count].dev);
 		// platform?
 	}
 	//FIXME clear pools also
@@ -419,71 +441,36 @@ static int sched_remove(struct platform_device *pdev)
 }
 
 
-static int sched_probe(struct platform_device *pdev)
+static int zdma_probe(struct platform_device *pdev)
 {
-	int i, res;
-	driver.pdev = pdev;
+	int res;
+	driver.devp = &pdev->dev;
 
-	pr_info("scheduler starting... pdev=%p, pdev->name=%s, &pdev->dev=%p\n", pdev, pdev->name, &pdev->dev);
-	
 	// basic data structure initialization
 	hw.dmac_count = 0;
 	hw.dmac = NULL;
 	hw.zone_count = 0;
 	hw.zone = NULL;
-	driver.mempool = devm_gen_pool_create(&driver.pdev->dev, PAGE_SHIFT, NUMA_NO_NODE, NULL);
+	driver.mempool = devm_gen_pool_create(driver.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
 
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
-	for_each_compatible_node(np, NULL, "tuc,dma-client") ++hw.dmac_count;
-	if (!hw.dmac_count) {
-		pr_err("devicetree: unable to find any compatible DMA controller!\n");
-		return -ENODEV;
-	}
-	pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
 
-	if ((hw.dmac = devm_kcalloc(&driver.pdev->dev, hw.dmac_count, sizeof(*hw.dmac), GFP_KERNEL)) == NULL) {
-		pr_err("unable to allocate %zu bytes for DMA controller hardware description structures!\n", 
-			hw.dmac_count*sizeof(*hw.dmac));
-		return -ENOMEM;
-	}
-	i = 0;
-	np = NULL;
 	for_each_compatible_node(np, NULL, "tuc,dma-client") {
-
-		hw.dmac[i].txchanp = of_dma_request_slave_channel(np, "tx");
-		if (IS_ERR_OR_NULL(hw.dmac[i].txchanp)) {
-			pr_err("dmac[%d]: failed to reserve TX channel -- devicetree misconfiguration, "
-				"DMA controller not present or driver not loaded.\n", i);
-			while (i--) {
-				dma_release_channel(hw.dmac[i].txchanp);
-				dma_release_channel(hw.dmac[i].rxchanp);
-			}
-			return -ENODEV;	// FIXME DOES NOT EXIT GRACEFULLY FIXME
-		}
-		hw.dmac[i].rxchanp = of_dma_request_slave_channel(np, "rx");
-		if (IS_ERR_OR_NULL(hw.dmac[i].rxchanp)) {
-			pr_err("dmac[%d]: failed to reserve RX channel -- devicetree misconfiguration, "
-				"DMA controller not present or driver not loaded.\n", i);
-			dma_release_channel(hw.dmac[i].txchanp);
-			while (i--) {
-				dma_release_channel(hw.dmac[i].txchanp);
-				dma_release_channel(hw.dmac[i].rxchanp);
-			}
-			return -ENODEV;
-		}
-		hw.dmac[i].id = i;
-		hw.dmac[i].load = 0;
-		++i;
+		res = dma_controller_add(np);
+		if (res) return res;
 	}
-	pr_info("%d channel pairs initialized\n", i);
+	if (!hw.dmac_count) {
+		pr_err("devicetree: no DMA controllers were detected\n");
+		return -ENODEV;
+	} else pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
 
 	// discover memory region info
 	np = NULL;
 	for_each_compatible_node(np, NULL, "tuc,zone") {
 		tnp = of_parse_phandle(np, "memory-region", 0);
 		if (!tnp) {
-			pr_err("devicetree: memory region node %d does not contain a phandle to a memory bank\n", i);
+			pr_err("devicetree: memory region %d does not contain a phandle to a memory bank\n", hw.zone_count);
 			return -ENODEV;
 		}
 		u64 size;
@@ -491,36 +478,36 @@ static int sched_probe(struct platform_device *pdev)
 		res = dma_zone_add(np, paddr, (size_t)size /* limit */, (size_t)size /* total */);
 		if (res) return res;
 	}
-
+	
 	if (!hw.zone_count) {
 		pr_err("devicetree: no suitable memory zones are defined!\n");
 		return -ENODEV;
-	}
+	} else pr_info("devicetree: found %d compatible memory zones\n", hw.zone_count);
 
 	return 0;
 }
 
-static struct of_device_id sched_of_match[] = {
-	{ .compatible = "tuc,sched", },
+static struct of_device_id zdma_of_match[] = {
+	{ .compatible = "tuc,zdma", },
 	{ /* end of list */ },
 };
-MODULE_DEVICE_TABLE(of, sched_of_match);
+MODULE_DEVICE_TABLE(of, zdma_of_match);
 
 
-static struct platform_driver sched_driver = {
+static struct platform_driver zdma_driver = {
 	.driver = {
-		.name = "sched",
+		.name = "zdma",
 		.owner = THIS_MODULE,
-		.of_match_table = sched_of_match,
+		.of_match_table = zdma_of_match,
 	},
-	.probe = sched_probe,
-	.remove = sched_remove,
+	.probe = zdma_probe,
+	.remove = zdma_remove,
 };
 
 
 static void __exit mod_exit(void)
 {
-	platform_driver_unregister(&sched_driver);
+	platform_driver_unregister(&zdma_driver);
 	cdev_del(&driver.cdev);
 	unregister_chrdev_region(driver.dev_num, 1 /* count */);
 	pr_info("module exiting...\n");
@@ -550,8 +537,8 @@ static int __init mod_init(void)
 	}
 
 	// register the driver to the kernel
-	if (platform_driver_register(&sched_driver)) {
-		pr_err("error registering scheduler platform driver\n");
+	if (platform_driver_register(&zdma_driver)) {
+		pr_err("error registering zdma platform driver\n");
 		return -1;
 	}
 

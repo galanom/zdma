@@ -28,8 +28,8 @@
 	};
 
 	amba_pl {
-		dma-sched@0 {
-			compatible = "tuc,sched";
+		zdma@0 {
+			compatible = "tuc,zdma";
 
 			zone@0 {
 				compatible = "tuc,zone";

@@ -29,10 +29,18 @@
 
 extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
+enum state {
+	INITIALIZING=1,
+	OFFLINE,
+	ONLINE,
+	SHUTTING_DOWN,
+};
+
 //module_param(length, unsigned, S_IRUGO);
 
 static struct {
 	int dmac_count, zone_count;
+	struct gen_pool *mempool;
 	struct dma_controller {
 		struct dma_chan *txchanp, *rxchanp;
 		int id;
@@ -40,18 +48,14 @@ static struct {
 	} *dmac;
 	struct dma_zone {
 		int id;
-		dma_addr_t dma_addr;	// FIXME drop this
-		phys_addr_t phys_addr;
-		unsigned long virt_addr;
-		size_t size, limit;
-		atomic_long_t used;
 		struct device dev;
 	} *zone;
 } hw;
 
 
 static struct driver {
-	struct gen_pool *mempool;
+	atomic_t state;
+	spinlock_t mem_lock;
 	dev_t dev_num;
 	struct device *devp;
 	struct cdev cdev;
@@ -62,12 +66,11 @@ static struct driver {
 
 struct client {
 	struct dma_controller *dmac;
-	struct dma_config conf;
-	struct {
-		struct dma_zone *zone;
-		phys_addr_t phys_addr;
-		dma_addr_t dma_addr;
-		unsigned long virt_addr;
+	struct dma_channel {
+		struct gen_pool_chunk *bank;
+		dma_addr_t handle;
+		size_t size;
+		void *vaddr;
 		struct dma_async_tx_descriptor *descp;
 		struct dma_slave_config conf;
 		dma_cookie_t cookie;
@@ -75,6 +78,119 @@ struct client {
 	} tx, rx;
 };
 
+static inline size_t chunk_size(const struct gen_pool_chunk *chunk)
+{
+	return chunk->end_addr - chunk->start_addr + 1;
+}
+
+
+static int set_bits_ll(unsigned long *addr, unsigned long mask_to_set)
+{
+	unsigned long val, nval;
+
+	nval = *addr;
+	do {
+		val = nval;
+		if (val & mask_to_set)
+			return -EBUSY;
+		cpu_relax();
+	} while ((nval = cmpxchg(addr, val, val | mask_to_set)) != val);
+
+	return 0;
+}
+
+static int clear_bits_ll(unsigned long *addr, unsigned long mask_to_clear)
+{
+	unsigned long val, nval;
+
+	nval = *addr;
+	do {
+		val = nval;
+		if ((val & mask_to_clear) != mask_to_clear)
+			return -EBUSY;
+		cpu_relax();
+	} while ((nval = cmpxchg(addr, val, val & ~mask_to_clear)) != val);
+
+	return 0;
+}
+
+static int bitmap_set_ll(unsigned long *map, int start, int nr)
+{
+	unsigned long *p = map + BIT_WORD(start);
+	const int size = start + nr;
+	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
+	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
+
+	while (nr - bits_to_set >= 0) {
+		if (set_bits_ll(p, mask_to_set))
+			return nr;
+		nr -= bits_to_set;
+		bits_to_set = BITS_PER_LONG;
+		mask_to_set = ~0UL;
+		p++;
+	}
+	if (nr) {
+		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
+		if (set_bits_ll(p, mask_to_set))
+			return nr;
+	}
+
+	return 0;
+}
+
+/*
+ * bitmap_clear_ll - clear the specified number of bits at the specified position
+ * @map: pointer to a bitmap
+ * @start: a bit position in @map
+ * @nr: number of bits to set
+ *
+ * Clear @nr bits start from @start in @map lock-lessly. Several users
+ * can set/clear the same bitmap simultaneously without lock. If two
+ * users clear the same bit, one user will return remain bits,
+ * otherwise return 0.
+ */
+static int bitmap_clear_ll(unsigned long *map, int start, int nr)
+{
+	unsigned long *p = map + BIT_WORD(start);
+	const int size = start + nr;
+	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
+	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
+
+	while (nr - bits_to_clear >= 0) {
+		if (clear_bits_ll(p, mask_to_clear))
+			return nr;
+		nr -= bits_to_clear;
+		bits_to_clear = BITS_PER_LONG;
+		mask_to_clear = ~0UL;
+		p++;
+	}
+	if (nr) {
+		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
+		if (clear_bits_ll(p, mask_to_clear))
+			return nr;
+	}
+
+	return 0;
+}
+
+static struct gen_pool_chunk *addr_in_gen_pool_chunk(struct gen_pool *pool, unsigned long vaddr)
+{
+	bool found = false;
+	struct gen_pool_chunk *chunk;
+	rcu_read_lock();
+	list_for_each_entry_rcu(chunk, &(pool)->chunks, next_chunk) {
+		if (vaddr >= chunk->start_addr && vaddr <= chunk->end_addr) {
+			found = true;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	if (found) return chunk;
+	return NULL;
+}
+
+
+//static int find_
 
 static void sync_callback(void *completion)
 {
@@ -84,8 +200,9 @@ static void sync_callback(void *completion)
 }
 
 
-static void client_dmac_alloc(struct client *p)
+static int client_dmac_alloc(struct client *p)
 {
+	if (atomic_read(&driver.state) != ONLINE) return -EBUSY;
 	BUG_ON(IS_ERR_OR_NULL(p));
 
 	if (p->dmac != NULL) {
@@ -104,74 +221,129 @@ static void client_dmac_alloc(struct client *p)
 	}
 	atomic_inc(&p->dmac->load);			// increase usage counter of selected DMAC
 	pr_info("reserved DMAC %d with load %d\n", p->dmac->id, atomic_read(&p->dmac->load));
-	return;
+	return 0;
 }
 
 
 
 static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 {
+	if (atomic_read(&driver.state) != ONLINE) return -EBUSY;
+
 	BUG_ON(IS_ERR_OR_NULL(p));
 
 	if (p->dmac == NULL) client_dmac_alloc(p);
 
-	if (p->conf.tx_size != 0 && p->conf.rx_size != 0) client_dmac_alloc(p);
+	if (p->tx.size != 0 && p->rx.size != 0) client_dmac_alloc(p);
 
-	if (p->tx.zone) {
-		gen_pool_free(driver.mempool, p->tx.virt_addr, p->conf.tx_size);
-		atomic_long_sub(p->conf.tx_size, &p->tx.zone->used);
-	}
-	if (p->rx.zone) {
-		gen_pool_free(driver.mempool, p->rx.virt_addr, p->conf.rx_size);
-		atomic_long_sub(p->conf.rx_size, &p->rx.zone->used);
-	}
+	if (p->tx.vaddr) gen_pool_free(hw.mempool, (unsigned long)p->tx.vaddr, p->tx.size);
+	if (p->rx.vaddr) gen_pool_free(hw.mempool, (unsigned long)p->rx.vaddr, p->rx.size);
 
 	if (tx_size == 0 && rx_size == 0) {
 		atomic_dec(&p->dmac->load);
 		return 0;
 	}
 
-	// step 1: pick zone
-	p->tx.zone = p->rx.zone = &hw.zone[0];
-	for (int i = 1, max = hw.zone[0].limit - atomic_long_read(&hw.zone[0].used); i < hw.zone_count; ++i) {
-		int curr = hw.zone[i].limit - atomic_long_read(&hw.zone[i].used);
-		if (curr >= max) {	// keep equal for 2nd max
-			max = curr;
-			p->tx.zone = p->rx.zone;
-			p->rx.zone = &hw.zone[i];
+	int curr_avail = 0, max_avail = 0;
+	int order = hw.mempool->min_alloc_order;
+	struct gen_pool_chunk *bank, *small, *big;
+	int nbits_big, nbits_small;
+	if (tx_size > rx_size) {
+		big = p->tx.bank;
+		small = p->rx.bank;
+		nbits_big = (tx_size + (1ul << order) - 1) >> order;
+		nbits_small = (rx_size + (1ul << order) - 1) >> order;
+		pr_info("tx is bigger, nbits tx: %d, rx: %d\n", nbits_big, nbits_small);
+	} else {
+		big = p->rx.bank;
+		small = p->tx.bank;
+		nbits_big = (rx_size + (1ul << order) - 1) >> order;
+		nbits_small = (tx_size + (1ul << order) - 1) >> order;	
+		pr_info("rx is bigger, nbits tx: %d, rx: %d\n", nbits_small, nbits_big);
+	}
+	int start_bit, end_bit, remain;
+	rcu_read_lock();
+	list_for_each_entry_rcu(bank, &hw.mempool->chunks, next_chunk) {
+		curr_avail = atomic_read(&bank->avail);
+		if (curr_avail >= max_avail) {
+			end_bit = chunk_size(bank) >> order;
+			start_bit = hw.mempool->algo(bank->bits, end_bit, 0, nbits_big, hw.mempool->data, hw.mempool);
+			if (start_bit < end_bit) {
+				max_avail = curr_avail;
+				small = big;
+				big = bank;
+			} else {
+				start_bit = hw.mempool->algo(bank->bits, end_bit, 0, nbits_small, hw.mempool->data, hw.mempool);
+				if (start_bit < end_bit) {
+					small = bank;
+				}
+			}
 		}
 	}
 	
+	end_bit = chunk_size(big) >> order;
+	int start_bit_big = hw.mempool->algo(big->bits, end_bit, 0, nbits_big, hw.mempool->data, hw.mempool);
+	spin_lock(&driver.mem_lock);
+	remain = bitmap_set_ll(big->bits, start_bit_big, nbits_big);
+	spin_unlock(&driver.mem_lock);
+	if (remain) {
+		bitmap_clear_ll(big->bits, start_bit_big, nbits_big);
+		pr_err("internal error: failed to allocate from memory pool!\n");
+		return -ENOMEM;
+	}
+	
+	end_bit = chunk_size(small) >> order;
+	int start_bit_small = hw.mempool->algo(small->bits, end_bit, 0, nbits_small, hw.mempool->data, hw.mempool);
+	spin_lock(&driver.mem_lock);
+	remain = bitmap_set_ll(small->bits, start_bit_small, nbits_small);
+	spin_unlock(&driver.mem_lock);
+	if (remain) {
+		bitmap_clear_ll(small->bits, start_bit_small, nbits_small);
+		pr_err("internal error: failed to allocate from memory pool!\n");
+		return -ENOMEM; // FIXME we are in a corrupt state
+	}
+	
+	if (tx_size > rx_size) {
+		p->tx.vaddr = (void *)(big->start_addr + ((unsigned long)start_bit_big << order));
+		p->rx.vaddr = (void *)(small->start_addr + ((unsigned long)start_bit_small << order));
+	} else {
+		p->rx.vaddr = (void *)(big->start_addr + ((unsigned long)start_bit_big << order));
+		p->tx.vaddr = (void *)(small->start_addr + ((unsigned long)start_bit_small << order));
+	}
+	atomic_sub(nbits_big << order, &big->avail);
+	atomic_sub(nbits_small << order, &small->avail);
+	rcu_read_unlock();
+	p->tx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->tx.vaddr);
+	p->rx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->rx.vaddr);
+
+	pr_info("big buf=%lx, small=%lx\n", big->start_addr, small->start_addr);
+	pr_info("TX=%p, RX=%p\n", p->tx.vaddr, p->rx.vaddr);
+
 	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_size/Ki, rx_size/Ki);
 	
-	p->tx.virt_addr = (unsigned long)gen_pool_dma_alloc(driver.mempool, tx_size, &p->tx.dma_addr);
-	if (!p->tx.virt_addr) {
-		// TODO implement memory defragmentation
+//	p->tx.vaddr = gen_pool_dma_alloc(hw.mempool, tx_size, &p->tx.handle);
+	if (!p->tx.vaddr) {
 		pr_warn("unable to allocate %zuKi of DMA memory for client TX buffer\n", tx_size/Ki);
 		return -ENOMEM;
 	}
-	p->rx.virt_addr = (unsigned long)gen_pool_dma_alloc(driver.mempool, rx_size, &p->rx.dma_addr);
-	if (!p->rx.virt_addr) {
+//	p->rx.vaddr = gen_pool_dma_alloc(hw.mempool, rx_size, &p->rx.handle);
+	if (!p->rx.vaddr) {
 		pr_warn("unable to allocate %zuKi of DMA memory for client RX buffer\n", rx_size/Ki);
-		gen_pool_free(driver.mempool, p->tx.virt_addr, tx_size);
+		gen_pool_free(hw.mempool, (unsigned long)p->tx.vaddr, tx_size);
 		return -ENOMEM;
 	}
 	
-	p->tx.phys_addr = dma_to_phys(&p->tx.zone->dev, p->tx.dma_addr);
-	p->rx.phys_addr = dma_to_phys(&p->rx.zone->dev, p->rx.dma_addr);
-
-	atomic_long_add(tx_size, &p->tx.zone->used);
-	atomic_long_add(rx_size, &p->rx.zone->used);
-	
 	// if no error...
-	p->conf.tx_size = tx_size;
-	p->conf.rx_size = rx_size;
+	p->tx.size = tx_size;
+	p->rx.size = rx_size;
 
 	return 0;
 }
 
 static int dma_controller_add(struct device_node *np)
 {
+	if (atomic_read(&driver.state) == ONLINE) return -EBUSY; // will never happen
+
 	void *q = devm_kcalloc(driver.devp, hw.dmac_count+1, sizeof(*hw.dmac), GFP_KERNEL);
 	if (q == NULL) {
 		pr_err("unable to allocate %zu bytes for DMA-C description structures!\n", 
@@ -202,8 +374,9 @@ static int dma_controller_add(struct device_node *np)
 	return 0;
 }
 
-static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit, size_t size)
+static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 {
+	if (atomic_read(&driver.state) != INITIALIZING) return -EBUSY;	// this will never happen
 	// reserve new memory
 	void *q = devm_kcalloc(driver.devp, hw.zone_count+1, sizeof(*hw.zone), GFP_KERNEL);
 	if (q == NULL) {
@@ -221,10 +394,6 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit,
 	// Attention: Should dma_zone_add() is ever implemented to be called anywhere except for initialization,
 	// proper locking is needed for whole structure, not just zone->used.
 	zone->id = hw.zone_count-1;
-	zone->phys_addr = paddr;
-	atomic_long_set(&zone->used, 0l);
-	zone->limit = limit;
-	zone->size = size;
 
 	// create pseudo device structure
 	device_initialize(&zone->dev);
@@ -246,16 +415,30 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit,
 	}
 
 	// dmam_alloc_attrs() is implemented in 4.13, port when possible -- FIXME look for release
-	zone->virt_addr = (unsigned long)dma_alloc_attrs(&zone->dev, limit, &zone->dma_addr, 
-		GFP_KERNEL, DMA_ATTR_NO_KERNEL_MAPPING);
-	if (!zone->virt_addr) {
-		pr_err("error: cannot claim reserved memory of size %zuKiB\n", limit/Ki);
+	dma_addr_t handle;
+	void *vaddr = dma_alloc_attrs(&zone->dev, size, &handle, 
+		GFP_KERNEL, DMA_ATTR_NO_KERNEL_MAPPING /*TODO check if this is wise in genpool */);
+	if (!vaddr) {
+		pr_err("error: cannot claim reserved memory of size %zuKiB\n", size/Ki);
 		return -ENOMEM;
+	}
+	if (handle != phys_to_dma(&zone->dev, paddr)) {
+		pr_crit("\n"
+			"***              ARCHITECTURE INCOMPATIBILITY              ***\n"
+			"*** The DMA addresses are different from physical address! ***\n"
+			"*** In Xilinx Zynq UltraScale+ (Cortex-A53, ARM64) it may  ***\n"
+			"*** have been caused by an IOMMU remapping of DMA space.   ***\n"
+			"*** In Xilinx Zynq 7000 (Cortex-A9, ARM32) this should not ***\n"
+			"*** really be happening due to the lack of IOMMU hardware. ***\n"
+			"*** Current version of this driver is not tested for such  ***\n"
+			"*** a configuration. Use at your own risk!!!               ***\n");
 	}
 
 	// update memory pool
-	BUG_ON(IS_ERR_OR_NULL(driver.mempool));
-	gen_pool_add_virt(driver.mempool, zone->virt_addr, zone->phys_addr, zone->limit, -1);
+	BUG_ON(IS_ERR_OR_NULL(hw.mempool));
+	gen_pool_add_virt(hw.mempool, (unsigned long)vaddr, handle, size, -1);
+//	zone->chunk = find_chunk_by_virt(hw.mempool, (unsigned long)vaddr);
+//	pr_info("double check %p vs %lu\n", handle, zone->chunk->start_addr);
 
 	return 0;
 }
@@ -263,13 +446,15 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t limit,
 
 static int dma_issue(struct client *p)
 {
-	if ((p->tx.descp = dmaengine_prep_slave_single(p->dmac->txchanp, p->tx.dma_addr, p->conf.tx_size, 
+	if (atomic_read(&driver.state) != ONLINE) return -EAGAIN;
+
+	if ((p->tx.descp = dmaengine_prep_slave_single(p->dmac->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->tx.cookie = -EBUSY;
 	}
 	
-	if ((p->rx.descp = dmaengine_prep_slave_single(p->dmac->rxchanp, p->rx.dma_addr, p->conf.rx_size,
+	if ((p->rx.descp = dmaengine_prep_slave_single(p->dmac->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->rx.cookie = -EBUSY;
@@ -298,11 +483,9 @@ static int dma_issue(struct client *p)
 	enum dma_status status;
 	cycles_t t0, t1;
 
-//	pr_info("Issueing DMA request...\n");
 	dma_async_issue_pending(p->dmac->txchanp);
 	dma_async_issue_pending(p->dmac->rxchanp);
 
-	// wait for the transaction to complete, timeout, or get get an error
 	t0 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
 	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
@@ -322,7 +505,7 @@ static int dma_issue(struct client *p)
 	}
 
 	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, time (cycles): %lu\n", 
-		p->conf.tx_size/Ki, p->conf.rx_size/Ki, t1-t0);
+		p->tx.size/Ki, p->rx.size/Ki, t1-t0);
 	else pr_warn("this kernel does not support get_cycles()\n");
 	return 0;
 }
@@ -352,6 +535,7 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
+	if (atomic_read(&driver.state) != ONLINE) return -EAGAIN;
 	struct client *p = filep->private_data;
 	struct dma_config conf;
 
@@ -367,7 +551,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
-		p->conf.flags = conf.flags;
+		p->tx.size = conf.tx_size;
+		p->rx.size = conf.rx_size;
+		//p->conf.flags = conf.flags;
 		break;	
 	case ZDMA_IOCTL_ISSUE:
 		return dma_issue(p);
@@ -382,44 +568,44 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
+	if (atomic_read(&driver.state) != ONLINE) {
+		pr_info("system is not yet online.\n");
+		return -EAGAIN;
+	}
+
 	struct client *p = filep->private_data;
-	bool tx = vma->vm_flags & VM_WRITE;
-
-	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
-		phys = tx ? p->tx.phys_addr : p->rx.phys_addr,
-		vsize = vma->vm_end - vma->vm_start,
-		psize = tx ? p->conf.tx_size : p->conf.rx_size - off;
-
-	pr_info("zdma mmap: [%s] off=%zu, phys=%p, vsize=%zu, psize=%zu\n", 
-		tx ? "TX" : "RX", (size_t)off, (void *)phys, (size_t)vsize, (size_t)psize); // FIXME
-	BUG_ON(vsize != ALIGN(psize, PAGE_SIZE));
-
-	if (tx == (vma->vm_flags & VM_READ)) {
+	if ((vma->vm_flags & VM_READ) == (vma->vm_flags & VM_WRITE)) {
 		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
 		return -EINVAL;
 	}
 	
-	if (!(tx ? p->tx.dma_addr : p->rx.dma_addr)) {
-		pr_err("%s DMA buffer has not yet been allocated\n.", tx ? "TX" : "RX");
+	struct dma_channel *chan = (vma->vm_flags & VM_WRITE) ? &p->tx : &p->rx;
+	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
+		paddr = dma_to_phys(driver.devp, chan->handle),
+		vsize = vma->vm_end - vma->vm_start,
+		psize = chan->size - off;
+	
+	pr_info("zdma mmap: [%s] off=%zu, phys=%p, vsize=%zu, psize=%zu\n", 
+		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", (size_t)off, (void *)paddr, (size_t)vsize, (size_t)psize);
+	BUG_ON(vsize != ALIGN(psize, PAGE_SIZE));
+
+	if (!chan->handle) {
+		pr_err("Internal error: DMA buffer has not yet been allocated!\n.");
 		return -ENOMEM;
 	}
 
-	if ( tx && (dma_mmap_attrs(&p->tx.zone->dev, vma, (void *)p->tx.virt_addr, p->tx.dma_addr, 
-		vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0)) {
-			pr_err("failed to map user TX buffer!\n");
-			return -ENOSPC;//FIXME
+	if (dma_mmap_attrs(driver.devp, vma, p->tx.vaddr, p->tx.handle, vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0) {
+			pr_err("failed to map user buffer!\n");
+			return -ENOMEM;
 	}
-	if (!tx && (dma_mmap_attrs(&p->rx.zone->dev, vma, (void *)p->rx.virt_addr, p->rx.dma_addr, 
-		vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0)) {
-			pr_err("failed to map user RX buffer!\n");
-			return -ENOSPC;//FIXME
-	}
+
 	return 0;
 }
 
 
 static int zdma_remove(struct platform_device *pdev)
 {
+	atomic_set(&driver.state, SHUTTING_DOWN);
 	pr_info("zdma shutting down...\n");
 //	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
 	
@@ -437,6 +623,7 @@ static int zdma_remove(struct platform_device *pdev)
 	}
 	//FIXME clear pools also
 //		dma_free_attrs(&zone->dev, zone->limit, zone->virt_addr, zone->dma_addr, DMA_ATTR_NO_KERNEL_MAPPING);
+	atomic_set(&driver.state, OFFLINE);
 	return 0;
 }
 
@@ -444,6 +631,20 @@ static int zdma_remove(struct platform_device *pdev)
 static int zdma_probe(struct platform_device *pdev)
 {
 	int res;
+//	while (atomic_read(&driver.state) == SHUTTING_DOWN); //wait to finish shutdown
+
+	if (atomic_read(&driver.state) == ONLINE) {
+		pr_crit("\n"
+			"***   An unexpected attempt was made to initialize an already running system.  ***\n"
+			"***              This may have happened due to several reasons:                ***\n"
+			"***   1. Device-tree misconfiguration, i.e. multiple zdma instance entries.    ***\n"
+			"***   2. Device-tree corruption at run-time from userland actors.              ***\n"
+			"***   3. An improper or incomplete module removal and re-insertion after a     ***\n"
+			"***    kernel bug or hardware failure. This should not have happened.          ***\n"
+			"***   The request will be ignored but the system may be in an unstable state   ***\n");
+		return -EBUSY;
+	}
+
 	driver.devp = &pdev->dev;
 
 	// basic data structure initialization
@@ -451,7 +652,7 @@ static int zdma_probe(struct platform_device *pdev)
 	hw.dmac = NULL;
 	hw.zone_count = 0;
 	hw.zone = NULL;
-	driver.mempool = devm_gen_pool_create(driver.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
+	hw.mempool = devm_gen_pool_create(driver.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
 
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
@@ -463,8 +664,8 @@ static int zdma_probe(struct platform_device *pdev)
 	if (!hw.dmac_count) {
 		pr_err("devicetree: no DMA controllers were detected\n");
 		return -ENODEV;
-	} else pr_info("devicetree: found %d compatible DMA controllers\n", hw.dmac_count);
-
+	}
+	
 	// discover memory region info
 	np = NULL;
 	for_each_compatible_node(np, NULL, "tuc,zone") {
@@ -475,15 +676,18 @@ static int zdma_probe(struct platform_device *pdev)
 		}
 		u64 size;
 		phys_addr_t paddr = of_translate_address(tnp, of_get_address(tnp, 0, &size, NULL));
-		res = dma_zone_add(np, paddr, (size_t)size /* limit */, (size_t)size /* total */);
+		res = dma_zone_add(np, paddr, (size_t)size);
 		if (res) return res;
 	}
 	
 	if (!hw.zone_count) {
 		pr_err("devicetree: no suitable memory zones are defined!\n");
 		return -ENODEV;
-	} else pr_info("devicetree: found %d compatible memory zones\n", hw.zone_count);
+	}
+	
+	pr_info("devicetree: found %d DMA controller(s) and %d memory zone(s)\n", hw.dmac_count, hw.zone_count);
 
+	atomic_set(&driver.state, ONLINE);
 	return 0;
 }
 
@@ -516,7 +720,10 @@ static void __exit mod_exit(void)
 
 static int __init mod_init(void)
 {
+	atomic_set(&driver.state, INITIALIZING);
 	pr_info("module initializing...\n");
+
+	spin_lock_init(&driver.mem_lock);
 
 	// create character device
 	driver.fops.owner = THIS_MODULE;

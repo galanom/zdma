@@ -67,9 +67,10 @@ case $1 in
 	vim components/plnx_workspace/device-tree-generation/pl.dtsi
 	;;
 "test")
-	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -std=gnu11 -ggdb -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror -Wno-declaration-after-statement -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0   -c -o build/tst.o ../../src/libzdma.c
-	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -o build/tst build/tst.o
+	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -std=gnu11 -ggdb -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror -Wno-declaration-after-statement -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0   -c -o build/libzdma.o ../../src/libzdma.c
+	$CC  -march=armv7-a -marm -mfpu=neon  -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=$TMP/sysroots/plnx_arm -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -o build/libzdma build/libzdma.o
 	make ARCH=arm -C ../../src M=`pwd` O=/tmp/petalinux/work-shared/plnx_arm/kernel-build-artifacts
+	#make clean -C ../../src M=`pwd`
 	;;
 "gdb")
 	arm-linux-gnueabihf-gdb build/tst -iex "target remote 192.168.2.2:1234"

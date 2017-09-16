@@ -27,6 +27,11 @@
 #error "OpenFirmware is not configured in kernel\n"
 #endif
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Ioannis Galanommatis");
+MODULE_DESCRIPTION("DMA client to xilinx_dma");
+MODULE_VERSION("0.3");
+
 extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
 enum state {
@@ -78,102 +83,7 @@ struct client {
 	} tx, rx;
 };
 
-static inline size_t chunk_size(const struct gen_pool_chunk *chunk)
-{
-	return chunk->end_addr - chunk->start_addr + 1;
-}
-
-
-static int set_bits_ll(unsigned long *addr, unsigned long mask_to_set)
-{
-	unsigned long val, nval;
-
-	nval = *addr;
-	do {
-		val = nval;
-		if (val & mask_to_set)
-			return -EBUSY;
-		cpu_relax();
-	} while ((nval = cmpxchg(addr, val, val | mask_to_set)) != val);
-
-	return 0;
-}
-
-static int clear_bits_ll(unsigned long *addr, unsigned long mask_to_clear)
-{
-	unsigned long val, nval;
-
-	nval = *addr;
-	do {
-		val = nval;
-		if ((val & mask_to_clear) != mask_to_clear)
-			return -EBUSY;
-		cpu_relax();
-	} while ((nval = cmpxchg(addr, val, val & ~mask_to_clear)) != val);
-
-	return 0;
-}
-
-static int bitmap_set_ll(unsigned long *map, int start, int nr)
-{
-	unsigned long *p = map + BIT_WORD(start);
-	const int size = start + nr;
-	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
-	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
-
-	while (nr - bits_to_set >= 0) {
-		if (set_bits_ll(p, mask_to_set))
-			return nr;
-		nr -= bits_to_set;
-		bits_to_set = BITS_PER_LONG;
-		mask_to_set = ~0UL;
-		p++;
-	}
-	if (nr) {
-		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
-		if (set_bits_ll(p, mask_to_set))
-			return nr;
-	}
-
-	return 0;
-}
-
-/*
- * bitmap_clear_ll - clear the specified number of bits at the specified position
- * @map: pointer to a bitmap
- * @start: a bit position in @map
- * @nr: number of bits to set
- *
- * Clear @nr bits start from @start in @map lock-lessly. Several users
- * can set/clear the same bitmap simultaneously without lock. If two
- * users clear the same bit, one user will return remain bits,
- * otherwise return 0.
- */
-static int bitmap_clear_ll(unsigned long *map, int start, int nr)
-{
-	unsigned long *p = map + BIT_WORD(start);
-	const int size = start + nr;
-	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
-	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
-
-	while (nr - bits_to_clear >= 0) {
-		if (clear_bits_ll(p, mask_to_clear))
-			return nr;
-		nr -= bits_to_clear;
-		bits_to_clear = BITS_PER_LONG;
-		mask_to_clear = ~0UL;
-		p++;
-	}
-	if (nr) {
-		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
-		if (clear_bits_ll(p, mask_to_clear))
-			return nr;
-	}
-
-	return 0;
-}
-
-static struct gen_pool_chunk *addr_in_gen_pool_chunk(struct gen_pool *pool, unsigned long vaddr)
+/*static struct gen_pool_chunk *addr_in_gen_pool_chunk(struct gen_pool *pool, unsigned long vaddr)
 {
 	bool found = false;
 	struct gen_pool_chunk *chunk;
@@ -187,10 +97,8 @@ static struct gen_pool_chunk *addr_in_gen_pool_chunk(struct gen_pool *pool, unsi
 	rcu_read_unlock();
 	if (found) return chunk;
 	return NULL;
-}
+}*/
 
-
-//static int find_
 
 static void sync_callback(void *completion)
 {
@@ -244,7 +152,8 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 		return 0;
 	}
 
-	int curr_avail = 0, max_avail = 0;
+
+/*	int curr_avail = 0, max_avail = 0;
 	int order = hw.mempool->min_alloc_order;
 	struct gen_pool_chunk *bank, *small, *big;
 	int nbits_big, nbits_small;
@@ -313,20 +222,19 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 	atomic_sub(nbits_big << order, &big->avail);
 	atomic_sub(nbits_small << order, &small->avail);
 	rcu_read_unlock();
+
+	*/
 	p->tx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->tx.vaddr);
 	p->rx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->rx.vaddr);
 
-	pr_info("big buf=%lx, small=%lx\n", big->start_addr, small->start_addr);
-	pr_info("TX=%p, RX=%p\n", p->tx.vaddr, p->rx.vaddr);
-
 	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_size/Ki, rx_size/Ki);
 	
-//	p->tx.vaddr = gen_pool_dma_alloc(hw.mempool, tx_size, &p->tx.handle);
+	p->tx.vaddr = gen_pool_dma_alloc(hw.mempool, tx_size, &p->tx.handle);
 	if (!p->tx.vaddr) {
 		pr_warn("unable to allocate %zuKi of DMA memory for client TX buffer\n", tx_size/Ki);
 		return -ENOMEM;
 	}
-//	p->rx.vaddr = gen_pool_dma_alloc(hw.mempool, rx_size, &p->rx.handle);
+	p->rx.vaddr = gen_pool_dma_alloc(hw.mempool, rx_size, &p->rx.handle);
 	if (!p->rx.vaddr) {
 		pr_warn("unable to allocate %zuKi of DMA memory for client RX buffer\n", rx_size/Ki);
 		gen_pool_free(hw.mempool, (unsigned long)p->tx.vaddr, tx_size);
@@ -755,8 +663,3 @@ static int __init mod_init(void)
 
 module_init(mod_init);
 module_exit(mod_exit);
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Ioannis Galanommatis");
-MODULE_DESCRIPTION("DMA client to xilinx_dma");
-MODULE_VERSION("0.2");
-

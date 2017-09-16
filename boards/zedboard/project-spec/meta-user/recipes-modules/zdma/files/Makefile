@@ -1,4 +1,5 @@
 obj-m := zdma.o
+
 ccflags-y := -std=gnu99 -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror -Wno-declaration-after-statement -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0
 
 SRC := $(shell pwd)

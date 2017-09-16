@@ -73,10 +73,12 @@ case $1 in
 	#make clean -C ../../src M=`pwd`
 	;;
 "gdb")
-	arm-linux-gnueabihf-gdb build/tst -iex "target remote 192.168.2.2:1234"
+	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
 	;;
 "kgdb")
-	#/tmp/petalinux/deploy/images/plnx_arm/vmlinux
+	arm-linux-gnueabihf-gdb /tmp/petalinux/deploy/images/plnx_arm/vmlinux
+	;;
+"mgdb")
 	cp ../../src/zdma.c /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
 	arm-linux-gnueabihf-gdb /tmp/petalinux/sysroots/plnx_arm/lib/modules/4.9.0-xilinx/extra/zdma.ko
 	rm /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c

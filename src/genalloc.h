@@ -124,6 +124,9 @@ extern unsigned long gen_pool_alloc_algo(struct gen_pool *, size_t,
 		genpool_algo_t algo, void *data);
 extern void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size,
 		dma_addr_t *dma);
+extern int gen_pool_dma_alloc_pair(struct gen_pool *pool,
+	size_t tx_size, void **tx_vaddr, dma_addr_t *tx_handle,
+	size_t rx_size, void **rx_vaddr, dma_addr_t *rx_handle);
 extern void gen_pool_free(struct gen_pool *, unsigned long, size_t);
 extern void gen_pool_for_each_chunk(struct gen_pool *,
 	void (*)(struct gen_pool *, struct gen_pool_chunk *, void *), void *);
@@ -154,10 +157,16 @@ extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
 		unsigned long start, unsigned int nr, void *data,
 		struct gen_pool *pool);
 
-extern struct gen_pool_chunk *gen_pool_sequence_default(struct gen_pool *pool,
+extern void gen_pool_set_chunk_algo(struct gen_pool *pool, 
+		genpool_chunk_algo_t algo);
+
+extern struct gen_pool_chunk *gen_chunk_first_fit(struct gen_pool *pool,
 		struct gen_pool_chunk *last_chunk);
 
-extern struct gen_pool_chunk *gen_pool_sequence_max_avail(struct gen_pool *pool,
+extern struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool,
+		struct gen_pool_chunk *last_chunk);
+
+extern struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 		struct gen_pool_chunk *last_chunk);
 
 extern struct gen_pool *devm_gen_pool_create(struct device *dev,
@@ -166,6 +175,8 @@ extern struct gen_pool *gen_pool_get(struct device *dev, const char *name);
 
 bool addr_in_gen_pool(struct gen_pool *pool, unsigned long start,
 			size_t size);
+struct gen_pool_chunk *find_chunk_by_vaddr(struct gen_pool *pool, 
+	unsigned long vaddr);
 
 #ifdef CONFIG_OF
 extern struct gen_pool *of_gen_pool_get(struct device_node *np,

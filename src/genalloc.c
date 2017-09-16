@@ -159,7 +159,7 @@ struct gen_pool *gen_pool_create(int min_alloc_order, int nid)
 		INIT_LIST_HEAD(&pool->chunks);
 		pool->min_alloc_order = min_alloc_order;
 		pool->algo = gen_pool_first_fit;
-		pool->chunk_algo = gen_pool_sequence_default;
+		pool->chunk_algo = gen_chunk_first_fit;
 		pool->data = NULL;
 		pool->name = NULL;
 	}
@@ -328,7 +328,6 @@ unsigned long gen_pool_alloc_algo(struct gen_pool *pool, size_t size,
 	rcu_read_lock();
 	//list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
 	while ((chunk = pool->chunk_algo(pool, chunk))) {
-		pr_info("selected chunk paddr=%tx\n", chunk->phys_addr);
 		if (size > atomic_read(&chunk->avail))
 			continue;
 
@@ -346,7 +345,6 @@ retry:
 			BUG_ON(remain);
 			goto retry;
 		}
-		pr_info("success!\n");
 		addr = chunk->start_addr + ((unsigned long)start_bit << order);
 		size = nbits << order;
 		atomic_sub(size, &chunk->avail);
@@ -357,79 +355,6 @@ retry:
 }
 EXPORT_SYMBOL(gen_pool_alloc_algo);
 
-
-/**
- * gen_chunk_alloc - allocate memory from a specific chunk
- * @chunk: pool to allocate from
- * @size: number of bytes to allocate from the pool
- *
- * Allocate the requested number of bytes from the specified pool chunk.
- * Uses the pool allocation function (with first-fit algorithm by default).
- * Can not be used in NMI handler on architectures without
- * NMI-safe cmpxchg implementation.
- */
-/*unsigned long gen_chunk_alloc(struct gen_pool *pool, size_t size)
-{
-	return gen_chunk_alloc_algo(pool, size, pool->algo, pool->data);
-}
-EXPORT_SYMBOL(gen_chunk_alloc);
-
-*/
-/**
- * gen_chunk_alloc_algo - allocate special memory from a specific chunk
- * @chunk:	the chunk to allocate from
- * @size:	number of bytes to allocate from the pool
- * @algo:	algorithm passed from caller
- * @data:	data passed to algorithm
- *
- * Allocate the requested number of bytes from the specified chunk.
- * Uses the pool allocation function (with first-fit algorithm by default).
- * Can not be used in NMI handler on architectures without
- * NMI-safe cmpxchg implementation.
- */
-/*unsigned long gen_chunk_alloc_algo(struct gen_pool_chunk *chunk, size_t size,
-		genpool_algo_t algo, void *data)
-{
-	unsigned long addr = 0;
-	int order = pool->min_alloc_order;
-	int nbits, start_bit, end_bit, remain;
-
-#ifndef CONFIG_ARCH_HAVE_NMI_SAFE_CMPXCHG
-	BUG_ON(in_nmi());
-#endif
-
-	if (size == 0)
-		return 0;
-
-	nbits = (size + (1UL << order) - 1) >> order;
-
-	rcu_read_lock();
-	if (size > atomic_read(&chunk->avail))
-		return NULL;
-
-	start_bit = 0;
-	end_bit = chunk_size(chunk) >> order;
-next:
-	start_bit = algo(chunk->bits, end_bit, start_bit,
-			 nbits, data, pool);
-	if (start_bit >= end_bit)
-		return NULL;
-	remain = bitmap_set_ll(chunk->bits, start_bit, nbits);
-	if (remain) {
-		remain = bitmap_clear_ll(chunk->bits, start_bit,
-			 nbits - remain);
-		BUG_ON(remain);
-		goto next;
-	}
-
-	addr = chunk->start_addr + ((unsigned long)start_bit << order);
-	size = nbits << order;
-	atomic_sub(size, &chunk->avail);
-	rcu_read_unlock();
-	return addr;
-}
-EXPORT_SYMBOL(gen_chunk_alloc_algo);
-*/
 
 /**
  * gen_pool_dma_alloc - allocate special memory from the pool for DMA usage
@@ -460,36 +385,40 @@ void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size, dma_addr_t *dma)
 }
 EXPORT_SYMBOL(gen_pool_dma_alloc);
 
-
-/**
- * gen_chunk_dma_alloc - allocate special memory from specific pool chunk for DMA usage
- * @chunk:	chunk to allocate from
- * @size:	number of bytes to allocate from the pool
- * @dma:	dma-view physical address return value.  Use NULL if unneeded.
- *
- * Allocate the requested number of bytes from the specified pool chunk.
- * Uses the pool allocation function (with first-fit algorithm by default).
- * Can not be used in NMI handler on architectures without
- * NMI-safe cmpxchg implementation.
- */
-/*void *gen_chunk_dma_alloc(struct gen_pool_chunk *chunk, size_t size, dma_addr_t *dma)
+int gen_pool_dma_alloc_pair(struct gen_pool *pool,
+	size_t tx_size, void **tx_vaddr, dma_addr_t *tx_handle,
+	size_t rx_size, void **rx_vaddr, dma_addr_t *rx_handle)
 {
-	unsigned long vaddr;
+	struct gen_pool_chunk *chunk;
+	size_t avail;
+	
+	if (tx_size > rx_size) {
+		*tx_vaddr = gen_pool_dma_alloc(pool, tx_size, tx_handle);
+		chunk = find_chunk_by_vaddr(pool, *tx_vaddr);
+	} else {
+		*rx_vaddr = gen_pool_dma_alloc(pool, rx_size, rx_handle);
+		chunk = find_chunk_by_vaddr(pool, *rx_vaddr);
+	}
+	if (chunk == NULL) return -ENOMEM; /* either allocation must have failed */
 
-	if (!chunk)
-		return NULL;
+	spin_lock(&pool->lock);
+	avail = atomic_read(&chunk->avail);
+	atomic_set(&chunk->avail, 0);
+	
+	if (tx_size > rx_size) {
+		*rx_vaddr = gen_pool_dma_alloc(pool, rx_size, rx_handle);
+		if (*rx_vaddr == NULL) gen_pool_free(pool, (unsigned long)*tx_vaddr, tx_size);
+	} else {
+		*tx_vaddr = gen_pool_dma_alloc(pool, tx_size, tx_handle);
+		if (*tx_vaddr == NULL) gen_pool_free(pool, (unsigned long)*rx_vaddr, rx_size);
+	}
 
-	vaddr = gen_chunk_alloc(chunk, size);
-	if (!vaddr)
-		return NULL;
-
-	if (dma)
-		*dma = gen_chunk_virt_to_phys(chunk, vaddr);
-
-	return (void *)vaddr;
+	atomic_set(&chunk->avail, avail);
+	spin_unlock(&pool->lock);
+	if (!*tx_vaddr || !*rx_vaddr) return -ENOMEM;
+	return 0;
 }
-EXPORT_SYMBOL(gen_chunk_dma_alloc);
-*/
+EXPORT_SYMBOL(gen_pool_dma_alloc_pair);
 
 /**
  * gen_pool_free - free allocated special memory back to the pool
@@ -582,6 +511,31 @@ bool addr_in_gen_pool(struct gen_pool *pool, unsigned long start,
 }
 
 
+/**
+ * find_chunk_by_vaddr - finds the chunk where the address belongs
+ * @pool:	the generic memory pool
+ * @vaddr:	the virtual address to base the search
+ *
+ * Returns a pointer to the chunk which contains the specified
+ * virtual address or NULL if it is not found.
+ */
+struct gen_pool_chunk *find_chunk_by_vaddr(struct gen_pool *pool, 
+	unsigned long vaddr)
+{
+	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
+		if (vaddr >= chunk->start_addr && vaddr <= chunk->end_addr) {
+			chunk_sel = chunk;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	return chunk_sel;
+}
+
+
 /** FIXME FIXME FIXME
  * find_chunk_max_avail - find the chunk with maximum available space
  * @pool:	the memory pool
@@ -591,46 +545,82 @@ bool addr_in_gen_pool(struct gen_pool *pool, unsigned long start,
  * the given limit.
  */
 
-struct gen_pool_chunk *gen_pool_sequence_default(struct gen_pool *pool, struct gen_pool_chunk *last_chunk)
+struct gen_pool_chunk *gen_chunk_first_fit(struct gen_pool *pool, 
+	struct gen_pool_chunk *last_chunk)
 {
-	return last_chunk ? list_next_or_null_rcu(&pool->chunks, &last_chunk->next_chunk, struct gen_pool_chunk, next_chunk)
-			  : list_first_or_null_rcu(&pool->chunks, struct gen_pool_chunk, next_chunk);
+	if (last_chunk == NULL) return list_first_or_null_rcu(&pool->chunks,
+					struct gen_pool_chunk, next_chunk);
+
+	return list_next_or_null_rcu(&pool->chunks, &last_chunk->next_chunk, 
+		struct gen_pool_chunk, next_chunk);
 
 }
+EXPORT_SYMBOL_GPL(gen_chunk_first_fit);
 
-struct gen_pool_chunk *gen_pool_sequence_max_avail(struct gen_pool *pool, struct gen_pool_chunk *last_chunk)
+
+struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool, 
+	struct gen_pool_chunk *last_chunk)
 {
-	size_t	avail, avail_last, avail_max = 0;
+	size_t avail_curr, avail_last, avail_max = 0;
 	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
 	bool found_last = false;
 	
 	avail_last = last_chunk ? atomic_read(&last_chunk->avail) : -1u;
 	
-	//rcu_read_lock();
 	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
-//		pr_info("attempting chunk at addr %tx\n", chunk->phys_addr);
 		if (chunk == last_chunk) {
 			found_last = true;
 			continue;
 		}
 
-		avail = atomic_read(&chunk->avail);
-		if (avail > avail_last) 
+		avail_curr = atomic_read(&chunk->avail);
+		if (avail_curr > avail_last) 
 			continue;
-		if (avail == avail_last && found_last) {
+		if (avail_curr == avail_last && found_last) {
 			chunk_sel = chunk; // first chunk that has equal available
 			break;		   // space with last_chunk
 		}
-		if (avail > avail_max) {
-//			pr_info("found biggr: old %zu, new %zu\n", avail_max, avail);
-			avail_max = avail;
+		if (avail_curr > avail_max) {
+			avail_max = avail_curr;
 			chunk_sel = chunk;
 		}
 	}
-	//rcu_read_unclock();
 	return chunk_sel;
 }
+EXPORT_SYMBOL_GPL(gen_chunk_max_avail);
 
+
+struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool, 
+	struct gen_pool_chunk *last_chunk)
+{
+	size_t used_curr, used_last, used_min = -1u;
+	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
+	bool found_last = false;
+	
+	used_last = last_chunk ? 
+		chunk_size(last_chunk) - atomic_read(&last_chunk->avail) : 0;
+	
+	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
+		if (chunk == last_chunk) {
+			found_last = true;
+			continue;
+		}
+
+		used_curr = chunk_size(chunk) - atomic_read(&chunk->avail);
+		if (used_curr < used_last) 
+			continue;
+		if (used_curr == used_last && found_last) {
+			chunk_sel = chunk; // first chunk that has equal available
+			break;		   // space with last_chunk
+		}
+		if (used_curr < used_min) {
+			used_min = used_curr;
+			chunk_sel = chunk;
+		}
+	}
+	return chunk_sel;
+}
+EXPORT_SYMBOL_GPL(gen_chunk_least_used);
 
 /**
  * gen_pool_avail - get available free space of the pool
@@ -693,6 +683,27 @@ void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo, void *data)
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL(gen_pool_set_algo);
+
+/**
+ * gen_pool_set_chunk_algo - set the chunk selection algorithm
+ * @pool: pool to change the chunk selection algorithm
+ * @chunk_algo: custom algorithm function
+ *
+ * The allocator calls @chunk_algo iteratively to select the next chunk 
+ * to attempt to allocate from. If @chunk_algo is NULL, the default algorithm
+ * gen_chunk_first_fit is used.
+ */
+void gen_pool_set_chunk_algo(struct gen_pool *pool, genpool_chunk_algo_t chunk_algo)
+{
+	rcu_read_lock();
+
+	pool->chunk_algo = chunk_algo;
+	if (!pool->chunk_algo)
+		pool->chunk_algo = gen_chunk_first_fit;
+	
+	rcu_read_unlock();
+}
+EXPORT_SYMBOL(gen_pool_set_chunk_algo);
 
 /**
  * gen_pool_first_fit - find the first available region

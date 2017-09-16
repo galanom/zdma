@@ -83,22 +83,6 @@ struct client {
 	} tx, rx;
 };
 
-/*static struct gen_pool_chunk *addr_in_gen_pool_chunk(struct gen_pool *pool, unsigned long vaddr)
-{
-	bool found = false;
-	struct gen_pool_chunk *chunk;
-	rcu_read_lock();
-	list_for_each_entry_rcu(chunk, &(pool)->chunks, next_chunk) {
-		if (vaddr >= chunk->start_addr && vaddr <= chunk->end_addr) {
-			found = true;
-			break;
-		}
-	}
-	rcu_read_unlock();
-	if (found) return chunk;
-	return NULL;
-}*/
-
 
 static void sync_callback(void *completion)
 {
@@ -152,95 +136,15 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 		return 0;
 	}
 
-
-/*	int curr_avail = 0, max_avail = 0;
-	int order = hw.mempool->min_alloc_order;
-	struct gen_pool_chunk *bank, *small, *big;
-	int nbits_big, nbits_small;
-	if (tx_size > rx_size) {
-		big = p->tx.bank;
-		small = p->rx.bank;
-		nbits_big = (tx_size + (1ul << order) - 1) >> order;
-		nbits_small = (rx_size + (1ul << order) - 1) >> order;
-		pr_info("tx is bigger, nbits tx: %d, rx: %d\n", nbits_big, nbits_small);
-	} else {
-		big = p->rx.bank;
-		small = p->tx.bank;
-		nbits_big = (rx_size + (1ul << order) - 1) >> order;
-		nbits_small = (tx_size + (1ul << order) - 1) >> order;	
-		pr_info("rx is bigger, nbits tx: %d, rx: %d\n", nbits_small, nbits_big);
-	}
-	int start_bit, end_bit, remain;
-	rcu_read_lock();
-	list_for_each_entry_rcu(bank, &hw.mempool->chunks, next_chunk) {
-		curr_avail = atomic_read(&bank->avail);
-		if (curr_avail >= max_avail) {
-			end_bit = chunk_size(bank) >> order;
-			start_bit = hw.mempool->algo(bank->bits, end_bit, 0, nbits_big, hw.mempool->data, hw.mempool);
-			if (start_bit < end_bit) {
-				max_avail = curr_avail;
-				small = big;
-				big = bank;
-			} else {
-				start_bit = hw.mempool->algo(bank->bits, end_bit, 0, nbits_small, hw.mempool->data, hw.mempool);
-				if (start_bit < end_bit) {
-					small = bank;
-				}
-			}
-		}
-	}
-	
-	end_bit = chunk_size(big) >> order;
-	int start_bit_big = hw.mempool->algo(big->bits, end_bit, 0, nbits_big, hw.mempool->data, hw.mempool);
-	spin_lock(&driver.mem_lock);
-	remain = bitmap_set_ll(big->bits, start_bit_big, nbits_big);
-	spin_unlock(&driver.mem_lock);
-	if (remain) {
-		bitmap_clear_ll(big->bits, start_bit_big, nbits_big);
-		pr_err("internal error: failed to allocate from memory pool!\n");
-		return -ENOMEM;
-	}
-	
-	end_bit = chunk_size(small) >> order;
-	int start_bit_small = hw.mempool->algo(small->bits, end_bit, 0, nbits_small, hw.mempool->data, hw.mempool);
-	spin_lock(&driver.mem_lock);
-	remain = bitmap_set_ll(small->bits, start_bit_small, nbits_small);
-	spin_unlock(&driver.mem_lock);
-	if (remain) {
-		bitmap_clear_ll(small->bits, start_bit_small, nbits_small);
-		pr_err("internal error: failed to allocate from memory pool!\n");
-		return -ENOMEM; // FIXME we are in a corrupt state
-	}
-	
-	if (tx_size > rx_size) {
-		p->tx.vaddr = (void *)(big->start_addr + ((unsigned long)start_bit_big << order));
-		p->rx.vaddr = (void *)(small->start_addr + ((unsigned long)start_bit_small << order));
-	} else {
-		p->rx.vaddr = (void *)(big->start_addr + ((unsigned long)start_bit_big << order));
-		p->tx.vaddr = (void *)(small->start_addr + ((unsigned long)start_bit_small << order));
-	}
-	atomic_sub(nbits_big << order, &big->avail);
-	atomic_sub(nbits_small << order, &small->avail);
-	rcu_read_unlock();
-
-	*/
-	p->tx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->tx.vaddr);
-	p->rx.handle = gen_pool_virt_to_phys(hw.mempool, (unsigned long)p->rx.vaddr);
-
 	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_size/Ki, rx_size/Ki);
-	
-	p->tx.vaddr = gen_pool_dma_alloc(hw.mempool, tx_size, &p->tx.handle);
-	if (!p->tx.vaddr) {
-		pr_warn("unable to allocate %zuKi of DMA memory for client TX buffer\n", tx_size/Ki);
+
+	if (gen_pool_dma_alloc_pair(hw.mempool,
+			tx_size, &p->tx.vaddr, &p->tx.handle, rx_size, &p->rx.vaddr, &p->rx.handle)) {
+		pr_warn("unable to allocate memory for DMA buffers (TX: %zuKiB, RX: %zuKiB)\n", 
+			tx_size/Ki, rx_size/Ki);
 		return -ENOMEM;
 	}
-	p->rx.vaddr = gen_pool_dma_alloc(hw.mempool, rx_size, &p->rx.handle);
-	if (!p->rx.vaddr) {
-		pr_warn("unable to allocate %zuKi of DMA memory for client RX buffer\n", rx_size/Ki);
-		gen_pool_free(hw.mempool, (unsigned long)p->tx.vaddr, tx_size);
-		return -ENOMEM;
-	}
-	
+
 	// if no error...
 	p->tx.size = tx_size;
 	p->rx.size = rx_size;
@@ -426,17 +330,16 @@ static int dev_open(struct inode *inodep, struct file *filep)
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
-	p->dmac = NULL;
-	pr_info("zdma open()\'ed for client %d\n", ++driver.clients);
+	++driver.clients;
 	return 0;
 }
 
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-	pr_info("zdma release()\'ed for client %d\n", driver.clients--);
 	client_mem_alloc(filep->private_data, 0, 0);
 	devm_kfree(driver.devp, filep->private_data);
+	--driver.clients;
 	return 0;
 }
 
@@ -477,35 +380,49 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
 	if (atomic_read(&driver.state) != ONLINE) {
-		pr_info("system is not yet online.\n");
+		pr_warn("system is not yet online.\n");
 		return -EAGAIN;
 	}
 
 	struct client *p = filep->private_data;
 	if ((vma->vm_flags & VM_READ) == (vma->vm_flags & VM_WRITE)) {
-		pr_err("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
+		pr_warn("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
 		return -EINVAL;
 	}
 	
 	struct dma_channel *chan = (vma->vm_flags & VM_WRITE) ? &p->tx : &p->rx;
-	phys_addr_t off = vma->vm_pgoff << PAGE_SHIFT,
+
+	phys_addr_t
+		off = vma->vm_pgoff << PAGE_SHIFT,
 		paddr = dma_to_phys(driver.devp, chan->handle),
 		vsize = vma->vm_end - vma->vm_start,
 		psize = chan->size - off;
 	
-	pr_info("zdma mmap: [%s] off=%zu, phys=%p, vsize=%zu, psize=%zu\n", 
-		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", (size_t)off, (void *)paddr, (size_t)vsize, (size_t)psize);
-	BUG_ON(vsize != ALIGN(psize, PAGE_SIZE));
+	if (chan->size == 0) {
+		pr_warn("attempt to map a zero length channel buffer\n");
+		return -EINVAL;
+	}
+
+	if (vsize != ALIGN(psize, PAGE_SIZE)) {
+		pr_crit("internal error: virtual and physical size calculations do not match!\n");
+		return -EINVAL;
+	}
 
 	if (!chan->handle) {
-		pr_err("Internal error: DMA buffer has not yet been allocated!\n.");
+		pr_warn("Internal error: DMA buffer has not yet been allocated!\n.");
 		return -ENOMEM;
 	}
 
 	if (dma_mmap_attrs(driver.devp, vma, p->tx.vaddr, p->tx.handle, vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0) {
-			pr_err("failed to map user buffer!\n");
-			return -ENOMEM;
+		pr_warn("failed to map user buffer!\n");
+		return -ENOMEM;
 	}
+
+	pr_info("%s: phys 0x%8p mapped at 0x%8p, size=%zuKiB\n", 
+		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", 
+		(void *)paddr,
+		(vma->vm_flags & VM_WRITE) ? p->tx.vaddr : p->rx.vaddr,
+		(size_t)psize/Ki);
 
 	return 0;
 }
@@ -561,6 +478,8 @@ static int zdma_probe(struct platform_device *pdev)
 	hw.zone_count = 0;
 	hw.zone = NULL;
 	hw.mempool = devm_gen_pool_create(driver.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
+	gen_pool_set_algo(hw.mempool, gen_pool_first_fit, NULL);
+	gen_pool_set_chunk_algo(hw.mempool, gen_chunk_least_used);
 
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;

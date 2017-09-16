@@ -53,11 +53,10 @@ int main(int argc, char **argv)
 	assert(fd0 >= 0 && fd1 >= 0);
 
 	struct dma_config xf0, xf1;
-	if (argc == 2) xf0.tx_size = atoi(argv[1]);
-	else xf0.tx_size = 1*Mi;
-	xf0.rx_size = xf0.tx_size;
-	xf1.tx_size = xf0.tx_size;
-	xf1.rx_size = xf0.rx_size;
+	xf0.tx_size = 512*Ki;
+	xf0.rx_size = 1024*Ki;
+	xf1.tx_size = 128*Ki;
+	xf1.rx_size = 128*Ki;
 
 	ioctl(fd0, ZDMA_IOCTL_CONFIG, &xf0);
 	ioctl(fd1, ZDMA_IOCTL_CONFIG, &xf1);

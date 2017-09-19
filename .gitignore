@@ -1,6 +1,9 @@
 ext/
-**/.log
-*.jou
-*.log
+**/*.log
+**/*.jou
+**/*.tmp
+**/*.lock
+**/*.old
+**/*.str
 .Xil
 

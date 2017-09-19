@@ -17,195 +17,9 @@ You can also run generated qemu images with a command like 'runqemu qemux86'
 INFO: Adding user layer: /home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user
 NOTE: Resolving any missing task queue dependencies
 NOTE: Executing SetScene Tasks
-NOTE: Running setscene task 676 of 790 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-apps/libzdma/libzdma.bb:do_package_write_rpm_setscene)
-NOTE: recipe libzdma-1.0-r0: task do_package_write_rpm_setscene: Started
-NOTE: recipe libzdma-1.0-r0: task do_package_write_rpm_setscene: Succeeded
-NOTE: Executing RunQueue Tasks
-NOTE: Running task 1575 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_fetch)
-NOTE: Running task 1769 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_install)
-NOTE: recipe zdma-1.0-r0: task do_fetch: Started
-NOTE: recipe zdma-1.0-r0: task do_fetch: Succeeded
-NOTE: Running task 1770 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_unpack)
-NOTE: Running task 1821 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_install)
-NOTE: recipe zdma-1.0-r0: task do_unpack: Started
-NOTE: recipe zdma-1.0-r0: task do_unpack: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_install: Started
-NOTE: Running task 2123 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_patch)
-NOTE: recipe python3-3.5.2-r1.0: task do_install: Started
-NOTE: Running task 2393 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_install)
-NOTE: Running task 2394 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_deploy)
-NOTE: recipe zdma-1.0-r0: task do_patch: Started
-NOTE: recipe zdma-1.0-r0: task do_patch: Succeeded
-NOTE: Running task 2396 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_make_scripts)
-NOTE: Running task 2397 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_configure)
-NOTE: Running task 2398 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_populate_lic)
-NOTE: recipe zdma-1.0-r0: task do_configure: Started
-NOTE: recipe zdma-1.0-r0: task do_make_scripts: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_deploy: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_install: Started
-NOTE: recipe zdma-1.0-r0: task do_populate_lic: Started
-NOTE: recipe zdma-1.0-r0: task do_configure: Succeeded
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_install: Succeeded
-NOTE: Running task 2399 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_package)
-NOTE: Running task 2400 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_populate_sysroot)
-NOTE: recipe zdma-1.0-r0: task do_populate_lic: Succeeded
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_deploy: Succeeded
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_populate_sysroot: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_populate_sysroot: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_make_scripts: Succeeded
-NOTE: Running task 2401 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_compile)
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package: Succeeded
-NOTE: Running task 2402 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_packagedata)
-NOTE: recipe zdma-1.0-r0: task do_compile: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_packagedata: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_packagedata: Succeeded
-NOTE: Running task 2403 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_package_write_rpm)
-NOTE: Running task 2404 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_package_qa)
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package_write_rpm: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package_qa: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package_qa: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_compile: Succeeded
-NOTE: Running task 2405 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_install)
-NOTE: recipe zdma-1.0-r0: task do_install: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_package_write_rpm: Succeeded
-NOTE: Running noexec task 2406 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_build)
-NOTE: Running task 2407 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/fsbl/fsbl_git.bb:do_rm_work)
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_rm_work: Started
-NOTE: recipe fsbl-2017.2+gitAUTOINC+122565ec40-r0: task do_rm_work: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_install: Succeeded
-NOTE: Running task 2408 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_package)
-NOTE: Running task 2409 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_populate_sysroot)
-NOTE: recipe zdma-1.0-r0: task do_populate_sysroot: Started
-NOTE: recipe zdma-1.0-r0: task do_package: Started
-NOTE: recipe zdma-1.0-r0: task do_populate_sysroot: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_package: Succeeded
-NOTE: Running task 2410 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_packagedata)
-NOTE: recipe zdma-1.0-r0: task do_packagedata: Started
-NOTE: recipe zdma-1.0-r0: task do_packagedata: Succeeded
-NOTE: Running task 2411 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_package_write_rpm)
-NOTE: Running task 2412 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_package_qa)
-NOTE: recipe zdma-1.0-r0: task do_package_write_rpm: Started
-NOTE: recipe zdma-1.0-r0: task do_package_qa: Started
-NOTE: recipe zdma-1.0-r0: task do_package_qa: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_package_write_rpm: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_install: Succeeded
-NOTE: Running task 2413 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_package)
-NOTE: Running task 2414 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_populate_sysroot)
-NOTE: recipe python3-3.5.2-r1.0: task do_populate_sysroot: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_package: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_populate_sysroot: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_install: Succeeded
-NOTE: Running task 2415 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_package)
-NOTE: Running task 2416 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_populate_sysroot)
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_populate_sysroot: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_populate_sysroot: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package: Succeeded
-NOTE: Running task 2417 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_packagedata)
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_packagedata: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_packagedata: Succeeded
-NOTE: Running task 2418 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_package_write_rpm)
-NOTE: Running task 2419 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_package_qa)
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_write_rpm: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_qa: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_qa: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_package: Succeeded
-NOTE: Running task 2420 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_packagedata)
-NOTE: recipe python3-3.5.2-r1.0: task do_packagedata: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_packagedata: Succeeded
-NOTE: Running task 2421 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-kernel/lttng/lttng-ust_git.bb:do_package_write_rpm)
-NOTE: Running task 2422 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-kernel/lttng/lttng-ust_git.bb:do_package_qa)
-NOTE: Running task 2423 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_package_write_rpm)
-NOTE: Running task 2424 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_package_qa)
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_write_rpm: Started
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_qa: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_package_write_rpm: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_package_qa: Started
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_qa: Succeeded
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_write_rpm: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_package_qa: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_write_rpm: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_package_write_rpm: Succeeded
-NOTE: Running noexec task 2425 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-kernel/lttng/lttng-ust_git.bb:do_build)
-NOTE: Running task 2426 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-kernel/lttng/lttng-ust_git.bb:do_rm_work)
-NOTE: Running noexec task 2427 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_build)
-NOTE: Running task 2428 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_rm_work)
-NOTE: Running noexec task 2429 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_build)
-NOTE: Running task 2430 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_rm_work)
-NOTE: Running task 2431 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rootfs)
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_rm_work: Started
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_rm_work: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_rm_work: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_rm_work: Started
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_rm_work: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_rm_work: Succeeded
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rootfs: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rootfs: Succeeded
-NOTE: Running task 2432 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image)
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image: Succeeded
-NOTE: Running task 2433 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_tar)
-NOTE: Running task 2434 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_cpio)
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_tar: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_cpio: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_tar: Succeeded
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_cpio: Succeeded
-NOTE: Running task 2435 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_complete)
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_complete: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_complete: Succeeded
-NOTE: Running task 2436 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-kernel/linux/linux-xlnx_4.9.bb:do_bundle_initramfs)
-NOTE: Running task 2437 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_qa)
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_bundle_initramfs: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_qa: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_qa: Succeeded
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_bundle_initramfs: Succeeded
-NOTE: Running task 2438 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-kernel/linux/linux-xlnx_4.9.bb:do_deploy)
-NOTE: Running noexec task 2439 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_bundle_initramfs)
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_deploy: Started
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_deploy: Succeeded
-NOTE: Running noexec task 2440 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-kernel/linux/linux-xlnx_4.9.bb:do_build)
-NOTE: Running task 2441 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-kernel/linux/linux-xlnx_4.9.bb:do_rm_work)
-NOTE: Running noexec task 2442 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_build)
-NOTE: Running task 2443 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_rm_work)
-NOTE: Running noexec task 2444 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-networking/recipes-support/bridge-utils/bridge-utils_1.5.bb:do_build)
-NOTE: Running task 2445 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-networking/recipes-support/bridge-utils/bridge-utils_1.5.bb:do_rm_work)
-NOTE: Running noexec task 2446 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/device-tree/device-tree-generation_git.bb:do_build)
-NOTE: Running task 2447 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/device-tree/device-tree-generation_git.bb:do_rm_work)
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_rm_work: Started
-NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_rm_work: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_rm_work: Started
-NOTE: recipe zdma-1.0-r0: task do_rm_work: Succeeded
-NOTE: Running noexec task 2448 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-bsp/u-boot/u-boot-xlnx_2017.01.bb:do_build)
-NOTE: Running noexec task 2449 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_build)
-NOTE: Running task 2450 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rm_work)
-NOTE: recipe bridge-utils-1.5-r0: task do_rm_work: Started
-NOTE: Running task 2451 of 2452 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-bsp/u-boot/u-boot-xlnx_2017.01.bb:do_rm_work)
-NOTE: recipe bridge-utils-1.5-r0: task do_rm_work: Succeeded
-NOTE: recipe device-tree-generation-xilinx+gitAUTOINC+43551819a1-r0: task do_rm_work: Started
-NOTE: recipe device-tree-generation-xilinx+gitAUTOINC+43551819a1-r0: task do_rm_work: Succeeded
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work: Started
-NOTE: recipe u-boot-xlnx-v2017.01-xilinx-v2017.2+git999-r0: task do_rm_work: Started
-NOTE: recipe u-boot-xlnx-v2017.01-xilinx-v2017.2+git999-r0: task do_rm_work: Succeeded
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work: Succeeded
-NOTE: Running task 2452 of 2452 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rm_work_all)
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work_all: Started
-NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work_all: Succeeded
-NOTE: Tasks Summary: Attempted 2452 tasks of which 2388 didn't need to be rerun and all succeeded.
-NOTE: Resolving any missing task queue dependencies
-NOTE: Executing SetScene Tasks
-NOTE: Running setscene task 689 of 790 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-linaro-toolchain/recipes-devtools/gdb/gdb_linaro-7.8.bb:do_package_write_rpm_setscene)
-NOTE: Running setscene task 723 of 790 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-kernel/lttng/lttng-ust_git.bb:do_package_write_rpm_setscene)
-NOTE: Running setscene task 733 of 790 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_package_write_rpm_setscene)
-NOTE: Running setscene task 764 of 790 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/core/meta/recipes-devtools/python/python3_3.5.2.bb:do_package_write_rpm_setscene)
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_write_rpm_setscene: Started
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_write_rpm_setscene: Started
+NOTE: Running setscene task 693 of 790 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-user/recipes-modules/zdma/zdma.bb:do_package_write_rpm_setscene)
 NOTE: recipe zdma-1.0-r0: task do_package_write_rpm_setscene: Started
 NOTE: recipe zdma-1.0-r0: task do_package_write_rpm_setscene: Succeeded
-NOTE: recipe lttng-ust-2_2.8.1+gitAUTOINC+514a87f3b6-r0: task do_package_write_rpm_setscene: Succeeded
-NOTE: recipe gdb-linaro-7.8-r2014.09: task do_package_write_rpm_setscene: Succeeded
-NOTE: recipe python3-3.5.2-r1.0: task do_package_write_rpm_setscene: Started
-NOTE: recipe python3-3.5.2-r1.0: task do_package_write_rpm_setscene: Succeeded
 NOTE: Executing RunQueue Tasks
 NOTE: Running task 2093 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rootfs)
 NOTE: recipe petalinux-user-image-1.0-r0: task do_rootfs: Started
@@ -217,9 +31,9 @@ NOTE: Running task 2433 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/p
 NOTE: Running task 2434 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_tar)
 NOTE: recipe petalinux-user-image-1.0-r0: task do_image_cpio: Started
 NOTE: recipe petalinux-user-image-1.0-r0: task do_image_tar: Started
+NOTE: recipe petalinux-user-image-1.0-r0: task do_image_tar: Succeeded
 NOTE: recipe petalinux-user-image-1.0-r0: task do_image_cpio: Succeeded
 NOTE: Running task 2435 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_xilinx_fitimage)
-NOTE: recipe petalinux-user-image-1.0-r0: task do_image_tar: Succeeded
 NOTE: recipe petalinux-user-image-1.0-r0: task do_image_xilinx_fitimage: Started
 NOTE: recipe petalinux-user-image-1.0-r0: task do_image_xilinx_fitimage: Succeeded
 NOTE: Running task 2436 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_image_complete)
@@ -243,21 +57,21 @@ NOTE: Running noexec task 2445 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/
 NOTE: Running task 2446 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx-tools/recipes-bsp/device-tree/device-tree-generation_git.bb:do_rm_work)
 NOTE: Running noexec task 2447 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-networking/recipes-support/bridge-utils/bridge-utils_1.5.bb:do_build)
 NOTE: Running task 2448 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-networking/recipes-support/bridge-utils/bridge-utils_1.5.bb:do_rm_work)
+NOTE: Running noexec task 2449 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-bsp/u-boot/u-boot-xlnx_2017.01.bb:do_build)
+NOTE: recipe zdma-1.0-r0: task do_rm_work: Started
+NOTE: Running noexec task 2450 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_build)
 NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_rm_work: Started
 NOTE: recipe linux-xlnx-4.9-xilinx-v2017.2+git999-r0: task do_rm_work: Succeeded
-NOTE: recipe zdma-1.0-r0: task do_rm_work: Started
-NOTE: recipe zdma-1.0-r0: task do_rm_work: Succeeded
-NOTE: Running noexec task 2449 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-bsp/u-boot/u-boot-xlnx_2017.01.bb:do_build)
-NOTE: Running noexec task 2450 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_build)
-NOTE: Running task 2451 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rm_work)
 NOTE: recipe device-tree-generation-xilinx+gitAUTOINC+43551819a1-r0: task do_rm_work: Started
+NOTE: Running task 2451 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rm_work)
 NOTE: Running task 2452 of 2453 (/opt/Xilinx/PetaLinux/2017.2/components/yocto/source/arm/layers/meta-xilinx/recipes-bsp/u-boot/u-boot-xlnx_2017.01.bb:do_rm_work)
-NOTE: recipe device-tree-generation-xilinx+gitAUTOINC+43551819a1-r0: task do_rm_work: Succeeded
 NOTE: recipe bridge-utils-1.5-r0: task do_rm_work: Started
 NOTE: recipe bridge-utils-1.5-r0: task do_rm_work: Succeeded
-NOTE: recipe u-boot-xlnx-v2017.01-xilinx-v2017.2+git999-r0: task do_rm_work: Started
+NOTE: recipe device-tree-generation-xilinx+gitAUTOINC+43551819a1-r0: task do_rm_work: Succeeded
 NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work: Started
+NOTE: recipe u-boot-xlnx-v2017.01-xilinx-v2017.2+git999-r0: task do_rm_work: Started
 NOTE: recipe u-boot-xlnx-v2017.01-xilinx-v2017.2+git999-r0: task do_rm_work: Succeeded
+NOTE: recipe zdma-1.0-r0: task do_rm_work: Succeeded
 NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work: Succeeded
 NOTE: Running task 2453 of 2453 (/home/igalanommatis/work/zdma/boards/zedboard/project-spec/meta-plnx-generated/recipes-core/images/petalinux-user-image.bb:do_rm_work_all)
 NOTE: recipe petalinux-user-image-1.0-r0: task do_rm_work_all: Started

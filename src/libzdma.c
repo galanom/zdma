@@ -12,9 +12,19 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include "macro.h"
 #include "zdma_ioctl.h"
+
+#define DEV_FILE "/dev/zdma"
+
+struct zdma_task {
+	int fd;
+	void *tx_buf, *rx_buf;
+	struct dma_config conf;
+};
+
 
 
 int buffer_fill(void *p, int len)
@@ -24,6 +34,7 @@ int buffer_fill(void *p, int len)
 	}
 	return 0;
 }
+
 
 int buffer_compare(void *p, void *q, int len)
 {
@@ -40,51 +51,101 @@ int buffer_compare(void *p, void *q, int len)
 	}
 	if (errors) fprintf(stderr, "*** Buffer verification failed: %d bits were flippedd (%d%%) ***\n",
 			errors, 100*errors/(len*8));
-	else printf("Buffer verification successful\n");
+//	else printf("Buffer verification successful\n");
 	return errors;
 }
 
+int tdiff(struct timespec t1, struct timespec t0)
+{
+	return (t1.tv_sec - t0.tv_sec)*K + (t1.tv_nsec - t0.tv_nsec)/M;
+}
+
+int zdma_task_init(struct zdma_task *task)
+{
+	memset(task, 0, sizeof(*task));
+
+	task->fd = open(DEV_FILE, O_RDWR | O_SYNC);
+	int err = errno;
+	if (task->fd < 0) {
+		fprintf(stderr, "error %d (%s) opening device file %s\n", 
+			err, strerror(err), DEV_FILE);
+		return err;
+	}
+	return 0;
+}
+
+int zdma_task_configure(struct zdma_task *task, ipcore_t ipcore, int tx_size, int rx_size)
+{
+	int err;
+	task->conf.ipcore = ipcore;
+	task->conf.tx_size = tx_size;
+	task->conf.rx_size = rx_size;
+	if (ioctl(task->fd, ZDMA_IOCTL_CONFIG, &task->conf) < 0) {
+		err = errno;
+		fprintf(stderr, "ioctl error %d (%s) while configuring DMA task\n",
+			err, strerror(err));
+		return err;
+	}
+
+	task->tx_buf = mmap(0, task->conf.tx_size, PROT_WRITE, 
+			MAP_SHARED|MAP_LOCKED, task->fd, 0);
+	if (task->tx_buf == MAP_FAILED) {
+		err = errno;
+		fprintf(stderr, "mmap error %d (%s) while mapping the TX "
+				"buffer to userspace\n",
+				err, strerror(err));
+		return err;
+	}
+	
+	task->rx_buf = mmap(0, task->conf.rx_size, PROT_READ, 
+			MAP_SHARED|MAP_LOCKED, task->fd, 0);
+	if (task->rx_buf == MAP_FAILED) {
+		err = errno;
+		fprintf(stderr, "mmap error %d (%s) while mapping the RX "
+				"buffer to userspace\n",
+				err, strerror(err));
+		return err;
+	} // TODO unmap
+
+	buffer_fill(task->tx_buf, task->conf.tx_size);
+
+	return 0;
+}
+
+int zdma_task_enqueue(struct zdma_task *task)
+{
+	int err;
+	if (ioctl(task->fd, ZDMA_IOCTL_ENQUEUE, 0)) {
+		err = errno;
+		fprintf(stderr, "ioctl error %d (%s) while enqueueing DMA task\n",
+			err, strerror(err));
+		return err;
+	}
+	//buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
+	return 0;
+}
+
+void zdma_task_destroy(struct zdma_task *task)
+{
+	close(task->fd);
+	return;
+}
+
+#define SIZE (8*M)
+#define ITER 128
 
 int main(int argc, char **argv)
 {
-	int fd0, fd1;
-	fd0 = open("/dev/zdma", O_RDWR|O_SYNC);
-	fd1 = open("/dev/zdma", O_RDWR|O_SYNC);
-	assert(fd0 >= 0 && fd1 >= 0);
-
-	struct dma_config xf0, xf1;
-	xf0.tx_size = 512*Ki;
-	xf0.rx_size = 1024*Ki;
-	xf1.tx_size = 128*Ki;
-	xf1.rx_size = 128*Ki;
-
-	ioctl(fd0, ZDMA_IOCTL_CONFIG, &xf0);
-	ioctl(fd1, ZDMA_IOCTL_CONFIG, &xf1);
-	
-	void *tx0 = mmap(0, xf0.tx_size, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd0, 0);
-	assert(tx0 != MAP_FAILED);
-	
-	void *rx0 = mmap(0, xf0.rx_size, PROT_READ, MAP_SHARED|MAP_LOCKED, fd0, 0);
-	assert(rx0 != MAP_FAILED);
-
-	void *tx1 = mmap(0, xf1.tx_size, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd1, 0);
-	assert(tx1 != MAP_FAILED);
-	
-	void *rx1 = mmap(0, xf1.rx_size, PROT_READ, MAP_SHARED|MAP_LOCKED, fd1, 0);
-	assert(rx1 != MAP_FAILED);
-
-	buffer_fill(tx0, xf0.tx_size);
-	buffer_fill(tx1, xf1.tx_size);
-
-	ioctl(fd0, ZDMA_IOCTL_ISSUE, 0);
-	buffer_compare(tx0, rx0, xf0.tx_size);
-	
-	ioctl(fd1, ZDMA_IOCTL_ISSUE, 0);
-	buffer_compare(tx1, rx1, xf1.tx_size);
-	
-	close(fd0);
-	close(fd1);
-
+	struct timespec t0, t1;
+	struct zdma_task task;
+	zdma_task_init(&task);
+	zdma_task_configure(&task, LOOPBACK, SIZE, SIZE);
+	clock_gettime(CLOCK_MONOTONIC, &t0);
+	for (int i = 0; i < ITER; ++i) zdma_task_enqueue(&task);
+	clock_gettime(CLOCK_MONOTONIC, &t1);
+	zdma_task_destroy(&task);
+	int t = tdiff(t1, t0);
+	printf("Time: %d.%d, %.2fMB/s\n", t/1000, t%1000, ITER*SIZE/(t*1000.0));
 	return 0;
 }
 

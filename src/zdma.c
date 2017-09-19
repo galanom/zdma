@@ -258,6 +258,8 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 
 static int dma_issue(struct client *p)
 {
+//	cycles_t ta, tb;
+//	ta = get_cycles();
 	if (atomic_read(&driver.state) != ONLINE) return -EAGAIN;
 
 	if ((p->tx.descp = dmaengine_prep_slave_single(p->dmac->txchanp, p->tx.handle, p->tx.size, 
@@ -293,15 +295,15 @@ static int dma_issue(struct client *p)
 
 	unsigned long timeout = 3000;
 	enum dma_status status;
-	cycles_t t0, t1;
+//	cycles_t t0, t1;
 
 	dma_async_issue_pending(p->dmac->txchanp);
 	dma_async_issue_pending(p->dmac->rxchanp);
 
-	t0 = get_cycles();
+//	t0 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
 	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
-	t1 = get_cycles();
+//	t1 = get_cycles();
 
 	status = dma_async_is_tx_complete(p->dmac->txchanp, p->tx.cookie, NULL, NULL);
 
@@ -315,10 +317,11 @@ static int dma_issue(struct client *p)
 			status == DMA_ERROR ? "error" : "in progress");
 		return -EIO;
 	}
-
-	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, time (cycles): %lu\n", 
-		p->tx.size/Ki, p->rx.size/Ki, t1-t0);
+/*	tb = get_cycles();
+	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, xfer time: %lu, total: %lu\n", 
+		p->tx.size/Ki, p->rx.size/Ki, t1-t0, tb-ta);
 	else pr_warn("this kernel does not support get_cycles()\n");
+*/
 	return 0;
 }
 
@@ -366,7 +369,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		p->rx.size = conf.rx_size;
 		//p->conf.flags = conf.flags;
 		break;	
-	case ZDMA_IOCTL_ISSUE:
+	case ZDMA_IOCTL_ENQUEUE:
 		return dma_issue(p);
 		break;
 	default:

@@ -131,21 +131,35 @@ void zdma_task_destroy(struct zdma_task *task)
 	return;
 }
 
-#define SIZE (8*M)
-#define ITER 128
+#define SIZE (8ULL*M)
 
 int main(int argc, char **argv)
 {
+	int task_num = 0, iter_num = 0;
+	if (argc == 3) {
+		task_num = atoi(argv[1]);
+		iter_num = atoi(argv[2]);
+	}
+	if (!task_num) task_num = 4;
+	if (!iter_num) iter_num = 64;
+	printf("Executing for %d tasks x %d iterations...\n", task_num, iter_num);
+
 	struct timespec t0, t1;
-	struct zdma_task task;
-	zdma_task_init(&task);
-	zdma_task_configure(&task, LOOPBACK, SIZE, SIZE);
+	struct zdma_task task[task_num];
+	for (int j = 0; j < task_num; ++j) {
+		zdma_task_init(&task[j]);
+		zdma_task_configure(&task[j], LOOPBACK, SIZE, SIZE);
+	}
 	clock_gettime(CLOCK_MONOTONIC, &t0);
-	for (int i = 0; i < ITER; ++i) zdma_task_enqueue(&task);
+	for (int i = 0; i < iter_num; ++i)
+		for (int j = 0; j < task_num; ++j)
+			zdma_task_enqueue(&task[j]);
+
 	clock_gettime(CLOCK_MONOTONIC, &t1);
-	zdma_task_destroy(&task);
+	for (int j = 0; j < task_num; ++j)
+		zdma_task_destroy(&task[j]);
 	int t = tdiff(t1, t0);
-	printf("Time: %d.%d, %.2fMB/s\n", t/1000, t%1000, ITER*SIZE/(t*1000.0));
+	printf("Time: %d.%d, %.2fMB/s\n", t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
 	return 0;
 }
 

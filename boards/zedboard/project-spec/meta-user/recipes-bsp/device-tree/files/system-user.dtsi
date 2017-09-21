@@ -11,17 +11,17 @@
 			no-map;
 		};
 		bank1: bank1@1A000000 {
-			reg = <0x1A000000 0x01000000>;
+			reg = <0x1A000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};
 		bank2: bank2@1C000000 {
-			reg = <0x1C000000 0x00800000>;
+			reg = <0x1C000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};
 		bank3: bank3@1E000000 {
-			reg = <0x1E000000 0x00100000>;
+			reg = <0x1E000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};

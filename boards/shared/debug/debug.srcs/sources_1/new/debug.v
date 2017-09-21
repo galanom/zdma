@@ -6,7 +6,9 @@ module debug(
 	output [7:0] LED
 	);
 
-reg [22:0] counter [7:0] ;
+parameter blink_rate=22;
+
+reg [blink_rate:0] counter [7:0] ;
 reg state [7:0];
 parameter blink_off=1'b0, blink_on=1'b1;
 

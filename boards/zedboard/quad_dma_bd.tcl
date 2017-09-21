@@ -225,7 +225,10 @@ CONFIG.NUM_SI {8} \
  ] $axi_mem_intercon
 
   # Create instance: debug_0, and set properties
-  set debug_0 [ create_bd_cell -type ip -vlnv galanom.info:zdma:debug:1.3 debug_0 ]
+  set debug_0 [ create_bd_cell -type ip -vlnv galanom.info:zdma:debug:1.4 debug_0 ]
+  set_property -dict [ list \
+CONFIG.blink_rate {19} \
+ ] $debug_0
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]

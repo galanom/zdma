@@ -11,6 +11,7 @@ case $action in
 	[[ "$major" -eq "" ]] && { echo "Could not find $MODULE in /proc/devices"; exit -1; }
 	rm -f /dev/$MODULE
 	mknod /dev/$MODULE c $major 0
+	echo "hello world" > /home/root/loopback.bit
 	;;
 "gdb")
 	ip link set up dev eth0

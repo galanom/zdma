@@ -380,44 +380,54 @@ void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size, dma_addr_t *dma)
 
 	if (dma)
 		*dma = gen_pool_virt_to_phys(pool, vaddr);
-
+	
 	return (void *)vaddr;
 }
 EXPORT_SYMBOL(gen_pool_dma_alloc);
 
 int gen_pool_dma_alloc_pair(struct gen_pool *pool,
-	size_t tx_size, void **tx_vaddr, dma_addr_t *tx_handle,
-	size_t rx_size, void **rx_vaddr, dma_addr_t *rx_handle)
+	size_t size_tx, void **vaddr_tx, dma_addr_t *handle_tx,
+	size_t size_rx, void **vaddr_rx, dma_addr_t *handle_rx)
 {
 	struct gen_pool_chunk *chunk;
 	size_t avail;
 	
-	if (tx_size > rx_size) {
-		*tx_vaddr = gen_pool_dma_alloc(pool, tx_size, tx_handle);
-		chunk = find_chunk_by_vaddr(pool, *tx_vaddr);
+	if (size_tx > size_rx) {
+		*vaddr_tx = gen_pool_dma_alloc(pool, size_tx, handle_tx);
+		chunk = find_chunk_by_vaddr(pool, (unsigned long)*vaddr_tx);
 	} else {
-		*rx_vaddr = gen_pool_dma_alloc(pool, rx_size, rx_handle);
-		chunk = find_chunk_by_vaddr(pool, *rx_vaddr);
+		*vaddr_rx = gen_pool_dma_alloc(pool, size_rx, handle_rx);
+		chunk = find_chunk_by_vaddr(pool, (unsigned long)*vaddr_rx);
 	}
+	
 	if (chunk == NULL) return -ENOMEM; /* either allocation must have failed */
 
 	spin_lock(&pool->lock);
 	avail = atomic_read(&chunk->avail);
 	atomic_set(&chunk->avail, 0);
 	
-	if (tx_size > rx_size) {
-		*rx_vaddr = gen_pool_dma_alloc(pool, rx_size, rx_handle);
-		if (*rx_vaddr == NULL) gen_pool_free(pool, (unsigned long)*tx_vaddr, tx_size);
+	if (size_tx > size_rx) {
+		*vaddr_rx = gen_pool_dma_alloc(pool, size_rx, handle_rx);
+		atomic_set(&chunk->avail, avail);
+		if (*vaddr_rx == NULL) // try to allocate from tx chunk
+			*vaddr_rx = gen_pool_dma_alloc(pool, size_rx, handle_rx);
+		if (*vaddr_rx == NULL) // if it still fails, quit...
+			gen_pool_free(pool, (unsigned long)*vaddr_tx, size_tx);
 	} else {
-		*tx_vaddr = gen_pool_dma_alloc(pool, tx_size, tx_handle);
-		if (*tx_vaddr == NULL) gen_pool_free(pool, (unsigned long)*rx_vaddr, rx_size);
+		*vaddr_tx = gen_pool_dma_alloc(pool, size_tx, handle_tx);
+		atomic_set(&chunk->avail, avail);
+		if (*vaddr_tx == NULL) // as above
+			*vaddr_tx = gen_pool_dma_alloc(pool, size_tx, handle_tx);
+		if (*vaddr_tx == NULL) 
+			gen_pool_free(pool, (unsigned long)*vaddr_rx, size_rx);
 	}
 
-	atomic_set(&chunk->avail, avail);
 	spin_unlock(&pool->lock);
-	if (!*tx_vaddr || !*rx_vaddr) return -ENOMEM;
+
+	if (!*vaddr_tx || !*vaddr_rx) return -ENOMEM;
 	return 0;
 }
+
 EXPORT_SYMBOL(gen_pool_dma_alloc_pair);
 
 /**
@@ -548,6 +558,7 @@ struct gen_pool_chunk *find_chunk_by_vaddr(struct gen_pool *pool,
 struct gen_pool_chunk *gen_chunk_first_fit(struct gen_pool *pool, 
 	struct gen_pool_chunk *last_chunk)
 {
+	//FIXME apply non-circular ll fix
 	if (last_chunk == NULL) return list_first_or_null_rcu(&pool->chunks,
 					struct gen_pool_chunk, next_chunk);
 
@@ -584,6 +595,9 @@ struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool,
 			avail_max = avail_curr;
 			chunk_sel = chunk;
 		}
+		if (&chunk->next_chunk == pool->chunks.prev) {
+			break;
+		}
 	}
 	return chunk_sel;
 }
@@ -617,7 +631,11 @@ struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 			used_min = used_curr;
 			chunk_sel = chunk;
 		}
+		if (&chunk->next_chunk == pool->chunks.prev) {
+			break;
+		}
 	}
+
 	return chunk_sel;
 }
 EXPORT_SYMBOL_GPL(gen_chunk_least_used);

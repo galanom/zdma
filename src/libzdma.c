@@ -22,7 +22,7 @@
 struct zdma_task {
 	int fd;
 	void *tx_buf, *rx_buf;
-	struct dma_config conf;
+	struct client_config conf;
 };
 
 
@@ -60,6 +60,58 @@ int tdiff(struct timespec t1, struct timespec t0)
 	return (t1.tv_sec - t0.tv_sec)*K + (t1.tv_nsec - t0.tv_nsec)/M;
 }
 
+int zdma_core_register(char *name, char *fname)
+{
+	int fd, fddev, err;
+	struct stat st;
+	struct core_config core;
+	fddev = open(DEV_FILE, O_RDONLY);
+	err = errno;
+	if (fddev < 0) {
+		fprintf(stderr, "error %d (%s) opening device file\n",
+			err, strerror(err));
+		return err;
+	}
+	
+	fd = open(fname, O_RDONLY);
+	err = errno;
+	if (fd < 0) {
+		fprintf(stderr, "error %d (%s) opening bitstream file %s\n",
+			err, strerror(err), fname);
+		return err;
+	}
+	fstat(fd, &st);
+	core.size = st.st_size;
+	strncpy(core.name, name, CORE_NAME_LEN);
+	core.bitstream = malloc(core.size);
+	if (core.bitstream == NULL) {
+		fprintf(stderr, "error allocating %zu bytes of memory "
+			"for bitstream\n", core.size);
+		return -ENOMEM;
+	}
+	ssize_t nbytes = read(fd, core.bitstream, core.size);
+	if (nbytes == -1) {
+		err = errno;
+		fprintf(stderr, "error %d (%s) reading bitstream from file %s\n",
+			err, strerror(err), fname);
+		return err;
+	} else if (nbytes != core.size) {
+		fprintf(stderr, "bitstream reading was interrupted at %zd\n", nbytes);
+		return -EINTR;
+	}
+	err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
+	if (err) {
+		fprintf(stderr, "ioctl error %d (%s) registering user core\n",
+			err, strerror(err));
+		return err;
+	}
+	free(core.bitstream);
+	close(fddev);
+	close(fd);
+	printf("user core %s was registered successfully\n", core.name);
+	return 0;
+}
+
 int zdma_task_init(struct zdma_task *task)
 {
 	memset(task, 0, sizeof(*task));
@@ -74,13 +126,13 @@ int zdma_task_init(struct zdma_task *task)
 	return 0;
 }
 
-int zdma_task_configure(struct zdma_task *task, ipcore_t ipcore, int tx_size, int rx_size)
+int zdma_task_configure(struct zdma_task *task, char *core_name, int tx_size, int rx_size)
 {
 	int err;
-	task->conf.ipcore = ipcore;
+	strncpy(task->conf.core_name, core_name, CORE_NAME_LEN);
 	task->conf.tx_size = tx_size;
 	task->conf.rx_size = rx_size;
-	if (ioctl(task->fd, ZDMA_IOCTL_CONFIG, &task->conf) < 0) {
+	if (ioctl(task->fd, ZDMA_CLIENT_CONFIG, &task->conf) < 0) {
 		err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while configuring DMA task\n",
 			err, strerror(err));
@@ -115,13 +167,13 @@ int zdma_task_configure(struct zdma_task *task, ipcore_t ipcore, int tx_size, in
 int zdma_task_enqueue(struct zdma_task *task)
 {
 	int err;
-	if (ioctl(task->fd, ZDMA_IOCTL_ENQUEUE, 0)) {
+	if (ioctl(task->fd, ZDMA_CLIENT_ENQUEUE, 0)) {
 		err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while enqueueing DMA task\n",
 			err, strerror(err));
 		return err;
 	}
-	//buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
+	buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
 	return 0;
 }
 
@@ -135,20 +187,21 @@ void zdma_task_destroy(struct zdma_task *task)
 
 int main(int argc, char **argv)
 {
-	int task_num = 0, iter_num = 0;
+	int err, task_num = 0, iter_num = 0;
 	if (argc == 3) {
 		task_num = atoi(argv[1]);
 		iter_num = atoi(argv[2]);
 	}
-	if (!task_num) task_num = 4;
-	if (!iter_num) iter_num = 64;
-	printf("Executing for %d tasks x %d iterations...\n", task_num, iter_num);
+	if (!task_num) task_num = 1;
+	if (!iter_num) iter_num = 1;
+	err = zdma_core_register("loopback", "./loopback.bit");
+	if (err) return err;
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
 	for (int j = 0; j < task_num; ++j) {
 		zdma_task_init(&task[j]);
-		zdma_task_configure(&task[j], LOOPBACK, SIZE, SIZE);
+		zdma_task_configure(&task[j], "loopback", SIZE, SIZE);
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t0);
 	for (int i = 0; i < iter_num; ++i)
@@ -159,7 +212,8 @@ int main(int argc, char **argv)
 	for (int j = 0; j < task_num; ++j)
 		zdma_task_destroy(&task[j]);
 	int t = tdiff(t1, t0);
-	printf("Time: %d.%d, %.2fMB/s\n", t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
+	printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
+		task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
 	return 0;
 }
 

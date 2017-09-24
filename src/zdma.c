@@ -27,6 +27,8 @@
 #error "OpenFirmware is not configured in kernel\n"
 #endif
 
+#define DT_NAME_LEN 32
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
@@ -45,15 +47,24 @@ enum zdma_system_state {
 enum zdma_client_state {
 	CLIENT_OPENED = 0,
 	CLIENT_CONFIGURED,
+	CLIENT_MMAP_TX_DONE,
+	CLIENT_MMAP_RX_DONE,
 	CLIENT_READY,
+	CLIENT_INPROGRESS,
+	CLIENT_DONE,
 	CLIENT_CLOSING,
-	CLIENT_CONFIG_ERROR,
-	CLIENT_MMAP_ERROR,
+	CLIENT_ERROR_CONFIG,
+	CLIENT_ERROR_MMAP,
+	CLIENT_ERROR_MEMORY,
+};
+
+enum zdma_dmac_state {
+	DMAC_FREE = 0,
+	DMAC_BUSY,
 };
 
 enum zdma_core_state {
-	CORE_EMPTY = 0,
-	CORE_UNLOADED,
+	CORE_UNLOADED = 0,
 	CORE_LOADING,
 	CORE_LOADED,
 	CORE_UNLOADING,
@@ -67,15 +78,19 @@ static struct system {
 
 	struct zdma_dmac {
 		struct list_head node;
-		atomic_t load;
+		char name[DT_NAME_LEN];
+		struct zdma_core *core;
+		atomic_t state;
+		spinlock_t lock;
 		struct dma_chan *txchanp, *rxchanp;
 	} dmacs;
 
 	struct zdma_core {
 		struct list_head node;
-		char name[16];
-		int state;
-		struct zdma_dmac avail_dmacs;
+		char name[CORE_NAME_LEN];
+		void *bitstream;
+		size_t size;
+		struct workqueue_struct *workqueue;
 	} cores;
 
 	struct zdma_zone {
@@ -93,7 +108,7 @@ static struct system {
 
 struct client {
 	struct zdma_core *core;
-	struct zdma_dmac *dmac;
+	enum zdma_client_state state;
 	struct dma_channel {
 		struct gen_pool_chunk *bank;
 		dma_addr_t handle;
@@ -114,35 +129,32 @@ static void sync_callback(void *completion)
 	return;
 }
 
-static int client_dmac_alloc(struct client *p)
+
+static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 {
-	if (sys.state != SYS_UP) return -EBUSY;
-	BUG_ON(IS_ERR_OR_NULL(p));
-
-	if (p->dmac != NULL) {
-		// FIXME wait for pending transfers
-		// FIXME channel release?
-		atomic_dec(&p->dmac->load);
-	}
-
-	int curr, min = INT_MAX;
-	struct zdma_dmac *dmac;
-	rcu_read_lock();
-	list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
-		curr = atomic_read(&dmac->load);
-		if (curr < min) {
-			p->dmac = dmac;
-			min = curr;
+	struct zdma_dmac *dmac, *dmac_sel = NULL;
+	do {
+		rcu_read_lock();
+		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
+			if (dmac->core == core) {
+				int state = atomic_cmpxchg(&dmac->state, DMAC_FREE, DMAC_BUSY);
+				if (state == DMAC_FREE) {
+					dmac_sel = dmac;
+					break;
+				}
+			}
 		}
-	}
-	rcu_read_unlock();
+		rcu_read_unlock();
+		// FIXME put to sleep
+	} while (dmac_sel == NULL);
+	return dmac_sel;
+}
 
-	spin_lock(&sys.dmacs_lock);
-	atomic_inc(&p->dmac->load);			// increase usage counter of selected DMAC
-	spin_unlock(&sys.dmacs_lock);
-
-	pr_info("reserved DMAC %p with load %d\n", p->dmac, atomic_read(&p->dmac->load));
-	return 0;
+static void dmac_release(struct zdma_dmac *dmac)
+{
+	atomic_set(&dmac->state, DMAC_FREE);
+	//wake up ppl
+	return;
 }
 
 
@@ -152,24 +164,19 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 
 	BUG_ON(IS_ERR_OR_NULL(p));
 
-	if (p->dmac == NULL) client_dmac_alloc(p);
-
-	//if (p->tx.size != 0 && p->rx.size != 0) client_dmac_alloc(p);
-
 	if (p->tx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
 	if (p->rx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
 
-	if (tx_size == 0 && rx_size == 0) {
-		atomic_dec(&p->dmac->load);
-		return 0;
-	}
+	if (tx_size == 0 || rx_size == 0) return 0;	// TODO implement one way tranfers
 
 	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_size/Ki, rx_size/Ki);
 
 	if (gen_pool_dma_alloc_pair(sys.mem,
-			tx_size, &p->tx.vaddr, &p->tx.handle, rx_size, &p->rx.vaddr, &p->rx.handle)) {
+			tx_size, &p->tx.vaddr, &p->tx.handle, 
+			rx_size, &p->rx.vaddr, &p->rx.handle)) {
 		pr_warn("unable to allocate memory for DMA buffers (TX: %zuKiB, RX: %zuKiB)\n", 
 			tx_size/Ki, rx_size/Ki);
+		p->state = CLIENT_ERROR_MEMORY;
 		return -ENOMEM;
 	}
 
@@ -182,7 +189,7 @@ static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
 
 static int dma_controller_add(struct device_node *np)
 {
-	if (sys.state == SYS_UP) return -EBUSY; // will never happen
+	if (sys.state != SYS_INIT) return -EBUSY;
 
 	struct zdma_dmac *dmac = devm_kzalloc(sys.devp, sizeof(struct zdma_dmac), GFP_KERNEL);
 	if (unlikely(dmac == NULL)) {
@@ -190,7 +197,11 @@ static int dma_controller_add(struct device_node *np)
 			sizeof(*dmac));
 		return -ENOMEM;
 	}
-	
+	spin_lock_init(&dmac->lock);
+	atomic_set(&dmac->state, DMAC_FREE);
+	char *s = strrchr(of_node_full_name(np), '/') + 1;
+	strncpy(dmac->name, s, DT_NAME_LEN-1);
+
 	dmac->txchanp = of_dma_request_slave_channel(np, "tx");
 	if (IS_ERR_OR_NULL(dmac->txchanp)) {
 		pr_err("dmac %p: failed to reserve TX channel -- devicetree misconfiguration, "
@@ -214,7 +225,6 @@ static int dma_controller_add(struct device_node *np)
 static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 {
 	if (sys.state != SYS_INIT) return -EBUSY;	// this will never happen
-
 	struct zdma_zone *zone = devm_kzalloc(sys.devp, sizeof(struct zdma_zone), GFP_KERNEL);
 	if (unlikely(zone == NULL)) {
 		pr_err("unable to allocate %zu bytes for zone description\n",
@@ -241,24 +251,23 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 		return -ENOMEM;
 	}
 
-	// dmam_alloc_attrs() is implemented in 4.13, port when possible -- FIXME look for release
 	dma_addr_t handle;
-	void *vaddr = dma_alloc_attrs(&zone->dev, size, &handle, 
-		GFP_KERNEL, DMA_ATTR_NO_KERNEL_MAPPING /*TODO check if this is wise in genpool */);
+	void *vaddr = dmam_alloc_coherent(&zone->dev, size, &handle, 
+		GFP_KERNEL);
 	if (!vaddr) {
 		pr_err("error: cannot claim reserved memory of size %zuKiB\n", size/Ki);
 		return -ENOMEM;
 	}
 	if (handle != phys_to_dma(&zone->dev, paddr)) {
 		pr_crit("\n"
-			"***              ARCHITECTURE INCOMPATIBILITY              ***\n"
-			"*** The DMA addresses are different from physical address! ***\n"
-			"*** In Xilinx Zynq UltraScale+ (Cortex-A53, ARM64) it may  ***\n"
-			"*** have been caused by an IOMMU remapping of DMA space.   ***\n"
-			"*** In Xilinx Zynq 7000 (Cortex-A9, ARM32) this should not ***\n"
-			"*** really be happening due to the lack of IOMMU hardware. ***\n"
-			"*** Current version of this driver is not tested for such  ***\n"
-			"*** a configuration. Use at your own risk!!!               ***\n");
+		"***              ARCHITECTURE INCOMPATIBILITY              ***\n"
+		"*** The DMA addresses are different from physical address! ***\n"
+		"*** In Xilinx Zynq UltraScale+ (Cortex-A53, ARM64) it may  ***\n"
+		"*** have been caused by an IOMMU remapping of DMA space.   ***\n"
+		"*** In Xilinx Zynq 7000 (Cortex-A9, ARM32) this should not ***\n"
+		"*** really be happening due to the lack of IOMMU hardware. ***\n"
+		"*** Current version of this driver is not tested for such  ***\n"
+		"*** a configuration. Use at your own risk!!!               ***\n");
 	}
 
 	spin_lock(&sys.zones_lock);
@@ -278,13 +287,15 @@ static int dma_issue(struct client *p)
 //	ta = get_cycles();
 	if (sys.state != SYS_UP) return -EAGAIN;
 
-	if ((p->tx.descp = dmaengine_prep_slave_single(p->dmac->txchanp, p->tx.handle, p->tx.size, 
+	struct zdma_dmac *dmac = dmac_reserve(p->core);
+
+	if ((p->tx.descp = dmaengine_prep_slave_single(dmac->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->tx.cookie = -EBUSY;
 	}
 	
-	if ((p->rx.descp = dmaengine_prep_slave_single(p->dmac->rxchanp, p->rx.handle, p->rx.size,
+	if ((p->rx.descp = dmaengine_prep_slave_single(dmac->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		return p->rx.cookie = -EBUSY;
@@ -307,21 +318,19 @@ static int dma_issue(struct client *p)
 	init_completion(&p->tx.cmp);
 	init_completion(&p->rx.cmp);
 
-	//
-
 	unsigned long timeout = 3000;
 	enum dma_status status;
 //	cycles_t t0, t1;
 
-	dma_async_issue_pending(p->dmac->txchanp);
-	dma_async_issue_pending(p->dmac->rxchanp);
+	dma_async_issue_pending(dmac->txchanp);
+	dma_async_issue_pending(dmac->rxchanp);
 
 //	t0 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
 	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
 //	t1 = get_cycles();
 
-	status = dma_async_is_tx_complete(p->dmac->txchanp, p->tx.cookie, NULL, NULL);
+	status = dma_async_is_tx_complete(dmac->txchanp, p->tx.cookie, NULL, NULL);
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (timeout == 0) {
@@ -338,12 +347,14 @@ static int dma_issue(struct client *p)
 		p->tx.size/Ki, p->rx.size/Ki, t1-t0, tb-ta);
 	else pr_warn("this kernel does not support get_cycles()\n");
 */
+	dmac_release(dmac);
 	return 0;
 }
 
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
+	if (sys.state != SYS_UP) return -EAGAIN;
 	struct client *p;
 	if ((p = filep->private_data = devm_kzalloc(sys.devp, sizeof(struct client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
@@ -367,26 +378,75 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
 	if (sys.state != SYS_UP) return -EAGAIN;
 	struct client *p = filep->private_data;
-	struct dma_config conf;
 
 	switch (cmd) {
-	case ZDMA_IOCTL_DEBUG:
+	case ZDMA_DEBUG:
 		break;
-	case ZDMA_IOCTL_CONFIG:
-		if (copy_from_user(&conf, (void __user *)arg, sizeof(conf))) {
+	case ZDMA_CORE_REGISTER:
+		;
+		pr_info("register ioctl\n");
+		struct core_config core_conf;
+		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
-		if (client_mem_alloc(p, conf.tx_size, conf.rx_size)) {
+		void *bitstream = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
+		if (bitstream == NULL) {
+			pr_err("error allocating %zu bytes of memory for bitstream %s\n",
+				core_conf.size, core_conf.name);
+			return -ENOMEM;
+		}
+		if (copy_from_user(bitstream, (void __user *)core_conf.bitstream, core_conf.size)) {
+			pr_err("could not load user bitstream to kernel memory\n");
+			return -EIO;
+		}
+		struct zdma_core *core = devm_kmalloc(sys.devp, sizeof(*core), GFP_KERNEL);
+		if (core == NULL) {
+			pr_err("could allocate memory for core descriptor\n");
+			return -ENOMEM;
+		}
+		strncpy(core->name, core_conf.name, CORE_NAME_LEN);
+		core->size = core_conf.size;
+		core->bitstream = bitstream;
+		spin_lock(&sys.cores_lock);
+		list_add_rcu(&core->node, &sys.cores.node);
+		spin_unlock(&sys.cores_lock);
+		pr_info("core [%s] with size %zdKi registered\n", core->name, core->size/Ki);
+
+		////////////
+		list_for_each_entry_rcu(core, &sys.cores.node, node) {
+			pr_info("debug: core [%s]\n", core->name);
+		};
+		int i = 0;
+		struct zdma_dmac *dmac;
+		rcu_read_lock();
+		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
+			if (i == 0 || i == 2) continue;
+			dmac->core = core;
+		}
+		rcu_read_unlock();
+		///////////
+		
+		break;
+	case ZDMA_CLIENT_CONFIG:
+		;
+		struct client_config client_conf;
+		if (copy_from_user(&client_conf, (void __user *)arg, sizeof(client_conf))) {
+			pr_err("could not read all configuration data, ioctl ignored\n");
+			return -EIO;
+		}
+		if (client_mem_alloc(p, client_conf.tx_size, client_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
-		p->tx.size = conf.tx_size;
-		p->rx.size = conf.rx_size;
+		p->tx.size = client_conf.tx_size;
+		p->rx.size = client_conf.rx_size;
+		p->state = CLIENT_CONFIGURED;
 		// find core!
 		//p->conf.flags = conf.flags;
 		break;	
-	case ZDMA_IOCTL_ENQUEUE:
+	case ZDMA_CLIENT_ENQUEUE:
+		if (p->state != CLIENT_READY) return -EAGAIN;
 		return dma_issue(p);
 		break;
 	default:
@@ -399,17 +459,21 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
-	if (sys.state != SYS_UP) {
-		pr_warn("system is not yet up.\n");
-		return -EAGAIN;
-	}
-
+	if (sys.state != SYS_UP) return -EAGAIN;
 	struct client *p = filep->private_data;
+	if (p->state != CLIENT_CONFIGURED && p->state != CLIENT_MMAP_TX_DONE 
+		&& p->state != CLIENT_MMAP_RX_DONE) return -EAGAIN;
+
 	if ((vma->vm_flags & VM_READ) == (vma->vm_flags & VM_WRITE)) {
 		pr_warn("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
 		return -EINVAL;
 	}
-	
+	if (((vma->vm_flags & VM_WRITE) && (p->state == CLIENT_MMAP_TX_DONE)) ||
+		(((vma->vm_flags & VM_READ) && (p->state == CLIENT_MMAP_RX_DONE)))) {
+		pr_warn("channel already mapped\n");
+		return -EINVAL;
+	}	
+
 	struct dma_channel *chan = (vma->vm_flags & VM_WRITE) ? &p->tx : &p->rx;
 
 	phys_addr_t
@@ -433,15 +497,20 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		return -ENOMEM;
 	}
 
-	if (dma_mmap_attrs(sys.devp, vma, p->tx.vaddr, p->tx.handle, vsize, DMA_ATTR_NO_KERNEL_MAPPING) < 0) {
+	if (dma_mmap_coherent(sys.devp, vma, chan->vaddr, chan->handle, vsize) < 0) {
 		pr_warn("failed to map user buffer!\n");
 		return -ENOMEM;
 	}
+	
+	if (p->state == CLIENT_CONFIGURED) {
+		p->state = (vma->vm_flags & VM_WRITE) ? 
+			CLIENT_MMAP_TX_DONE : CLIENT_MMAP_RX_DONE;
+	} else 	p->state = CLIENT_READY;
 
 	pr_info("%s: phys 0x%8p mapped at 0x%8p, size=%zuKiB\n", 
 		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", 
 		(void *)paddr,
-		(vma->vm_flags & VM_WRITE) ? p->tx.vaddr : p->rx.vaddr,
+		chan->vaddr,
 		(size_t)psize/Ki);
 
 	return 0;
@@ -452,20 +521,18 @@ static int zdma_remove(struct platform_device *pdev)
 {
 	sys.state = SYS_DEINIT;
 	pr_info("zdma shutting down...\n");
-//	dev_set_drvdata(&pdev->dev, NULL);	//TODO understand what this does
-	
-//	while (hw.dmac_count--) {
-//		pr_info("releasing dmac[%d]\n", hw.dmac_count);
-//		dma_release_channel(hw.dmac[hw.dmac_count].rxchanp);
-//		dma_release_channel(hw.dmac[hw.dmac_count].txchanp);
-//	}
-//	for (int i = 0; i < INDEX_RANGE; ++i) {
-//		if (driver.zone_devp[i] == NULL) continue;
-//		pr_info("releasing zone[%d]\n", i);
-//		device_del(driver.zone_devp[i]);
-//		put_device(driver.zone_devp[i]);
-//	}
-	gen_pool_destroy(sys.mem);
+	//dev_set_drvdata(&pdev->dev, NULL);
+
+	struct zdma_zone *zone;
+	list_for_each_entry(zone, &sys.zones.node, node) {
+		device_unregister(&zone->dev);
+	}
+
+	struct zdma_dmac *dmac;
+	list_for_each_entry(dmac, &sys.dmacs.node, node) {
+		if (dmac->txchanp) dma_release_channel(dmac->txchanp);
+		if (dmac->rxchanp) dma_release_channel(dmac->rxchanp);
+	}
 	sys.state = SYS_DOWN;
 	return 0;
 }

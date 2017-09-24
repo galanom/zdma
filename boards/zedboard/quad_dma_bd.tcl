@@ -175,8 +175,8 @@ proc create_root_design { parentCell } {
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {64} \
 CONFIG.c_m_axis_mm2s_tdata_width {64} \
-CONFIG.c_mm2s_burst_size {64} \
-CONFIG.c_s2mm_burst_size {64} \
+CONFIG.c_mm2s_burst_size {256} \
+CONFIG.c_s2mm_burst_size {256} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_0
@@ -187,8 +187,8 @@ CONFIG.c_sg_length_width {23} \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {64} \
 CONFIG.c_m_axis_mm2s_tdata_width {64} \
-CONFIG.c_mm2s_burst_size {32} \
-CONFIG.c_s2mm_burst_size {32} \
+CONFIG.c_mm2s_burst_size {256} \
+CONFIG.c_s2mm_burst_size {256} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_1
@@ -199,8 +199,8 @@ CONFIG.c_sg_length_width {23} \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {64} \
 CONFIG.c_m_axis_mm2s_tdata_width {64} \
-CONFIG.c_mm2s_burst_size {16} \
-CONFIG.c_s2mm_burst_size {16} \
+CONFIG.c_mm2s_burst_size {256} \
+CONFIG.c_s2mm_burst_size {256} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_2
@@ -211,8 +211,8 @@ CONFIG.c_sg_length_width {23} \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {64} \
 CONFIG.c_m_axis_mm2s_tdata_width {64} \
-CONFIG.c_mm2s_burst_size {8} \
-CONFIG.c_s2mm_burst_size {8} \
+CONFIG.c_mm2s_burst_size {256} \
+CONFIG.c_s2mm_burst_size {256} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_3
@@ -451,7 +451,6 @@ CONFIG.PCW_USB0_PERIPHERAL_ENABLE {1} \
 CONFIG.PCW_USB0_USB0_IO {MIO 28 .. 39} \
 CONFIG.PCW_USB_RESET_ENABLE {1} \
 CONFIG.PCW_USB_RESET_SELECT {Share reset pin} \
-CONFIG.PCW_USE_DEFAULT_ACP_USER_VAL {1} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
 CONFIG.PCW_USE_HIGH_OCM {1} \
 CONFIG.PCW_USE_S_AXI_ACP {0} \

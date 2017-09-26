@@ -4218,6 +4218,7 @@ CONFIG_zinit=y
 # modules 
 #
 CONFIG_zdma=y
+CONFIG_zoled=y
 
 #
 # user packages 

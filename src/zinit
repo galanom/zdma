@@ -4,13 +4,14 @@ MODULE="zdma"
 
 case $action in
 "init")
-#	modprobe xilinx_dma
-#	echo "Loading module ${MODULE}..."
-#	modprobe $MODULE
-        major=`awk "\\$2==\"$MODULE\" { print \\$1 }" /proc/devices`
-	[[ "$major" -eq "" ]] && { echo "Could not find $MODULE in /proc/devices"; exit -1; }
-	rm -f /dev/$MODULE
-	mknod /dev/$MODULE c $major 0
+	for MODULE in zdma zoled
+	do
+	        major=`awk "\\$2==\"$MODULE\" { print \\$1 }" /proc/devices`
+		[[ "$major" -eq "" ]] && { echo "Could not find $MODULE in /proc/devices"; exit -1; }
+		rm -f /dev/$MODULE
+		mknod /dev/$MODULE c $major 0
+	done
+
 	echo "hello world" > /home/root/loopback.bit
 	;;
 "gdb")
@@ -18,13 +19,6 @@ case $action in
 	ip addr add 192.168.2.2/24 dev eth0
 	gdbserver 192.168.2.2:1234 /usr/bin/libzdma
 	;;
-"exit"|"stop")
-	echo "Unloading module ${MODULE}..."
-	modprobe -r $MODULE
-	modprobe -r xilinx_dma
-	rm -f /dev/$MODULE
-	;;
-
 *)
 	echo "Unknown command!"
 	;;

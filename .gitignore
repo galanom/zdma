@@ -1,4 +1,5 @@
 ext/
+tmp/
 **/*.log
 **/*.jou
 **/*.tmp

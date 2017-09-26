@@ -4230,3 +4230,4 @@ CONFIG_zdma=y
 # PetaLinux RootFS Settings
 #
 CONFIG_ROOTFS_ROOT_PASSWD="root"
+CONFIG_zoled=y

@@ -22,6 +22,7 @@
 #include "zdma.h"
 #include "zdma_ioctl.h"
 #include "macro.h"
+#include "zoled.h"
 
 #ifndef CONFIG_OF
 #error "OpenFirmware is not configured in kernel\n"
@@ -34,8 +35,6 @@ MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("0.3");
 
-//module_param(length, unsigned, S_IRUGO);
-extern int xilinx_vdma_channel_set_config(void *, void *);	// FIXME dependency?
 
 enum zdma_system_state {
 	SYS_DOWN = 0,
@@ -43,6 +42,7 @@ enum zdma_system_state {
 	SYS_UP,
 	SYS_DEINIT,
 };
+
 
 enum zdma_client_state {
 	CLIENT_OPENED = 0,
@@ -58,10 +58,12 @@ enum zdma_client_state {
 	CLIENT_ERROR_MEMORY,
 };
 
+
 enum zdma_dmac_state {
 	DMAC_FREE = 0,
 	DMAC_BUSY,
 };
+
 
 enum zdma_core_state {
 	CORE_UNLOADED = 0,
@@ -545,13 +547,13 @@ static int zdma_probe(struct platform_device *pdev)
 
 	if (sys.state == SYS_UP) {
 		pr_crit("\n"
-			"***   An unexpected attempt was made to initialize an already running system.  ***\n"
-			"***              This may have happened due to several reasons:                ***\n"
-			"***   1. Device-tree misconfiguration, i.e. multiple zdma instance entries.    ***\n"
-			"***   2. Device-tree corruption at run-time from userland actors.              ***\n"
-			"***   3. An improper or incomplete module removal and re-insertion after a     ***\n"
-			"***    kernel bug or hardware failure. This should not have happened.          ***\n"
-			"***   The request will be ignored but the system may be in an unstable state   ***\n");
+	"***  An unexpected attempt was made to initialize an already running system. ***\n"
+	"***             This may have happened due to several reasons:               ***\n"
+	"***  1. Device-tree misconfiguration, i.e. multiple zdma instance entries.   ***\n"
+	"***  2. Device-tree corruption at run-time from userland actors.             ***\n"
+	"***  3. An improper or incomplete module removal and re-insertion after a    ***\n"
+	"***   kernel bug or hardware failure. This should not have happened.         ***\n"
+	"***  The request will be ignored but the system may be in an unstable state  ***\n");
 		return -EBUSY;
 	}
 

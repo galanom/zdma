@@ -558,9 +558,12 @@ struct gen_pool_chunk *find_chunk_by_vaddr(struct gen_pool *pool,
 struct gen_pool_chunk *gen_chunk_first_fit(struct gen_pool *pool, 
 	struct gen_pool_chunk *last_chunk)
 {
-	//FIXME apply non-circular ll fix
-	if (last_chunk == NULL) return list_first_or_null_rcu(&pool->chunks,
-					struct gen_pool_chunk, next_chunk);
+	if (last_chunk == NULL) 
+		return list_first_or_null_rcu(&pool->chunks,
+			struct gen_pool_chunk, next_chunk);
+	
+	if (last_chunk->next_chunk.next == &pool->chunks)
+		return NULL;
 
 	return list_next_or_null_rcu(&pool->chunks, &last_chunk->next_chunk, 
 		struct gen_pool_chunk, next_chunk);
@@ -576,7 +579,9 @@ struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool,
 	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
 	bool found_last = false;
 	
-	avail_last = last_chunk ? atomic_read(&last_chunk->avail) : -1u;
+	if (last_chunk == NULL) avail_max = 0;
+	else avail_max = avail_last = 
+		chunk_size(last_chunk) - atomic_read(&last_chunk->avail);
 	
 	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
 		if (chunk == last_chunk) {
@@ -585,8 +590,6 @@ struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool,
 		}
 
 		avail_curr = atomic_read(&chunk->avail);
-		if (avail_curr > avail_last) 
-			continue;
 		if (avail_curr == avail_last && found_last) {
 			chunk_sel = chunk; // first chunk that has equal available
 			break;		   // space with last_chunk
@@ -607,13 +610,15 @@ EXPORT_SYMBOL_GPL(gen_chunk_max_avail);
 struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool, 
 	struct gen_pool_chunk *last_chunk)
 {
-	size_t used_curr, used_last, used_min = -1u;
+	size_t used_curr, used_last, used_min;
 	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
 	bool found_last = false;
 	
-	used_last = last_chunk ? 
-		chunk_size(last_chunk) - atomic_read(&last_chunk->avail) : 0;
+	if (last_chunk == NULL) used_min = -1u;
+	else used_min = used_last = 
+		chunk_size(last_chunk) - atomic_read(&last_chunk->avail);
 	
+	pr_info("start with last chunk=%p and used_last %zK\n", last_chunk, used_last);
 	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
 		if (chunk == last_chunk) {
 			found_last = true;
@@ -621,8 +626,6 @@ struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 		}
 
 		used_curr = chunk_size(chunk) - atomic_read(&chunk->avail);
-		if (used_curr < used_last) 
-			continue;
 		if (used_curr == used_last && found_last) {
 			chunk_sel = chunk; // first chunk that has equal available
 			break;		   // space with last_chunk
@@ -631,10 +634,8 @@ struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 			used_min = used_curr;
 			chunk_sel = chunk;
 		}
-		if (&chunk->next_chunk == pool->chunks.prev) {
-			break;
-		}
 	}
+	pr_info("exiting with chunk_sel: %p\n", chunk_sel);
 
 	return chunk_sel;
 }

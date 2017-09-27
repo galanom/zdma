@@ -7,4 +7,5 @@ tmp/
 **/*.old
 **/*.str
 .Xil
+nohup.out
 

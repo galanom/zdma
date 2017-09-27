@@ -8,4 +8,6 @@ void zoled_print(char *s, ...);
 void zoled_mvprint(int r, int c, char *s, ...);
 void zoled_clrln(int r);
 void zoled_clrscr(void);
+void zoled_disable(void);
+void zoled_enable(void);
 

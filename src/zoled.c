@@ -45,8 +45,8 @@ MODULE_DESCRIPTION("Driver for OLED IP Core of Ali Aljaani, TAMUQ Univ.");
 #define OLED_COLS 16
 #define FMT_LEN (OLED_COLS*OLED_ROWS*4)
 
-
 struct {
+	bool enabled;
 	dev_t cdev_num;
 	struct cdev cdev;
 	struct file_operations cdev_fops;
@@ -58,6 +58,19 @@ struct {
 	int r, c;
 } zoled;
 
+void zoled_enable(void)
+{
+	zoled.enabled = true;
+	return;
+}
+EXPORT_SYMBOL_GPL(zoled_enable);
+
+void zoled_disable(void)
+{
+	zoled.enabled = false;
+	return;
+}
+EXPORT_SYMBOL_GPL(zoled_disable);
 
 void zoled_clrln(int r)
 {
@@ -79,6 +92,7 @@ EXPORT_SYMBOL_GPL(zoled_clrscr);
 
 void zoled_refresh(void)
 {
+	if (!zoled.enabled) return;
 	for (int r = 0; r < OLED_ROWS; ++r) 
 		for (int c = 0; c < OLED_COLS; c += sizeof(u32))
 			iowrite32(*(u32 *)&zoled.data[r][c], zoled.vaddr + r*OLED_COLS + c);
@@ -147,6 +161,7 @@ EXPORT_SYMBOL_GPL(zoled_addstr);
 
 void zoled_print(char *s, ...)
 {
+	if (!zoled.enabled) return;
 	char buf[FMT_LEN];
 	va_list args;
 
@@ -248,13 +263,16 @@ static int zoled_probe(struct platform_device *pdev)
 	zoled_clrscr();
 	zoled.r = 0;
 	zoled.c = 0;
+	zoled.enabled = true;
+	pr_info("Zedboard OLED driver probing done\n");
 	return 0;
 }
 
 
 static int zoled_remove(struct platform_device *pdev)
 {
-	release_mem_region(zoled.base, zoled.size);
+	pr_info("Zedboard OLED driver is removed\n");
+	//release_mem_region(zoled.base, zoled.size);
 	return 0;
 }
 
@@ -283,6 +301,8 @@ static struct platform_driver zoled_driver = {
 
 static int __init zoled_init(void)
 {
+	zoled.enabled = false;
+	pr_info("Zedboard OLED driver initializing...\n");
 	zoled.cdev_fops.owner = THIS_MODULE;
 	zoled.cdev_fops.open = dev_open;
 	zoled.cdev_fops.write = dev_write;
@@ -308,6 +328,7 @@ static void __exit zoled_exit(void)
 	cdev_del(&zoled.cdev);
 	unregister_chrdev_region(zoled.cdev_num, 1 /* count */);
 	platform_driver_unregister(&zoled_driver);
+	pr_info("Zedboard OLED driver exiting...\n");
 	return;
 }
 

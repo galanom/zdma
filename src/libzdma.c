@@ -22,7 +22,7 @@
 struct zdma_task {
 	int fd;
 	void *tx_buf, *rx_buf;
-	struct client_config conf;
+	struct zdma_client_config conf;
 };
 
 
@@ -38,7 +38,7 @@ int buffer_fill(void *p, int len)
 
 int buffer_compare(void *p, void *q, int len)
 {
-	int errors = 0;
+	long long errors = 0;
 	if (p == NULL || q == NULL) return -EFAULT;
 
 	for (int i = 0; i < len/8; ++i) {
@@ -49,9 +49,11 @@ int buffer_compare(void *p, void *q, int len)
 			while (flip >>= 1);
 		}
 	}
-	if (errors) fprintf(stderr, "*** Buffer verification failed: %d bits were flippedd (%d%%) ***\n",
-			errors, 100*errors/(len*8));
-//	else printf("Buffer verification successful\n");
+	if (errors) fprintf(stderr, 
+		"*** Buffer verification failed: %lld bits were flippedd (%lld%%) ***\n",
+		errors, 100*errors/(len*8));
+	else printf("Buffer verification successful [%llx:%llx%llx%llx]\n",
+		((long long *)q)[0], ((long long *)q)[1], ((long long *)q)[2], ((long long *)q)[3]);
 	return errors;
 }
 
@@ -64,7 +66,7 @@ int zdma_core_register(char *name, char *fname)
 {
 	int fd, fddev, err;
 	struct stat st;
-	struct core_config core;
+	struct zdma_core_config core;
 	fddev = open(DEV_FILE, O_RDONLY);
 	err = errno;
 	if (fddev < 0) {
@@ -157,10 +159,8 @@ int zdma_task_configure(struct zdma_task *task, char *core_name, int tx_size, in
 				"buffer to userspace\n",
 				err, strerror(err));
 		return err;
-	} // TODO unmap
-
+	} 
 	buffer_fill(task->tx_buf, task->conf.tx_size);
-
 	return 0;
 }
 
@@ -173,12 +173,30 @@ int zdma_task_enqueue(struct zdma_task *task)
 			err, strerror(err));
 		return err;
 	}
-	buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
 	return 0;
 }
 
+int zdma_task_waitfor(struct zdma_task *task)
+{
+	int err;
+	if (ioctl(task->fd, ZDMA_CLIENT_BARRIER, 0)) {
+		err = errno;
+		fprintf(stderr, "ioctl error %d (%s) while flushing work queue\n",
+			err, strerror(err));
+		return err;
+	}
+	return 0;
+}
+int zdma_task_verify(struct zdma_task *task)
+{
+	return buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
+}
+
+
 void zdma_task_destroy(struct zdma_task *task)
 {
+	munmap(task->tx_buf, task->conf.tx_size);
+	munmap(task->rx_buf, task->conf.rx_size);
 	close(task->fd);
 	return;
 }
@@ -194,19 +212,27 @@ int main(int argc, char **argv)
 	}
 	if (!task_num) task_num = 1;
 	if (!iter_num) iter_num = 1;
-	err = zdma_core_register("loopback", "./loopback.bit");
-	if (err) return err;
+	if (zdma_core_register("loopback", "./loopback.bit") != 0) {
+		err = errno;
+		printf("core registration returned errno=%d\n", err);
+	}
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
 	for (int j = 0; j < task_num; ++j) {
-		zdma_task_init(&task[j]);
-		zdma_task_configure(&task[j], "loopback", SIZE, SIZE);
+		err = zdma_task_init(&task[j]);
+		assert(!err);
+		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE);
+		assert(!err);
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t0);
-	for (int i = 0; i < iter_num; ++i)
-		for (int j = 0; j < task_num; ++j)
-			zdma_task_enqueue(&task[j]);
+	for (int i = 0; i < iter_num; ++i) for (int j = 0; j < task_num; ++j) {
+		err = zdma_task_enqueue(&task[j]);
+		assert(!err);
+		err= zdma_task_waitfor(&task[j]);
+		assert(!err);
+//		zdma_task_verify(&task[j]);
+	}
 
 	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (int j = 0; j < task_num; ++j)

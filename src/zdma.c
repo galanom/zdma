@@ -1,4 +1,4 @@
-#define pr_fmt(fmt) "[" KBUILD_MODNAME "] %s():%d: " fmt, __func__, __LINE__
+#define pr_fmt(fmt) "%s[%d] " fmt, __func__, __LINE__
 
 #include <linux/module.h>
 #include <linux/version.h>
@@ -12,6 +12,7 @@
 #include <linux/dma-contiguous.h>
 #include <linux/genalloc.h>
 #include <linux/uaccess.h>
+#include <linux/wait.h>
 
 #include <linux/of_dma.h>
 #include <linux/of_address.h>
@@ -35,6 +36,8 @@ MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("0.3");
 
+bool debug = true;
+module_param(debug, bool, 0);
 
 enum zdma_system_state {
 	SYS_DOWN = 0,
@@ -76,7 +79,7 @@ enum zdma_core_state {
 static struct system {
 	enum zdma_system_state state;
 	atomic_t dmac_count, zone_count, client_count;
-	spinlock_t dmacs_lock, cores_lock, zones_lock, mem_lock;
+	spinlock_t dmacs_lock, cores_lock, zones_lock, mem_lock, clients_lock;
 
 	struct zdma_dmac {
 		struct list_head node;
@@ -93,6 +96,7 @@ static struct system {
 		void *bitstream;
 		size_t size;
 		struct workqueue_struct *workqueue;
+		wait_queue_head_t avail;
 	} cores;
 
 	struct zdma_zone {
@@ -101,27 +105,28 @@ static struct system {
 	} zones;
 
 	struct gen_pool *mem;
+	struct zdma_client {
+		struct list_head node;
+		struct zdma_core *core;
+		enum zdma_client_state state;
+		struct work_struct work;
+		struct dma_channel {
+			struct gen_pool_chunk *bank;
+			dma_addr_t handle;
+			size_t size;
+			void *vaddr;
+			struct dma_async_tx_descriptor *descp;
+			struct dma_slave_config conf;
+			dma_cookie_t cookie;
+			struct completion cmp;
+		} tx, rx;
+	} clients;
 
 	struct device *devp;
 	dev_t cdev_num;
 	struct cdev cdev;
 	struct file_operations cdev_fops;
 } sys;
-
-struct client {
-	struct zdma_core *core;
-	enum zdma_client_state state;
-	struct dma_channel {
-		struct gen_pool_chunk *bank;
-		dma_addr_t handle;
-		size_t size;
-		void *vaddr;
-		struct dma_async_tx_descriptor *descp;
-		struct dma_slave_config conf;
-		dma_cookie_t cookie;
-		struct completion cmp;
-	} tx, rx;
-};
 
 
 static void sync_callback(void *completion)
@@ -131,36 +136,94 @@ static void sync_callback(void *completion)
 	return;
 }
 
+struct zdma_core *core_lookup(char *name)
+{
+	struct zdma_core *core, *core_sel = NULL;
+	rcu_read_lock();
+	list_for_each_entry_rcu(core, &sys.cores.node, node) {
+		if (strncmp(core->name, name, CORE_NAME_LEN) == 0) {
+			core_sel = core;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	return core_sel;
+}
+
+static void zdma_debug(void)
+{
+	struct zdma_dmac *dmac;
+	struct gen_pool_chunk *chunk;
+	struct zdma_core *core;
+	struct zdma_client *client;
+	
+	pr_info("------------------------------------------------------\n");
+	rcu_read_lock();
+	list_for_each_entry_rcu(dmac, &sys.dmacs.node, node)
+		pr_info("DMAC %p [%s] -- core: %p [%s], state: %d\n", 
+			dmac, dmac->name, dmac->core, dmac->core->name, 
+			atomic_read(&dmac->state));
+	list_for_each_entry_rcu(core, &sys.cores.node, node)
+		pr_info("CORE %p [%s] -- size: %zu, bitstream vaddr: %p\n", 
+			core, core->name, core->size, core->bitstream);
+	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk)
+		pr_info("MEM %p: base virt: %lx phys: %lx size: %lu avail: %d\n", 
+			chunk, 
+			chunk->start_addr, 
+			(long)chunk->phys_addr,
+			(chunk->end_addr - chunk->start_addr + 1)/Ki,
+			atomic_read(&chunk->avail)/Ki);
+	list_for_each_entry_rcu(client, &sys.clients.node, node)
+		pr_info("CLIENT %p: core: %s, txsize: %zu, rxsize: %zu, state: %d\n",
+			client, client->core->name,
+			client->tx.size, client->rx.size, client->state);
+	rcu_read_unlock();
+	pr_info("------------------------------------------------------\n");
+	return;
+}
+
+
+static bool hello;
 
 static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 {
+	hello = false;
 	struct zdma_dmac *dmac, *dmac_sel = NULL;
 	do {
 		rcu_read_lock();
 		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
+			zoled_print(".");
 			if (dmac->core == core) {
 				int state = atomic_cmpxchg(&dmac->state, DMAC_FREE, DMAC_BUSY);
 				if (state == DMAC_FREE) {
+					zoled_print("+");
 					dmac_sel = dmac;
 					break;
-				}
+				} else zoled_print("-");
 			}
 		}
 		rcu_read_unlock();
-		// FIXME put to sleep
+		if (dmac_sel != NULL) zoled_print(":)\n");
+		if (dmac_sel == NULL) {
+			zoled_print("X");
+			set_current_state(TASK_INTERRUPTIBLE);
+			wait_event_interruptible(core->avail, hello);
+			zoled_print("?");
+		}
 	} while (dmac_sel == NULL);
 	return dmac_sel;
 }
 
 static void dmac_release(struct zdma_dmac *dmac)
 {
+	hello = true;
 	atomic_set(&dmac->state, DMAC_FREE);
-	//wake up ppl
+	wake_up_interruptible(&dmac->core->avail);
 	return;
 }
 
 
-static int client_mem_alloc(struct client *p, size_t tx_size, size_t rx_size)
+static int client_mem_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP) return -EBUSY;
 
@@ -283,25 +346,33 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 }
 
 
-static int dma_issue(struct client *p)
+static void dma_issue(struct work_struct *work)
 {
-//	cycles_t ta, tb;
-//	ta = get_cycles();
-	if (sys.state != SYS_UP) return -EAGAIN;
+	struct zdma_client *p = container_of(work, struct zdma_client, work);
+
+	zoled_print("-> %s\n", p->core->name);
+	
+	if (sys.state != SYS_UP) {
+		pr_info("system is not up, rejecting work\n");
+		return;
+	}
 
 	struct zdma_dmac *dmac = dmac_reserve(p->core);
-
+	zoled_print("P:");
 	if ((p->tx.descp = dmaengine_prep_slave_single(dmac->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return p->tx.cookie = -EBUSY;
+		p->tx.cookie = -EBUSY;
+		return;
 	}
-	
+	zoled_print("TX");
 	if ((p->rx.descp = dmaengine_prep_slave_single(dmac->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
-		return p->rx.cookie = -EBUSY;
+		p->rx.cookie = -EBUSY;
+		return;
 	}
+	zoled_print(",RX");
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -309,10 +380,11 @@ static int dma_issue(struct client *p)
 
 	p->tx.cookie = dmaengine_submit(p->tx.descp);
 	p->rx.cookie = dmaengine_submit(p->rx.descp);
+	zoled_print(";S");
 
 	if (dma_submit_error(p->tx.cookie) || dma_submit_error(p->rx.cookie)) {
 		pr_err("cookie contains error!\n");
-		return -EIO;
+		return;
 	}
 	
 	// initialize the completion before using it and then start the DMA transaction
@@ -322,46 +394,44 @@ static int dma_issue(struct client *p)
 
 	unsigned long timeout = 3000;
 	enum dma_status status;
-//	cycles_t t0, t1;
 
 	dma_async_issue_pending(dmac->txchanp);
 	dma_async_issue_pending(dmac->rxchanp);
+	zoled_print("I");
 
-//	t0 = get_cycles();
 	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
 	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
-//	t1 = get_cycles();
-
+	zoled_print("C");
 	status = dma_async_is_tx_complete(dmac->txchanp, p->tx.cookie, NULL, NULL);
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (timeout == 0) {
 		pr_crit("*** DMA OPERATION TIMED OUT ***\n");
-		return -ETIMEDOUT;
+		return;
 	} 
 	if (status != DMA_COMPLETE) {
 		pr_err("DMA returned completion callback status of: %s\n", 
 			status == DMA_ERROR ? "error" : "in progress");
-		return -EIO;
+		return;
 	}
-/*	tb = get_cycles();
-	if (t1-t0) pr_info("DMA size: %4zu->%4zu kiB, xfer time: %lu, total: %lu\n", 
-		p->tx.size/Ki, p->rx.size/Ki, t1-t0, tb-ta);
-	else pr_warn("this kernel does not support get_cycles()\n");
-*/
 	dmac_release(dmac);
-	return 0;
+	zoled_print(".\n");
+	return;
 }
 
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
 	if (sys.state != SYS_UP) return -EAGAIN;
-	struct client *p;
-	if ((p = filep->private_data = devm_kzalloc(sys.devp, sizeof(struct client), GFP_KERNEL)) == NULL) {
+	struct zdma_client *p;
+	if ((p = filep->private_data = devm_kzalloc(sys.devp, sizeof(struct zdma_client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
+	INIT_WORK(&p->work, dma_issue);
+	spin_lock(&sys.clients_lock);
+	list_add_rcu(&p->node, &sys.clients.node);
+	spin_unlock(&sys.clients_lock);
 	atomic_inc(&sys.client_count);
 	return 0;
 }
@@ -369,8 +439,14 @@ static int dev_open(struct inode *inodep, struct file *filep)
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-	client_mem_alloc(filep->private_data, 0, 0);
-	devm_kfree(sys.devp, filep->private_data);
+	struct zdma_client *p = filep->private_data;
+	client_mem_alloc(p, 0, 0);
+
+	spin_lock(&sys.clients_lock);
+	list_del_rcu(&p->node);
+	spin_unlock(&sys.clients_lock);
+	synchronize_rcu(); // TODO learn what this does and also call_rcu
+	devm_kfree(sys.devp, p);
 	atomic_dec(&sys.client_count);
 	return 0;
 }
@@ -379,19 +455,27 @@ static int dev_release(struct inode *inodep, struct file *filep)
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
 	if (sys.state != SYS_UP) return -EAGAIN;
-	struct client *p = filep->private_data;
+	struct zdma_client *p = filep->private_data;
+	struct zdma_core *core;
 
 	switch (cmd) {
 	case ZDMA_DEBUG:
+		zdma_debug();
 		break;
 	case ZDMA_CORE_REGISTER:
 		;
-		pr_info("register ioctl\n");
-		struct core_config core_conf;
+		struct zdma_core_config core_conf;
 		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
+
+		core = core_lookup(core_conf.name);
+		if (core) {
+			pr_info("core [%s] is already registered in the system, ignoring\n", core->name);
+			return -EEXIST;
+		}
+
 		void *bitstream = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
 		if (bitstream == NULL) {
 			pr_err("error allocating %zu bytes of memory for bitstream %s\n",
@@ -402,7 +486,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("could not load user bitstream to kernel memory\n");
 			return -EIO;
 		}
-		struct zdma_core *core = devm_kmalloc(sys.devp, sizeof(*core), GFP_KERNEL);
+		core = devm_kmalloc(sys.devp, sizeof(*core), GFP_KERNEL);
 		if (core == NULL) {
 			pr_err("could allocate memory for core descriptor\n");
 			return -ENOMEM;
@@ -410,6 +494,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		strncpy(core->name, core_conf.name, CORE_NAME_LEN);
 		core->size = core_conf.size;
 		core->bitstream = bitstream;
+		init_waitqueue_head(&core->avail);
+		core->workqueue = create_singlethread_workqueue(core->name);
+		
 		spin_lock(&sys.cores_lock);
 		list_add_rcu(&core->node, &sys.cores.node);
 		spin_unlock(&sys.cores_lock);
@@ -417,22 +504,23 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		////////////
 		list_for_each_entry_rcu(core, &sys.cores.node, node) {
-			pr_info("debug: core [%s]\n", core->name);
+			break;
 		};
 		int i = 0;
-		struct zdma_dmac *dmac;
+		struct zdma_dmac *dmac = NULL;
 		rcu_read_lock();
 		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
-			if (i == 0 || i == 2) continue;
+			++i;
+			if (i == 1 || i == 4) continue;
 			dmac->core = core;
 		}
 		rcu_read_unlock();
 		///////////
-		
+		zdma_debug();
 		break;
 	case ZDMA_CLIENT_CONFIG:
 		;
-		struct client_config client_conf;
+		struct zdma_client_config client_conf;
 		if (copy_from_user(&client_conf, (void __user *)arg, sizeof(client_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
@@ -443,13 +531,20 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		}
 		p->tx.size = client_conf.tx_size;
 		p->rx.size = client_conf.rx_size;
+
+		p->core = core_lookup(client_conf.core_name);
+		if (p->core == NULL) {
+			pr_warn("requested core [%s] is not registered\n", client_conf.core_name);
+			return -EINVAL;
+		}
 		p->state = CLIENT_CONFIGURED;
-		// find core!
-		//p->conf.flags = conf.flags;
 		break;	
 	case ZDMA_CLIENT_ENQUEUE:
 		if (p->state != CLIENT_READY) return -EAGAIN;
-		return dma_issue(p);
+		queue_work(p->core->workqueue, &p->work);
+		break;
+	case ZDMA_CLIENT_BARRIER:
+		flush_work(&p->work);
 		break;
 	default:
 		pr_err("unknown ioctl: command %x, argument %lu\n", cmd, arg);
@@ -462,7 +557,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
 	if (sys.state != SYS_UP) return -EAGAIN;
-	struct client *p = filep->private_data;
+	struct zdma_client *p = filep->private_data;
 	if (p->state != CLIENT_CONFIGURED && p->state != CLIENT_MMAP_TX_DONE 
 		&& p->state != CLIENT_MMAP_RX_DONE) return -EAGAIN;
 
@@ -522,7 +617,6 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 static int zdma_remove(struct platform_device *pdev)
 {
 	sys.state = SYS_DEINIT;
-	pr_info("zdma shutting down...\n");
 	//dev_set_drvdata(&pdev->dev, NULL);
 
 	struct zdma_zone *zone;
@@ -536,13 +630,17 @@ static int zdma_remove(struct platform_device *pdev)
 		if (dmac->rxchanp) dma_release_channel(dmac->rxchanp);
 	}
 	sys.state = SYS_DOWN;
+	pr_info("zdma is down\n");
 	return 0;
 }
+
 
 
 static int zdma_probe(struct platform_device *pdev)
 {
 	int res;
+	if (!debug) zoled_disable();
+
 //	while (atomic_read(&driver.state) == SHUTTING_DOWN); //wait to finish shutdown
 
 	if (sys.state == SYS_UP) {
@@ -564,7 +662,9 @@ static int zdma_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&sys.dmacs.node);
 	INIT_LIST_HEAD(&sys.cores.node);
 	INIT_LIST_HEAD(&sys.zones.node);
+	INIT_LIST_HEAD(&sys.clients.node);
 	atomic_set(&sys.dmac_count, 0);
+//	atomic_set(&sys.core_count, 0);
 	atomic_set(&sys.zone_count, 0);
 	atomic_set(&sys.client_count, 0);
 	sys.mem = devm_gen_pool_create(sys.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
@@ -643,6 +743,7 @@ static int __init mod_init(void)
 	spin_lock_init(&sys.dmacs_lock);
 	spin_lock_init(&sys.zones_lock);
 	spin_lock_init(&sys.cores_lock);
+	spin_lock_init(&sys.clients_lock);
 	
 	// create character device
 	sys.cdev_fops.owner = THIS_MODULE;

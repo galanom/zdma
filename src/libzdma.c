@@ -52,7 +52,7 @@ int buffer_compare(void *p, void *q, int len)
 	if (errors) fprintf(stderr, 
 		"*** Buffer verification failed: %lld bits were flippedd (%lld%%) ***\n",
 		errors, 100*errors/(len*8));
-	else printf("Buffer verification successful [%llx:%llx%llx%llx]\n",
+	else printf("Verification OK [%llx:%llx:%llx:%llx]\n",
 		((long long *)q)[0], ((long long *)q)[1], ((long long *)q)[2], ((long long *)q)[3]);
 	return errors;
 }
@@ -227,19 +227,16 @@ int main(int argc, char **argv)
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_enqueue(&task[j]);
 			assert(!err);
-			//assert(!err);
-			//zdma_task_verify(&task[j]);
 		}
 		for (int j = 0; j < task_num; ++j) {
 			err= zdma_task_waitfor(&task[j]);
 			assert(!err);
+			//zdma_task_verify(&task[j]);
 		}
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t1);
-	for (int j = 0; j < task_num; ++j) {
-		//zdma_task_waitfor(&task[j]);
+	for (int j = 0; j < task_num; ++j)
 		zdma_task_destroy(&task[j]);
-	}
 	int t = tdiff(t1, t0);
 	printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
 		task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));

@@ -36,7 +36,7 @@ MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("0.3");
 
-bool debug = true;
+bool debug = false;
 module_param(debug, bool, 0);
 
 enum zdma_system_state {
@@ -81,6 +81,9 @@ static struct system {
 	enum zdma_system_state state;
 	atomic_t dmac_count, zone_count, client_count;
 	spinlock_t dmacs_lock, cores_lock, zones_lock, mem_lock, clients_lock;
+	
+	struct workqueue_struct *workqueue;
+	wait_queue_head_t waitqueue;
 
 	struct zdma_dmac {
 		struct list_head node;
@@ -96,8 +99,6 @@ static struct system {
 		char name[CORE_NAME_LEN];
 		void *bitstream;
 		size_t size;
-		struct workqueue_struct *workqueue;
-		wait_queue_head_t avail;
 	} cores;
 
 	struct zdma_zone {
@@ -107,6 +108,7 @@ static struct system {
 
 	struct gen_pool *mem;
 	struct zdma_client {
+		int id;
 		struct list_head node;
 		struct zdma_core *core;
 		atomic_t state;
@@ -184,11 +186,8 @@ static void zdma_debug(void)
 }
 
 
-static bool hello;
-
 static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 {
-	hello = false;
 	struct zdma_dmac *dmac, *dmac_sel = NULL;
 	do {
 		rcu_read_lock();
@@ -205,21 +204,18 @@ static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 		}
 		rcu_read_unlock();
 		if (dmac_sel != NULL) zoled_print("%c", dmac_sel->name[11]);
-		if (dmac_sel == NULL) {
-			zoled_print("X");
-			set_current_state(TASK_INTERRUPTIBLE);
-			wait_event_interruptible(core->avail, hello);
-			zoled_print("?");
-		}
+		if (dmac_sel == NULL) schedule();
+			//zoled_print("X");
+			//wait_event_interruptible(core->avail, hello);
+			//zoled_print("?");
 	} while (dmac_sel == NULL);
 	return dmac_sel;
 }
 
 static void dmac_release(struct zdma_dmac *dmac)
 {
-	hello = true;
 	atomic_set(&dmac->state, DMAC_FREE);
-	wake_up_interruptible(&dmac->core->avail);
+//	wake_up_interruptible(&dmac->core->avail);
 	return;
 }
 
@@ -227,17 +223,14 @@ static void dmac_release(struct zdma_dmac *dmac)
 static int rmalloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP) return -EBUSY;
-	if (atomic_read(&p->state) == CLIENT_CONFIGURED) {
-		gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
-		gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
-	}
-	
+	if (p->tx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
+	if (p->rx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
 	if (tx_size == 0 || rx_size == 0) return 0;
 
 	if (gen_pool_dma_alloc_pair(sys.mem,
 			tx_size, &p->tx.vaddr, &p->tx.handle, 
 			rx_size, &p->rx.vaddr, &p->rx.handle)) {
-		pr_warn("unable to allocate memory for DMA buffers (TX: %zuKiB, RX: %zuKiB)\n", 
+		pr_warn("unable to allocate %zu+%zu KiB for DMA buffers\n", 
 			tx_size/Ki, rx_size/Ki);
 		atomic_set(&p->state, CLIENT_ERROR_MEMORY);
 		return -ENOMEM;
@@ -344,6 +337,7 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 static void dma_issue(struct work_struct *work)
 {
 	struct zdma_client *p = container_of(work, struct zdma_client, work);
+//	pr_info("PID %d ENTER>\n", p->id);
 	zoled_print(">");
 	struct zdma_dmac *dmac = dmac_reserve(p->core);
 	zoled_print("P");
@@ -410,12 +404,14 @@ static void dma_issue(struct work_struct *work)
 	dmac_release(dmac);
 	atomic_set(&p->state, CLIENT_READY);
 	zoled_print("<\n");
+	//pr_info("PID %d <EXIT\n", p->id);
 	return;
 }
 
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
+	static atomic_t id = ATOMIC_INIT(0);
 	if (sys.state != SYS_UP) return -EAGAIN;
 	struct zdma_client *p;
 	if ((p = filep->private_data = devm_kzalloc(sys.devp, sizeof(struct zdma_client), GFP_KERNEL)) == NULL) {
@@ -427,6 +423,7 @@ static int dev_open(struct inode *inodep, struct file *filep)
 	list_add_rcu(&p->node, &sys.clients.node);
 	spin_unlock(&sys.clients_lock);
 	atomic_inc(&sys.client_count);
+	p->id = atomic_inc_return(&id);
 	return 0;
 }
 
@@ -490,8 +487,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		strncpy(core->name, core_conf.name, CORE_NAME_LEN);
 		core->size = core_conf.size;
 		core->bitstream = bitstream;
-		init_waitqueue_head(&core->avail);
-		core->workqueue = create_singlethread_workqueue(core->name);
+//		init_waitqueue_head(&core->avail);
 		
 		spin_lock(&sys.cores_lock);
 		list_add_rcu(&core->node, &sys.cores.node);
@@ -502,12 +498,12 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		list_for_each_entry_rcu(core, &sys.cores.node, node) {
 			break;
 		};
-		int i = 0;
+		//int i = 0;
 		struct zdma_dmac *dmac = NULL;
 		rcu_read_lock();
 		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
-			++i;
-			if (i == 1 || i == 4) continue;
+		//	++i;
+		//	if (i == 1 || i == 4) continue;
 			dmac->core = core;
 		}
 		rcu_read_unlock();
@@ -538,7 +534,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	case ZDMA_CLIENT_ENQUEUE:
 		if (atomic_cmpxchg(&p->state, CLIENT_READY, CLIENT_INPROGRESS) != CLIENT_READY)
 			return -EAGAIN;
-		queue_work(p->core->workqueue, &p->work);
+		queue_work(sys.workqueue, &p->work);
 		break;
 	case ZDMA_CLIENT_BARRIER:
 		flush_work(&p->work);
@@ -611,6 +607,7 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 static int zdma_remove(struct platform_device *pdev)
 {
 	sys.state = SYS_DEINIT;
+	destroy_workqueue(sys.workqueue);
 	//dev_set_drvdata(&pdev->dev, NULL);
 
 	struct zdma_zone *zone;
@@ -652,7 +649,7 @@ static int zdma_probe(struct platform_device *pdev)
 	sys.devp = &pdev->dev;
 
 	// basic data structure initialization
-
+	sys.workqueue = alloc_workqueue("zdma", WQ_FREEZABLE, 0);
 	INIT_LIST_HEAD(&sys.dmacs.node);
 	INIT_LIST_HEAD(&sys.cores.node);
 	INIT_LIST_HEAD(&sys.zones.node);

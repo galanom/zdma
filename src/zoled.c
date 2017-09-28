@@ -96,8 +96,8 @@ void zoled_refresh(void)
 	for (int r = 0; r < OLED_ROWS; ++r) 
 		for (int c = 0; c < OLED_COLS; c += sizeof(u32))
 			iowrite32(*(u32 *)&zoled.data[r][c], zoled.vaddr + r*OLED_COLS + c);
-	for (int i = 0; i < K; ++i) iowrite32(1, zoled.vaddr+64);
-	for (int i = 0; i < K; ++i) iowrite32(0, zoled.vaddr+64);
+	for (int i = 0; i < 10*K; ++i) iowrite32(1, zoled.vaddr+64);
+	for (int i = 0; i < 10*K; ++i) iowrite32(0, zoled.vaddr+64);
 	return;
 }
 EXPORT_SYMBOL_GPL(zoled_refresh);

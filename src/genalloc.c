@@ -618,7 +618,6 @@ struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 	else used_min = used_last = 
 		chunk_size(last_chunk) - atomic_read(&last_chunk->avail);
 	
-	pr_info("start with last chunk=%p and used_last %zK\n", last_chunk, used_last);
 	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
 		if (chunk == last_chunk) {
 			found_last = true;
@@ -635,7 +634,6 @@ struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
 			chunk_sel = chunk;
 		}
 	}
-	pr_info("exiting with chunk_sel: %p\n", chunk_sel);
 
 	return chunk_sel;
 }

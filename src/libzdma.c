@@ -212,10 +212,7 @@ int main(int argc, char **argv)
 	}
 	if (!task_num) task_num = 1;
 	if (!iter_num) iter_num = 1;
-	if (zdma_core_register("loopback", "./loopback.bit") != 0) {
-		err = errno;
-		printf("core registration returned errno=%d\n", err);
-	}
+	zdma_core_register("loopback", "./loopback.bit");
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
@@ -226,17 +223,23 @@ int main(int argc, char **argv)
 		assert(!err);
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t0);
-	for (int i = 0; i < iter_num; ++i) for (int j = 0; j < task_num; ++j) {
-		err = zdma_task_enqueue(&task[j]);
-		assert(!err);
-		err= zdma_task_waitfor(&task[j]);
-		assert(!err);
-//		zdma_task_verify(&task[j]);
+	for (int i = 0; i < iter_num; ++i) {
+		for (int j = 0; j < task_num; ++j) {
+			err = zdma_task_enqueue(&task[j]);
+			assert(!err);
+			//assert(!err);
+			//zdma_task_verify(&task[j]);
+		}
+		for (int j = 0; j < task_num; ++j) {
+			err= zdma_task_waitfor(&task[j]);
+			assert(!err);
+		}
 	}
-
 	clock_gettime(CLOCK_MONOTONIC, &t1);
-	for (int j = 0; j < task_num; ++j)
+	for (int j = 0; j < task_num; ++j) {
+		//zdma_task_waitfor(&task[j]);
 		zdma_task_destroy(&task[j]);
+	}
 	int t = tdiff(t1, t0);
 	printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
 		task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));

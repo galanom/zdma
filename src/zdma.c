@@ -59,6 +59,7 @@ enum zdma_client_state {
 	CLIENT_ERROR_CONFIG,
 	CLIENT_ERROR_MMAP,
 	CLIENT_ERROR_MEMORY,
+	CLIENT_ERROR_DMA,
 };
 
 
@@ -108,7 +109,7 @@ static struct system {
 	struct zdma_client {
 		struct list_head node;
 		struct zdma_core *core;
-		enum zdma_client_state state;
+		atomic_t state;
 		struct work_struct work;
 		struct dma_channel {
 			struct gen_pool_chunk *bank;
@@ -176,7 +177,7 @@ static void zdma_debug(void)
 	list_for_each_entry_rcu(client, &sys.clients.node, node)
 		pr_info("CLIENT %p: core: %s, txsize: %zu, rxsize: %zu, state: %d\n",
 			client, client->core->name,
-			client->tx.size, client->rx.size, client->state);
+			client->tx.size, client->rx.size, atomic_read(&client->state));
 	rcu_read_unlock();
 	pr_info("------------------------------------------------------\n");
 	return;
@@ -192,10 +193,10 @@ static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 	do {
 		rcu_read_lock();
 		list_for_each_entry_rcu(dmac, &sys.dmacs.node, node) {
-			zoled_print(".");
+			zoled_print("%d", atomic_read(&dmac->state));
 			if (dmac->core == core) {
-				int state = atomic_cmpxchg(&dmac->state, DMAC_FREE, DMAC_BUSY);
-				if (state == DMAC_FREE) {
+				if (atomic_cmpxchg(&dmac->state, DMAC_FREE, 
+						DMAC_BUSY) == DMAC_FREE) {
 					zoled_print("+");
 					dmac_sel = dmac;
 					break;
@@ -203,7 +204,7 @@ static struct zdma_dmac *dmac_reserve(struct zdma_core *core)
 			}
 		}
 		rcu_read_unlock();
-		if (dmac_sel != NULL) zoled_print(":)\n");
+		if (dmac_sel != NULL) zoled_print("%c", dmac_sel->name[11]);
 		if (dmac_sel == NULL) {
 			zoled_print("X");
 			set_current_state(TASK_INTERRUPTIBLE);
@@ -223,32 +224,26 @@ static void dmac_release(struct zdma_dmac *dmac)
 }
 
 
-static int client_mem_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
+static int rmalloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP) return -EBUSY;
-
-	BUG_ON(IS_ERR_OR_NULL(p));
-
-	if (p->tx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
-	if (p->rx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
-
-	if (tx_size == 0 || rx_size == 0) return 0;	// TODO implement one way tranfers
-
-	pr_info("request to set DMA buffer size to TX: %zukiB, RX: %zukiB\n", tx_size/Ki, rx_size/Ki);
+	if (atomic_read(&p->state) == CLIENT_CONFIGURED) {
+		gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
+		gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
+	}
+	
+	if (tx_size == 0 || rx_size == 0) return 0;
 
 	if (gen_pool_dma_alloc_pair(sys.mem,
 			tx_size, &p->tx.vaddr, &p->tx.handle, 
 			rx_size, &p->rx.vaddr, &p->rx.handle)) {
 		pr_warn("unable to allocate memory for DMA buffers (TX: %zuKiB, RX: %zuKiB)\n", 
 			tx_size/Ki, rx_size/Ki);
-		p->state = CLIENT_ERROR_MEMORY;
+		atomic_set(&p->state, CLIENT_ERROR_MEMORY);
 		return -ENOMEM;
 	}
-
-	// if no error...
 	p->tx.size = tx_size;
 	p->rx.size = rx_size;
-
 	return 0;
 }
 
@@ -349,30 +344,25 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 static void dma_issue(struct work_struct *work)
 {
 	struct zdma_client *p = container_of(work, struct zdma_client, work);
-
-	zoled_print("-> %s\n", p->core->name);
-	
-	if (sys.state != SYS_UP) {
-		pr_info("system is not up, rejecting work\n");
-		return;
-	}
-
+	zoled_print(">");
 	struct zdma_dmac *dmac = dmac_reserve(p->core);
-	zoled_print("P:");
+	zoled_print("P");
 	if ((p->tx.descp = dmaengine_prep_slave_single(dmac->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		p->tx.cookie = -EBUSY;
+		atomic_set(&p->state, CLIENT_ERROR_DMA);
 		return;
 	}
-	zoled_print("TX");
+	zoled_print("t");
 	if ((p->rx.descp = dmaengine_prep_slave_single(dmac->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
 		p->rx.cookie = -EBUSY;
+		atomic_set(&p->state, CLIENT_ERROR_DMA);
 		return;
 	}
-	zoled_print(",RX");
+	zoled_print("r");
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -380,10 +370,11 @@ static void dma_issue(struct work_struct *work)
 
 	p->tx.cookie = dmaengine_submit(p->tx.descp);
 	p->rx.cookie = dmaengine_submit(p->rx.descp);
-	zoled_print(";S");
+	zoled_print("S");
 
 	if (dma_submit_error(p->tx.cookie) || dma_submit_error(p->rx.cookie)) {
 		pr_err("cookie contains error!\n");
+		atomic_set(&p->state, CLIENT_ERROR_DMA);
 		return;
 	}
 	
@@ -407,15 +398,18 @@ static void dma_issue(struct work_struct *work)
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (timeout == 0) {
 		pr_crit("*** DMA OPERATION TIMED OUT ***\n");
+		atomic_set(&p->state, CLIENT_ERROR_DMA);
 		return;
 	} 
 	if (status != DMA_COMPLETE) {
 		pr_err("DMA returned completion callback status of: %s\n", 
 			status == DMA_ERROR ? "error" : "in progress");
+		atomic_set(&p->state, CLIENT_ERROR_DMA);
 		return;
 	}
 	dmac_release(dmac);
-	zoled_print(".\n");
+	atomic_set(&p->state, CLIENT_READY);
+	zoled_print("<\n");
 	return;
 }
 
@@ -440,12 +434,14 @@ static int dev_open(struct inode *inodep, struct file *filep)
 static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
-	client_mem_alloc(p, 0, 0);
+	flush_work(&p->work);
+	rmalloc(p, 0, 0);
 
 	spin_lock(&sys.clients_lock);
 	list_del_rcu(&p->node);
 	spin_unlock(&sys.clients_lock);
 	synchronize_rcu(); // TODO learn what this does and also call_rcu
+	
 	devm_kfree(sys.devp, p);
 	atomic_dec(&sys.client_count);
 	return 0;
@@ -525,7 +521,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
-		if (client_mem_alloc(p, client_conf.tx_size, client_conf.rx_size)) {
+		if (rmalloc(p, client_conf.tx_size, client_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
@@ -537,10 +533,11 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_warn("requested core [%s] is not registered\n", client_conf.core_name);
 			return -EINVAL;
 		}
-		p->state = CLIENT_CONFIGURED;
+		atomic_set(&p->state, CLIENT_CONFIGURED);
 		break;	
 	case ZDMA_CLIENT_ENQUEUE:
-		if (p->state != CLIENT_READY) return -EAGAIN;
+		if (atomic_cmpxchg(&p->state, CLIENT_READY, CLIENT_INPROGRESS) != CLIENT_READY)
+			return -EAGAIN;
 		queue_work(p->core->workqueue, &p->work);
 		break;
 	case ZDMA_CLIENT_BARRIER:
@@ -556,38 +553,35 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
-	if (sys.state != SYS_UP) return -EAGAIN;
+	if (sys.state != SYS_UP) 
+		return -EAGAIN;
 	struct zdma_client *p = filep->private_data;
-	if (p->state != CLIENT_CONFIGURED && p->state != CLIENT_MMAP_TX_DONE 
-		&& p->state != CLIENT_MMAP_RX_DONE) return -EAGAIN;
 
+	if (	atomic_read(&p->state) != CLIENT_CONFIGURED && 
+		atomic_read(&p->state) != CLIENT_MMAP_TX_DONE && 
+		atomic_read(&p->state) != CLIENT_MMAP_RX_DONE) 
+		return -EAGAIN;
 	if ((vma->vm_flags & VM_READ) == (vma->vm_flags & VM_WRITE)) {
 		pr_warn("invalid protection flags -- please use MAP_WRITE for TX or MAP_READ for RX\n");
 		return -EINVAL;
 	}
-	if (((vma->vm_flags & VM_WRITE) && (p->state == CLIENT_MMAP_TX_DONE)) ||
-		(((vma->vm_flags & VM_READ) && (p->state == CLIENT_MMAP_RX_DONE)))) {
+	if (((vma->vm_flags & VM_WRITE) && (atomic_read(&p->state) == CLIENT_MMAP_TX_DONE)) ||
+		(((vma->vm_flags & VM_READ) && (atomic_read(&p->state) == CLIENT_MMAP_RX_DONE)))) {
 		pr_warn("channel already mapped\n");
 		return -EINVAL;
 	}	
 
 	struct dma_channel *chan = (vma->vm_flags & VM_WRITE) ? &p->tx : &p->rx;
 
-	phys_addr_t
-		off = vma->vm_pgoff << PAGE_SHIFT,
-		paddr = dma_to_phys(sys.devp, chan->handle),
-		vsize = vma->vm_end - vma->vm_start,
-		psize = chan->size - off;
+	phys_addr_t	vsize = vma->vm_end - vma->vm_start,
+			psize = chan->size - (vma->vm_pgoff << PAGE_SHIFT);
 	
 	if (chan->size == 0) {
 		pr_warn("attempt to map a zero length channel buffer\n");
 		return -EINVAL;
 	}
 
-	if (vsize != ALIGN(psize, PAGE_SIZE)) {
-		pr_crit("internal error: virtual and physical size calculations do not match!\n");
-		return -EINVAL;
-	}
+	BUG_ON(vsize != ALIGN(psize, PAGE_SIZE));
 
 	if (!chan->handle) {
 		pr_warn("Internal error: DMA buffer has not yet been allocated!\n.");
@@ -599,17 +593,17 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 		return -ENOMEM;
 	}
 	
-	if (p->state == CLIENT_CONFIGURED) {
-		p->state = (vma->vm_flags & VM_WRITE) ? 
-			CLIENT_MMAP_TX_DONE : CLIENT_MMAP_RX_DONE;
-	} else 	p->state = CLIENT_READY;
+	if (atomic_read(&p->state) == CLIENT_CONFIGURED) {
+		atomic_set(&p->state, (vma->vm_flags & VM_WRITE) ? 
+			CLIENT_MMAP_TX_DONE : CLIENT_MMAP_RX_DONE);
+	} else 	atomic_set(&p->state, CLIENT_READY);
 
-	pr_info("%s: phys 0x%8p mapped at 0x%8p, size=%zuKiB\n", 
+/*	pr_info("%s: phys 0x%8p mapped at 0x%8p, size=%zuKiB\n", 
 		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", 
 		(void *)paddr,
 		chan->vaddr,
 		(size_t)psize/Ki);
-
+*/
 	return 0;
 }
 

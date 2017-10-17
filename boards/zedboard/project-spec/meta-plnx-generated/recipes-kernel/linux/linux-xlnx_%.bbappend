@@ -22,6 +22,14 @@ def find_cfgs(d):
 
 
 
+
+
+
+
+
+
+
+
 RDEPENDS_kernel-base = ""
 KERNEL_IMAGETYPE_zynq ?= "zImage"
 do_configure[depends] += "kern-tools-native:do_populate_sysroot"

@@ -4218,6 +4218,7 @@ CONFIG_zinit=y
 # modules 
 #
 CONFIG_zdma=y
+CONFIG_zoled=y
 
 #
 # user packages 
@@ -4230,4 +4231,3 @@ CONFIG_zdma=y
 # PetaLinux RootFS Settings
 #
 CONFIG_ROOTFS_ROOT_PASSWD="root"
-CONFIG_zoled=y

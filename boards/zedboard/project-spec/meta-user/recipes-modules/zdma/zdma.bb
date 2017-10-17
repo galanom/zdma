@@ -7,10 +7,10 @@ inherit module
 
 SRC_URI = "file://Makefile \
            file://zdma.c \
-           file://zdma.h \
            file://zoled.h \
+           file://param.h \
            file://macro.h \
-           file://zdma_ioctl.h \
+           file://glue.h \
 	   file://COPYING \
           "
 

@@ -1,0 +1,27 @@
+From fd1f8bd44a7496257c68333704d294d052889f60 Mon Sep 17 00:00:00 2001
+From: Ioannis Galanommatis <galanom@gmail.com>
+Date: Wed, 11 Oct 2017 21:48:57 +0300
+Subject: [PATCH] environment.h workaround
+
+---
+ include/environment.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/environment.h b/include/environment.h
+index b602e8ac46..fe49428c11 100644
+--- a/include/environment.h
++++ b/include/environment.h
+@@ -8,6 +8,10 @@
+ #ifndef _ENVIRONMENT_H_
+ #define _ENVIRONMENT_H_
+ 
++#ifndef CONFIG_ENV_SIZE
++#define CONFIG_ENV_SIZE (128 << 10)
++#endif
++
+ /**************************************************************************
+  *
+  * The "environment" is stored as a list of '\0' terminated
+-- 
+2.13.0
+

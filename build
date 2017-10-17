@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+PROJ_DIR=/home/igalanommatis/work/zdma/
+
+cd $PROJ_DIR/yocto/poky/build
+bitbake core-image-minimal
+cd ../../../

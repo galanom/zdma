@@ -255,7 +255,7 @@ static int zoled_probe(struct platform_device *pdev)
 		return -EBUSY;
 	}
 
-	zoled.vaddr = ioremap(zoled.base, zoled.size);
+	zoled.vaddr = devm_ioremap(&pdev->dev, zoled.base, zoled.size);
 	if (zoled.vaddr == NULL) {
 		pr_err("error mapping IO memory\n");
 		return -EIO;

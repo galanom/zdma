@@ -9,7 +9,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 SRC_URI = "file://libzdma.c \
 	   file://macro.h \
-	   file://zdma_ioctl.h \
+	   file://glue.h \
+	   file://param.h \
 	   file://Makefile \
 		  "
 

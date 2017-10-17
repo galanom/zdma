@@ -8,4 +8,10 @@ tmp/
 **/*.str
 .Xil
 nohup.out
+yocto/*
+!yocto/meta-user/
+boards/*
+boards/
+boards
+image/
 

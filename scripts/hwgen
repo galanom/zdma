@@ -1,15 +1,16 @@
 #!/opt/Xilinx/SDK/2017.3/bin/hsi -source
-set proj "/home/igalanommatis/work/zdma/"
+set proj "/home/igalanommatis/work/zdma"
+exec cp $proj/hw/quad_dma/quad_dma.sdk/quad_dma_wrapper.hdf $proj/image/system.hdf
 set_param general.maxBackupLogs 0
-set hwdsgn [open_hw_design $proj/hw/quad_dma/quad_dma.sdk/quad_dma_wrapper.hdf]
+set hwdsgn [open_hw_design $proj/image/system.hdf]
 set_repo_path ext/device-tree-xlnx
 create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
 exec rm -rf dts
 generate_target -dir $proj/image/dts/
 generate_app -quiet -hw $hwdsgn -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl -compile -sw fsbl -dir $proj/image/fsbl
-exec cp $proj/image/fsbl/executable.elf $proj/image/zynq-fsbl.elf
+exec cp $proj/image/fsbl/executable.elf $proj/image/zynq_fsbl.elf
 exec cp $proj/hw/quad_dma/quad_dma.sdk/ps7_init.tcl $proj/image/
-exec cp $proj/hw/quad_dma/quad_dma.sdk/quad_dma_wrapper.bit $proj/image/zdma.bit
+exec cp $proj/hw/quad_dma/quad_dma.sdk/quad_dma_wrapper.bit $proj/image/download.bit
 exec echo /include/ \"system-user.dtsi\" >> $proj/image/dts/system-top.dts
 quit
 

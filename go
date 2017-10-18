@@ -7,7 +7,6 @@ cd /home/igalanommatis/work/zdma
 
 # Create vivado project backup for git
 for f in hw/*/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
-	echo $f
 	cp $f hw/
 	#sed -e "s/myproj/hardware/g; s/project_1/`echo $f | cut -f2 -d/`/g" $f > hw/`echo $f | cut -f2 -d/`/${f##*/}
 done
@@ -23,7 +22,7 @@ case $1 in
 	;;
 "build")
 	cd yocto/poky
-	source oe*
+	source ./oe-init-build-env
 	bitbake core-image-minimal
 	;;
 "boot")

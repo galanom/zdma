@@ -11,6 +11,6 @@ SRC_URI += "file://0001-environment-workaround.patch"
 #	install ${WORKDIR}/platform-top.h ${S}/include/configs/
 #}
 
-#do_deploy_append() {
-#	install -Dm 0644 ${WORKDIR}/build/spl/u-boot-spl.bin ${DEPLOYDIR}/u-boot-spl.bin
-#}
+do_deploy_append() {
+	install -Dm 0644 ${WORKDIR}/build/spl/u-boot-spl.bin ${DEPLOYDIR}/u-boot-spl.bin
+}

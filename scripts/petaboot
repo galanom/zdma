@@ -21,14 +21,14 @@ after 500
 targets -set -nocase -filter {name =~ "arm*#0"}
 
 source "$img/ps7_init.tcl"
-ps7_init
+#ps7_init
 ps7_post_config
 catch {stop}
 set mctrlval [string trim [lindex [split [mrd 0xF8007080] :] 1]]
 puts "mctrlval=$mctrlval"
 puts stderr "INFO: Downloading ELF file to the target."
 dow "$img/zynq_fsbl.elf"
-after 500; con
+after 2000; con
 after 2000; stop
 targets -set -nocase -filter {name =~ "arm*#0"}
 puts stderr "INFO: Downloading ELF file to the target."
@@ -43,11 +43,11 @@ after 2000
 rwr r2 0x02408000
 targets -set -nocase -filter {name =~ "arm*#0"}
 dow -data "$img/zImage" 0x8000
-after 500
+after 2000
 rwr pc 0x8000
 
-dow -data "$img/core-image-minimal-zedboard-zynq7.cpio.gz.u-boot" 0x03000000
-after 500
+#dow -data "$img/core-image-minimal-zedboard-zynq7.cpio.gz.u-boot" 0x03000000
+#after 2000
 
 con
 after 500

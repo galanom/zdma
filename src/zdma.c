@@ -681,6 +681,7 @@ static int zdma_remove(struct platform_device *pdev)
 static int zdma_probe(struct platform_device *pdev)
 {
 	int res;
+	zoled_print("probe\n");
 	if (!debug) zoled_disable();
 
 //	while (atomic_read(&driver.state) == SHUTTING_DOWN); //wait to finish shutdown
@@ -782,6 +783,7 @@ static void __exit mod_exit(void)
 static int __init mod_init(void)
 {
 	sys.state = SYS_INIT;
+	zoled_print("init\n");
 
 	spin_lock_init(&sys.partitions_lock);
 	spin_lock_init(&sys.zones_lock);

@@ -1,9 +1,9 @@
 ///include/ "system-conf.dtsi"
 /  {
-/*	aliases {
+	aliases {
 		serial0 = &uart1;
 		serial1 = &uart0;
-	};*/
+	};
 
 	chosen {
 		bootargs = "console=ttyPS0,115200 earlycon";
@@ -24,12 +24,12 @@
 			reg = <0x1A000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
-		};/*
+		};
 		bank2: bank2@1C000000 {
-			reg = <0x1C000000 0x02000000>;
+			reg = <0x1C000000 0x01000000>;
 			compatible = "shared-dma-pool";
 			no-map;
-		};
+		};/*
 		bank3: bank3@1E000000 {
 			reg = <0x1E000000 0x01000000>;
 			compatible = "shared-dma-pool";
@@ -41,7 +41,7 @@
 	amba_pl {
 		zdma@0 {
 			compatible = "tuc,zdma";
-			
+
 			zone@0 {
 				compatible = "tuc,zone";
 				memory-region = <&bank0>;
@@ -49,11 +49,11 @@
 			zone@1 {
 				compatible = "tuc,zone";
 				memory-region = <&bank1>;
-			};/*
+			};
 			zone@2 {
 				compatible = "tuc,zone";
 				memory-region = <&bank2>;
-			};
+			};/*
 			zone@3 {
 				compatible = "tuc,zone";
 				memory-region = <&bank3>;

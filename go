@@ -14,19 +14,40 @@ done
 case $1 in
 "clean")
 	;;
+"git")
+	./go clean
+	git add -f yocto/build/conf
+	git add -f yocto/meta-local
+	git status
+	;;
+"conf")
+	vim yocto/build/conf/local.conf
+	;;
 "reload")
 	scripts/hwgen
+	;;
+"dt")
+	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-user.dtsi
+	;;
+"edt")
+	dtc -I dtb -O dts image/zynq-zed.dtb -o image/zynq-zed.dts
+	vim image/uImage-zynq-zed.dts
+	dtc -I dts -O dtb image/zynq-zed.dts -o image/zynq-zed.dtb
 	;;
 "ez")
 	vim src/zdma/zdma.c
 	;;
 "build")
-	cd yocto/poky
-	source ./oe-init-build-env
+	cd yocto
+	source ./oe-init-build-env > /dev/null
 	bitbake core-image-minimal
 	;;
 "boot")
 	scripts/boot
+	;;
+"bb")
+	./go build
+	./go boot
 	;;
 "gdb")
 	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
@@ -47,4 +68,5 @@ case $1 in
 	;;
 esac
 cd -
+
 

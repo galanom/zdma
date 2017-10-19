@@ -1,0 +1,4 @@
+SANITY_VERSION 1
+TMPDIR /tmp/yocto
+SSTATE_DIR /home/igalanommatis/work/zdma/yocto/build/sstate-cache
+NATIVELSBSTRING gentoo

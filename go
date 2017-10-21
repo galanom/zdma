@@ -3,7 +3,9 @@ x="\e[1;92m"
 y="\e[39m"
 DESIGN="quad_dma"
 
-cd /home/igalanommatis/work/zdma
+PROJ="/home/igalanommatis/work/zdma"
+
+cd $PROJ
 
 # Create vivado project backup for git
 for f in hw/*/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
@@ -30,24 +32,23 @@ case $1 in
 	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-user.dtsi
 	;;
 "edt")
-	dtc -I dtb -O dts image/zynq-zed.dtb -o image/zynq-zed.dts
+	dtc -I dtb -O dts image/uImage-zynq-zed.dtb -o image/uImage-zynq-zed.dts
 	vim image/uImage-zynq-zed.dts
-	dtc -I dts -O dtb image/zynq-zed.dts -o image/zynq-zed.dtb
+	dtc -I dts -O dtb image/uImage-zynq-zed.dts -o image/uImage-zynq-zed.dtb
 	;;
 "ez")
 	vim src/zdma/zdma.c
 	;;
 "build")
 	cd yocto
-	source ./oe-init-build-env > /dev/null
+	source oe-init-build-env> /dev/null
 	bitbake core-image-minimal
 	;;
 "boot")
 	scripts/boot
 	;;
 "bb")
-	./go build
-	./go boot
+	./go build && ./go boot
 	;;
 "gdb")
 	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
@@ -56,6 +57,7 @@ case $1 in
 	arm-linux-gnueabihf-gdb /tmp/petalinux/deploy/images/plnx_arm/vmlinux
 	;;
 "mgdb")
+	# needs fixing
 	cp ../../src/zdma.c /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
 	arm-linux-gnueabihf-gdb /tmp/petalinux/sysroots/plnx_arm/lib/modules/4.9.0-xilinx/extra/zdma.ko
 	rm /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
@@ -67,6 +69,6 @@ case $1 in
 		"$x boot$y:   boot target at remote host\n"
 	;;
 esac
-cd -
 
+cd $PROJ
 

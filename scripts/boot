@@ -14,31 +14,16 @@ foreach line $items {
 		rst
 	}
 }
-after 200
-
-puts stderr "INFO: Configuring the FPGA..."
-puts stderr "INFO: Downloading bitstream to the target."
-fpga "$img/download.bit"
-after 3000
 targets -set -nocase -filter {name =~ "arm*#0"}
+after 500
 dow -data "$img/u-boot-spl.bin" 0x0
+after 500
 rwr pc 0x0
-after 1000
+after 500
 con
-after 2000
+after 1000
 stop
-
 dow "$img/u-boot.elf"
 con
-after 2000
-stop
-
-dow -data "$img/uImage" 0x2000000
-after 1000
-dow -data "$img/core-image-minimal-zedboard-zynq7.cpio.gz.u-boot" 0x3000000
-after 1000
-dow -data "$img/uImage-zynq-zed.dtb" 0x2A00000
-after 3000
-con
-
+exit
 

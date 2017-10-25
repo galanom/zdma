@@ -41,10 +41,12 @@ case $1 in
 	;;
 "build")
 	cd yocto
-	source oe-init-build-env> /dev/null
+	source ./oe-init-build-env > /dev/null
 	bitbake core-image-minimal
 	;;
 "boot")
+	cmp -bs hw/quad_dma/quad_dma.runs/impl_1/quad_dma_wrapper.bit image/download.bit || \
+		echo "WARNING! Bitstream in image directory and vivado implementation differ!"
 	scripts/boot
 	;;
 "bb")
@@ -54,7 +56,7 @@ case $1 in
 	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
 	;;
 "kgdb")
-	arm-linux-gnueabihf-gdb /tmp/petalinux/deploy/images/plnx_arm/vmlinux
+	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC+68e6869cfb-r26/linux-zedboard_zynq7-standard-build
 	;;
 "mgdb")
 	# needs fixing

@@ -50,6 +50,7 @@ int buffer_compare(void *p, void *q, int len)
 			while (flip >>= 1);
 		}
 	}
+	fprintf(stderr, "%lld->%lld\n", *(uint64_t *)p, *(uint64_t *)q);
 	if (errors) fprintf(stderr, 
 		"*** Buffer verification failed: %lld bits were flippedd (%lld%%) ***\n",
 		errors, 100*errors/(len*8));
@@ -105,10 +106,11 @@ int zdma_core_register(char *name, char *fname)
 	}
 
 	// configuration register offsets; zero for unused
-	core.reg_off[0] = 0x0014;
-	core.reg_off[1] = 0x001c;
-	core.reg_off[2] = 0x0000;
+	core.reg_off[0] = 0x0024;
+	core.reg_off[1] = 0x0014;
+	core.reg_off[2] = 0x001c;
 	core.reg_off[3] = 0x0000;
+	core.reg_off[4] = 0x0000;
 
 	err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
 	if (err) {
@@ -241,7 +243,7 @@ void zdma_task_destroy(struct zdma_task *task)
 	return;
 }
 
-#define SIZE (8ULL*M)
+#define SIZE (1024*1000)
 
 int main(int argc, char **argv)
 {
@@ -262,14 +264,13 @@ int main(int argc, char **argv)
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE, 2, 1080, 1920);
+		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE, 2, 1048576, 1);
 		assert(!err);
 	}
 
-	zdma_debug();
-
 	clock_gettime(CLOCK_MONOTONIC, &t0);
 	for (int i = 0; i < iter_num; ++i) {
+		zdma_debug();
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_enqueue(&task[j]);
 			///assert(!err);

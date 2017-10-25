@@ -68,13 +68,21 @@ enum zdma_partition_state {
 	PART_BUSY,
 };
 
-
 enum zdma_core_state {
+	CORE_INIT = 0,
+	CORE_START = 1<<0,
+	CORE_DONE = 1<<1,
+	CORE_IDLE = 1<<2,
+	CORE_READY = 1<<3,
+	CORE_AUTOSTART = 1<<7,
+};
+
+/*enum zdma_core_state {
 	CORE_UNLOADED = 0,
 	CORE_LOADING,
 	CORE_LOADED,
 	CORE_UNLOADING,
-};
+};*/
 
 
 static struct system {
@@ -179,9 +187,9 @@ static void zdma_debug(void)
 			part, part->name, part->core, part->core->name, 
 			atomic_read(&part->state));
 	list_for_each_entry_rcu(core, &sys.cores.node, node)
-		pr_info("CORE %p [%s] -- bitstream: %p/%zuKi, param regs: %hx, %hx, %hx, %hx\n", 
+		pr_info("CORE %p [%s] -- bitstream: %p/%zuKi, param regs: [%hx], %hx, %hx, %hx, %hx\n", 
 			core, core->name, core->bitstream, core->size/Ki,
-			core->reg_off[0], core->reg_off[1], core->reg_off[2], core->reg_off[3]);
+			core->reg_off[0], core->reg_off[1], core->reg_off[2], core->reg_off[3], core->reg_off[4]);
 	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk)
 		pr_info("MEM %p: base virt: %lx phys: %lx size: %lu avail: %d\n", 
 			chunk, 
@@ -201,22 +209,19 @@ static void zdma_debug(void)
 
 static int partition_setup(struct zdma_partition *partition, struct zdma_core *core)
 {
-	while (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) != PART_FREE)
-		{};
+//	while (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) != PART_FREE)
+//		{};
 	
 	BUG_ON(IS_ERR_OR_NULL(partition));
 	BUG_ON(IS_ERR_OR_NULL(core));
 
-	if (partition->name[11] == '0') {
-		// placeholder for PR
-		partition->core = core;
-	} else goto part_setup_fail;
+	partition->core = core;
 
-	atomic_set(&partition->state, PART_FREE);
+//	atomic_set(&partition->state, PART_FREE);
 	return 0;
-part_setup_fail:
+/*part_setup_fail:
 	atomic_set(&partition->state, PART_FREE);
-	return -1;
+	return -1;*/
 }
 
 
@@ -226,19 +231,17 @@ static struct zdma_partition *partition_reserve(struct zdma_core *core)
 	do {
 		rcu_read_lock();
 		list_for_each_entry_rcu(partition, &sys.partitions.node, node) {
-//			zoled_print("%d", atomic_read(&partition->state));
 			if (partition->core == core) {
-				if (atomic_cmpxchg(&partition->state, PART_FREE, 
-						PART_BUSY) == PART_FREE) {
-				//	zoled_print("+");
+				if (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) == PART_FREE) {
 					partition_sel = partition;
 					break;
-				} //else zoled_print("-");
+				}
 			}
 		}
+		zoled_print(".");
 		if (partition_sel == NULL) {
 			list_for_each_entry_rcu(partition, &sys.partitions.node, node) {
-				if (atomic_read(&partition->state) == PART_FREE) {
+				if (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) == PART_FREE) {
 					zoled_print("@");
 					int err = partition_setup(partition, core);
 					if (!err) partition_sel = partition;
@@ -286,6 +289,7 @@ static int rmalloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 
 static int partition_add(struct device_node *np)
 {
+	int err = 0;
 	if (sys.state != SYS_INIT) return -EBUSY;
 
 	struct zdma_partition *partition = devm_kzalloc(sys.devp, sizeof(struct zdma_partition), GFP_KERNEL);
@@ -300,40 +304,65 @@ static int partition_add(struct device_node *np)
 	char *s = strrchr(of_node_full_name(np), '/') + 1;
 	strncpy(partition->name, s, DT_NAME_LEN-1);
 
-	// configure the DMA controller for this partition
-	partition->txchanp = of_dma_request_slave_channel(np, "tx");
-	if (IS_ERR_OR_NULL(partition->txchanp)) {
-		pr_err("partition %p: failed to reserve TX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", partition);
-		return -ENODEV;
+	struct device_node *tnp = of_parse_phandle(np, "transport", 0);
+	if (!tnp) {
+		pr_err("devicetree: %s does not contain a phandle to a data transporter.\n",
+			partition->name);
+		err = -EINVAL;
+		goto partition_add_error;
 	}
-	partition->rxchanp = of_dma_request_slave_channel(np, "rx");
+
+	// configure the DMA controller for this partition
+	partition->txchanp = of_dma_request_slave_channel(tnp, "tx");
+	if (IS_ERR_OR_NULL(partition->txchanp)) {
+		pr_err("%s: failed to reserve TX DMA channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", partition->name);
+		err = -ENODEV;
+		goto partition_add_error;
+	}
+	partition->rxchanp = of_dma_request_slave_channel(tnp, "rx");
 	if (IS_ERR_OR_NULL(partition->rxchanp)) {
-		pr_err("partition %p: failed to reserve RX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", partition);
+		pr_err("%s: failed to reserve RX DMA channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", partition->name);
 		dma_release_channel(partition->txchanp);
-		return -ENODEV;
+		err = -ENODEV;
+		goto partition_add_error;
 	}
 
 	// configure the partition's register space
-	static int lol;
-	partition->pbase = 0x43c10000 + lol;
-	partition->psize = 0x10000;
-	lol += 0x20000;
 
+	u64 size;
+	const __be32 * addr;
+	partition->pbase = of_translate_address(np, addr = of_get_address(np, 0, &size, NULL));
+	partition->psize = (size_t)size;
+	if (partition->pbase == (long)OF_BAD_ADDR || !size) {
+		pr_err("devicetree: %s: range entry is invalid:\n"
+			"base: %p, translated: %#zx, size: %#llx.\n", 
+			partition->name, addr, partition->pbase, size);
+		err = -EINVAL;
+		goto partition_add_error;
+	}
+	
 	if (!devm_request_mem_region(sys.devp, partition->pbase, partition->psize, partition->name)) {
-		pr_err("failed to reserve partition [%s] I/O space\n", partition->name);
-		return -ENOSPC;
+		pr_err("%s: failed to reserve I/O space at %#zx, size: %#zx\n", 
+			partition->name, partition->pbase, partition->psize);
+			err = -ENOSPC;
+		goto partition_add_error;
 	}
 	partition->vbase = devm_ioremap(sys.devp, partition->pbase, partition->psize);
-
+	iowrite32(CORE_INIT, partition->vbase);
+	
 	// now add the partition to the list
 	spin_lock(&sys.partitions_lock);
 	list_add_rcu(&partition->node, &sys.partitions.node);
 	spin_unlock(&sys.partitions_lock);
 	atomic_inc(&sys.partition_count);
 	return 0;
+partition_add_error:
+	devm_kfree(sys.devp, partition);
+	return err;	
 }
+
 
 static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 {
@@ -401,12 +430,30 @@ static void dma_issue(struct work_struct *work)
 
 	struct zdma_partition *partition = partition_reserve(p->core);
 	zoled_print("R");
+
+	pr_info("starting up core [%s] at partition [%s] (%zx->%p)\n", 
+		p->core->name, partition->name, partition->pbase, partition->vbase);
+
+	u32 csr;
+	if (partition->pbase == 0x431c0000) {
+	csr = ioread32(partition->vbase);
+	if (!(csr & CORE_IDLE)) {
+		pr_emerg("core [%s] at partition [%s] is in an unexpected state: "
+			"ap_idle is not asserted. CSR=%hhx\n",
+			p->core->name, partition->name, csr);
+		goto dma_error;
+	}
+	pr_info("Initial CSR=%x\n", csr);
 	
 	for (int i = 0; i < CORE_PARAM_CNT; ++i) {
 		if (p->core->reg_off[i] == 0) continue;
 		iowrite32(p->core_param[i], partition->vbase + p->core->reg_off[i]);
 	}
-	zoled_print("D");
+	iowrite32(CORE_START, partition->vbase); // ap_start = 1
+	}
+
+	zoled_print("S");
+
 	if ((p->tx.descp = dmaengine_prep_slave_single(partition->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
@@ -438,29 +485,55 @@ static void dma_issue(struct work_struct *work)
 	init_completion(&p->tx.cmp);
 	init_completion(&p->rx.cmp);
 
-	unsigned long timeout = 3000;
-	enum dma_status status;
+	unsigned long tx_timeout = msecs_to_jiffies(5000), rx_timeout = msecs_to_jiffies(5000);
+	enum dma_status tx_status, rx_status;
+
+	zoled_print("D");
 
 	dma_async_issue_pending(partition->txchanp);
 	dma_async_issue_pending(partition->rxchanp);
 
-	timeout = wait_for_completion_timeout(&p->tx.cmp, msecs_to_jiffies(timeout));
-	timeout = wait_for_completion_timeout(&p->rx.cmp, msecs_to_jiffies(timeout));
-	status = dma_async_is_tx_complete(partition->txchanp, p->tx.cookie, NULL, NULL);
+	tx_timeout = wait_for_completion_timeout(&p->tx.cmp, tx_timeout);
+	rx_timeout = wait_for_completion_timeout(&p->rx.cmp, rx_timeout);
+	tx_status = dma_async_is_tx_complete(partition->txchanp, p->tx.cookie, NULL, NULL);
+	rx_status = dma_async_is_tx_complete(partition->rxchanp, p->rx.cookie, NULL, NULL);
+	
 	zoled_print("C");
 
 	// determine if the transaction completed without a timeout and withtout any errors
-	if (timeout == 0) {
-		pr_crit(">>> DMA operation timed out! controller: %s, core: %s, client: %d <<<\n",
-			partition->name, partition->core->name, p->id);
-		goto dma_error;
-	} 
-	if (status != DMA_COMPLETE) {
-		pr_err(">>> DMA returned status of: [%s]. Controller: %s, core: %s, client: %d <<<\n", 
-			status == DMA_ERROR ? "error" : "in progress", 
-			partition->name, partition->core->name, p->id);
+	if (!tx_timeout || !rx_timeout) {
+		pr_crit("*** DMA operation timed out at controller %s, core %s, client %d, chan %s.\n",
+			partition->name, partition->core->name, p->id,
+			!tx_timeout && !rx_timeout ? "TX and RX" :
+			!tx_timeout ? "TX" : "RX");
 		goto dma_error;
 	}
+
+	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
+		pr_err("*** DMA status at controller %s, core %s, client %d: "
+			"TX: %s (t/o %ums), RX: %s (t/o %ums) ***\n", 
+			partition->name, partition->core->name, p->id,
+			tx_status == DMA_ERROR ? "ERROR" : 
+			tx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
+			jiffies_to_msecs(tx_timeout),
+			rx_status == DMA_ERROR ? "ERROR" : 
+			rx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
+			jiffies_to_msecs(rx_timeout));
+		goto dma_error;
+	}
+	
+	if (partition->pbase == 0x431c0000) {
+	pr_info("core %s return value %d\n", p->core->name,
+		ioread32(partition->vbase + p->core->reg_off[0]));
+	csr = ioread32(partition->vbase);
+	if (!(csr & CORE_DONE)) {
+		pr_emerg("core %s at partition %s is in an unexpected state: "
+			"ap_done is not asserted. CSR=%x\n",
+			p->core->name, partition->name, csr);
+		goto dma_error;
+	}
+	}
+	
 	atomic_set(&p->state, CLIENT_READY);
 	partition_release(partition);
 	zoled_print(".\n");
@@ -469,6 +542,7 @@ static void dma_issue(struct work_struct *work)
 dma_error:
 	atomic_set(&p->state, CLIENT_ERROR_DMA);
 	partition_release(partition);
+	zoled_print("!\n");
 	return;
 }
 
@@ -718,7 +792,7 @@ static int zdma_probe(struct platform_device *pdev)
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
 
-	for_each_compatible_node(np, NULL, "tuc,dma-client") {
+	for_each_compatible_node(np, NULL, "tuc,partition") {
 		res = partition_add(np);
 		if (res) return res;
 	}

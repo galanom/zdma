@@ -3,78 +3,76 @@
 module debug(
 	input clk,
 	input [7:0] dma_intr,
-	input [3:0] core_intr,
+	input event0,
+	input event1,
+	input [3:0] core0, core1, core2, core3,
+	input [1:0] core_select,
 	output [7:0] LED
 	);
 
-parameter blink_rate=22;
-
-reg [blink_rate:0] counter [7:0] ;
-reg state [7:0];
+parameter blink_rate=21;
+reg [1:0] events = 2'b00;
+reg led_state [7:0];
+reg [blink_rate:0] counter [7:0];
 parameter blink_off=1'b0, blink_on=1'b1;
-wire [7:0] data;
 
+always @(posedge clk)
+begin
+	if (event0)
+		events[0] <= 1;
+	else 
+		events[0] <= events[0];
+		
+	if (event1)
+		events[1] <= 1;
+	else
+		events[1] <= events[1];
+end
+
+assign 
+	LED[7] = led_state[2*core_select],
+	LED[6] = led_state[2*core_select+1],
+	LED[5] = events[0],
+	LED[4] = events[1];
+
+assign LED[3:0] =
+	(core_select == 0) ? core0 :
+	(core_select == 1) ? core1 :
+	(core_select == 2) ? core2 : core3;
+		
 genvar i;
-/*generate for (i = 0; i < 4; i = i + 1)
-	assign	data[7-i] = dma_intr[i] || dma_intr[i+1],
-			data[3-i] = core_intr[i];
-endgenerate*/
-
-assign // LEDs from left to right (LED7 to LED0)
-	data[7] = dma_intr[0] | dma_intr[1],
-	data[6] = dma_intr[2] | dma_intr[3],
-	data[5] = dma_intr[4] | dma_intr[5],
-	data[4] = dma_intr[6] | dma_intr[7],
-	data[3] = core_intr[0],
-	data[2] = core_intr[1],
-	data[1] = core_intr[2],
-	data[0] = core_intr[3];
-
-
 generate for (i = 0; i < 8; i = i + 1)
 begin
 	initial begin
-		state[i] = 0;
+		led_state[i] = 0;
 		counter[i] = 0;
 	end
 	
 	always @(posedge clk) 
 	begin
-		case(state[i])
+		case(led_state[i])
 		blink_off:
-			if (counter[i] == 0 && data[i] == 1) begin
+			if (counter[i] == 0 && dma_intr[i] == 1) begin
 				counter[i] <= counter[i] + 1;
-				state[i] <= blink_on;
+				led_state[i] <= blink_on;
 			end else if (counter[i] == 0) begin
 				counter[i] <= counter[i];
-				state[i] <= blink_off;
+				led_state[i] <= blink_off;
 			end else begin
 				counter[i] <= counter[i] + 1;
-				state[i] <= blink_off;				
+				led_state[i] <= blink_off;				
 			end
 		
 		blink_on:
 		begin
 			counter[i] <= counter[i] + 1;
 			if (counter[i] == 0)
-				state[i] <= blink_off;
+				led_state[i] <= blink_off;
 			else
-				state[i] <= blink_on;
+				led_state[i] <= blink_on;
 		end	
 		endcase	
 	end
-	
-	assign LED[i] = state[i];
-		
-/*	always @(state[i])
-	begin
-		case (state[i])
-		blink_on:
-			LED[i] = 1;
-		blink_off:
-			LED[i] = 0;
-		endcase
-	end*/
 end
 endgenerate
 

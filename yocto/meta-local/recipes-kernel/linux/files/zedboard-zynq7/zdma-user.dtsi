@@ -41,6 +41,30 @@
 	amba_pl {
 		zdma@0 {
 			compatible = "tuc,zdma";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			partition@0 {
+				compatible = "tuc,partition";
+				reg = <0x43c10000 0x10000>;
+				transport = <&dma0>;
+			};
+			partition@1 {
+				compatible = "tuc,partition";
+				reg = <0x43c20000 0x10000>;
+				transport = <&dma1>;
+			};
+			partition@2 {
+				compatible = "tuc,partition";
+				reg = <0x43c30000 0x10000>;
+				transport = <&dma2>;
+			};
+			partition@3 {
+				compatible = "tuc,partition";
+				reg = <0x43c40000 0x10000>;
+				transport = <&dma3>;
+			};
 
 			zone@0 {
 				compatible = "tuc,zone";
@@ -59,25 +83,25 @@
 				memory-region = <&bank3>;
 			};
 			
-			dma-client@0 {
+			dma0: dma-client@0 {
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_0 0
 					&axi_dma_0 1>;
 				dma-names = "tx", "rx";
 			};
-			dma-client@1 {
+			dma1: dma-client@1 {
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_1 0
 					&axi_dma_1 1>;
 				dma-names = "tx", "rx";
 			};
-			dma-client@2 {
+			dma2: dma-client@2 {
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_2 0
 					&axi_dma_2 1>;
 				dma-names = "tx", "rx";
 			};
-			dma-client@3 {
+			dma3: dma-client@3 {
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_3 0
 					&axi_dma_3 1>;

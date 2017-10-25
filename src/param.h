@@ -8,6 +8,6 @@
 #define CORE_IER 0x08
 #define CORE_ISR 0x0c
 
-#define CORE_PARAM_CNT 4
+#define CORE_PARAM_CNT 5
 #define CORE_NAME_LEN 16
 

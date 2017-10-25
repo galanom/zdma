@@ -1,8 +1,0 @@
-components/
-build/
-pre-built/
-hardware/
-images/
-.petalinux/*
-!.petalinux/metadata
-*.o

@@ -97,7 +97,7 @@ static struct system {
 			clients_lock;
 	
 	struct workqueue_struct *workqueue;
-	wait_queue_head_t waitqueue;
+//	wait_queue_head_t waitqueue;
 
 	struct zdma_partition {
 		atomic_t state;
@@ -183,22 +183,20 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
 	list_for_each_entry_rcu(part, &sys.partitions.node, node)
-		pr_info("PARTITION %p [%s] -- core: %p [%s], state: %d\n", 
-			part, part->name, part->core, part->core->name, 
-			atomic_read(&part->state));
+		pr_info("%s: core: %s, state: %d\n", 
+			part->name, part->core->name, atomic_read(&part->state));
 	list_for_each_entry_rcu(core, &sys.cores.node, node)
-		pr_info("CORE %p [%s] -- bitstream: %p/%zuKi, param regs: [%hx], %hx, %hx, %hx, %hx\n", 
-			core, core->name, core->bitstream, core->size/Ki,
+		pr_info("core %s: bitstream: 0x%p/%zuKi, regs: [%02hx] %02hx:%02hx:%02hx:%02hx\n", 
+			core->name, core->bitstream, core->size/Ki,
 			core->reg_off[0], core->reg_off[1], core->reg_off[2], core->reg_off[3], core->reg_off[4]);
 	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk)
-		pr_info("MEM %p: base virt: %lx phys: %lx size: %lu avail: %d\n", 
-			chunk, 
-			chunk->start_addr, 
+		pr_info("mem: base %#lx at phys %#lx, size: %lu avail: %d\n", 
 			(long)chunk->phys_addr,
+			chunk->start_addr, 
 			(chunk->end_addr - chunk->start_addr + 1)/Ki,
 			atomic_read(&chunk->avail)/Ki);
 	list_for_each_entry_rcu(client, &sys.clients.node, node)
-		pr_info("CLIENT %d: core: %s, dma: %x->%x, size: %zu->%zu, state: %d\n",
+		pr_info("client %d: core: %s, mem: %#x->%#x, size: %zu->%zu KiB, state: %d\n",
 			client->id, client->core->name, client->tx.handle, client->rx.handle,
 			client->tx.size/Ki, client->rx.size/Ki, atomic_read(&client->state));
 	rcu_read_unlock();
@@ -354,7 +352,7 @@ static int partition_add(struct device_node *np)
 	
 	// now add the partition to the list
 	spin_lock(&sys.partitions_lock);
-	list_add_rcu(&partition->node, &sys.partitions.node);
+	list_add_tail_rcu(&partition->node, &sys.partitions.node);
 	spin_unlock(&sys.partitions_lock);
 	atomic_inc(&sys.partition_count);
 	return 0;
@@ -413,7 +411,7 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 	}
 
 	spin_lock(&sys.zones_lock);
-	list_add_rcu(&zone->node, &sys.zones.node);
+	list_add_tail_rcu(&zone->node, &sys.zones.node);
 	spin_unlock(&sys.zones_lock);
 	atomic_inc(&sys.zone_count);
 	
@@ -429,21 +427,20 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_partition *partition = partition_reserve(p->core);
-	zoled_print("R");
+	zoled_print("R%c", partition->name[10]);
 
-	pr_info("starting up core [%s] at partition [%s] (%zx->%p)\n", 
-		p->core->name, partition->name, partition->pbase, partition->vbase);
+	pr_info("starting up %s at %s\n", 
+		p->core->name, partition->name);
 
 	u32 csr;
-	if (partition->pbase == 0x431c0000) {
+	if (partition->pbase <= 0x43c20000) {
 	csr = ioread32(partition->vbase);
 	if (!(csr & CORE_IDLE)) {
-		pr_emerg("core [%s] at partition [%s] is in an unexpected state: "
+		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%hhx\n",
 			p->core->name, partition->name, csr);
 		goto dma_error;
 	}
-	pr_info("Initial CSR=%x\n", csr);
 	
 	for (int i = 0; i < CORE_PARAM_CNT; ++i) {
 		if (p->core->reg_off[i] == 0) continue;
@@ -485,7 +482,7 @@ static void dma_issue(struct work_struct *work)
 	init_completion(&p->tx.cmp);
 	init_completion(&p->rx.cmp);
 
-	unsigned long tx_timeout = msecs_to_jiffies(5000), rx_timeout = msecs_to_jiffies(5000);
+	unsigned long tx_timeout = msecs_to_jiffies(2000), rx_timeout = msecs_to_jiffies(2000);
 	enum dma_status tx_status, rx_status;
 
 	zoled_print("D");
@@ -522,12 +519,13 @@ static void dma_issue(struct work_struct *work)
 		goto dma_error;
 	}
 	
-	if (partition->pbase == 0x431c0000) {
-	pr_info("core %s return value %d\n", p->core->name,
-		ioread32(partition->vbase + p->core->reg_off[0]));
+	if (partition->pbase <= 0x43c20000) {
+//	pr_info("core %s return value %d\n", p->core->name,
+//		ioread32(partition->vbase + p->core->reg_off[0]));
 	csr = ioread32(partition->vbase);
+//	pr_info("core return CSR is %x\n", csr);
 	if (!(csr & CORE_DONE)) {
-		pr_emerg("core %s at partition %s is in an unexpected state: "
+		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, partition->name, csr);
 		goto dma_error;
@@ -558,7 +556,7 @@ static int dev_open(struct inode *inodep, struct file *filep)
 	}
 	INIT_WORK(&p->work, dma_issue);
 	spin_lock(&sys.clients_lock);
-	list_add_rcu(&p->node, &sys.clients.node);
+	list_add_tail_rcu(&p->node, &sys.clients.node);
 	spin_unlock(&sys.clients_lock);
 	atomic_inc(&sys.client_count);
 	p->id = atomic_inc_return(&id);
@@ -569,7 +567,7 @@ static int dev_open(struct inode *inodep, struct file *filep)
 static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
-	pr_info("client %d exiting\n", p->id);
+//	pr_info("client %d exiting\n", p->id);
 	flush_work(&p->work);
 	rmalloc(p, 0, 0);
 
@@ -631,7 +629,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			core->reg_off[i] = core_conf.reg_off[i];
 	
 		spin_lock(&sys.cores_lock);
-		list_add_rcu(&core->node, &sys.cores.node);
+		list_add_tail_rcu(&core->node, &sys.cores.node);
 		spin_unlock(&sys.cores_lock);
 		pr_info("core [%s] with size %zdKi registered\n", core->name, core->size/Ki);
 		break;

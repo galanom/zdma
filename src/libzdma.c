@@ -39,22 +39,18 @@ int buffer_fill(void *p, int len)
 
 int buffer_compare(void *p, void *q, int len)
 {
-	long long errors = 0;
+	int errors = 0;
 	if (p == NULL || q == NULL) return -EFAULT;
 
 	for (int i = 0; i < len/4; ++i) {
 		uint32_t x = ((int32_t *)p)[i], y = ((int32_t *)q)[i];
-		if (x != y) {
-			uint32_t flip = x^y;
-			do if (flip & 1) ++errors;
-			while (flip >>= 1);
-		}
+		if (x != y) ++errors;
 	}
-	fprintf(stderr, "%lld->%lld\n", *(uint64_t *)p, *(uint64_t *)q);
-	if (errors) fprintf(stderr, 
-		"*** Buffer verification failed: %lld bits were flippedd (%lld%%) ***\n",
-		errors, 100*errors/(len*8));
-	else printf("Verification OK\n");
+	if (errors) {
+		fprintf(stderr, "%llx->%llx\n", *(uint64_t *)p, *(uint64_t *)q);
+		fprintf(stderr, "*** Verification failed: %d%% word mismatch ***\n",
+			100*errors/(len/4));
+	} else printf("Verification OK\n");
 	return errors;
 }
 
@@ -243,7 +239,7 @@ void zdma_task_destroy(struct zdma_task *task)
 	return;
 }
 
-#define SIZE (1024*1000)
+#define SIZE (768*1024)
 
 int main(int argc, char **argv)
 {
@@ -264,17 +260,20 @@ int main(int argc, char **argv)
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE, 2, 1048576, 1);
+		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE+1024, 0);
 		assert(!err);
 	}
 
+	zdma_debug();
 	clock_gettime(CLOCK_MONOTONIC, &t0);
+	#pragma omp parallel num_threads(task_num)
 	for (int i = 0; i < iter_num; ++i) {
-		zdma_debug();
+		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_enqueue(&task[j]);
 			///assert(!err);
 		}
+		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err= zdma_task_waitfor(&task[j]);
 			//assert(!err);

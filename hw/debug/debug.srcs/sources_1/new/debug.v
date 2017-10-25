@@ -11,7 +11,7 @@ module debug(
 	);
 
 parameter blink_rate=21;
-reg [1:0] events = 2'b00;
+reg [1:0] ev = 2'b00;
 reg led_state [7:0];
 reg [blink_rate:0] counter [7:0];
 parameter blink_off=1'b0, blink_on=1'b1;
@@ -19,21 +19,24 @@ parameter blink_off=1'b0, blink_on=1'b1;
 always @(posedge clk)
 begin
 	if (event0)
-		events[0] <= 1;
+		ev[0] <= 1;
 	else 
-		events[0] <= events[0];
+		ev[0] <= ev[0];
 		
 	if (event1)
-		events[1] <= 1;
+		ev[1] <= 1;
 	else
-		events[1] <= events[1];
+		ev[1] <= ev[1];
 end
 
 assign 
-	LED[7] = led_state[2*core_select],
-	LED[6] = led_state[2*core_select+1],
-	LED[5] = events[0],
-	LED[4] = events[1];
+	LED[7:6] = 
+		(core_select == 0) ? {dma_intr[0], dma_intr[1]} :
+		(core_select == 1) ? {dma_intr[2], dma_intr[3]} :
+		(core_select == 2) ? {dma_intr[4], dma_intr[5]} :
+							 {dma_intr[6], dma_intr[7]},
+	LED[5] = ev[0],
+	LED[4] = ev[1];
 
 assign LED[3:0] =
 	(core_select == 0) ? core0 :

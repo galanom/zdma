@@ -3,13 +3,12 @@
 #include <linux/ioctl.h>
 #include "param.h"
 
-#ifndef u32
+#ifndef __KERNEL__
+#include <stdint.h>
+#include <stdlib.h>
 typedef uint32_t u32;
-#endif
-
-#ifndef u16
 typedef uint16_t u16;
-#endif
+#endif /* __KERNEL__ */
 
 struct zdma_client_config {
 	size_t	tx_size, rx_size;		// TX, RX buffer sizes

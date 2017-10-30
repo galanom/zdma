@@ -55,13 +55,7 @@ int buffer_compare(void *p, void *q, int len)
 }
 
 
-int tdiff(struct timespec t1, struct timespec t0)
-{
-	return (t1.tv_sec - t0.tv_sec)*K + (t1.tv_nsec - t0.tv_nsec)/M;
-}
-
-
-int zdma_core_register(char *name, char *fname)
+int zdma_core_register(const char name[], const char fname[])
 {
 	int fd, fddev, err;
 	struct stat st;
@@ -153,7 +147,7 @@ int zdma_task_init(struct zdma_task *task)
 }
 
 
-int zdma_task_configure(struct zdma_task *task, char *core_name, 
+int zdma_task_configure(struct zdma_task *task, const char core_name[],
 	int tx_size, int rx_size, int argc, ...)
 {
 	int err;
@@ -194,7 +188,6 @@ int zdma_task_configure(struct zdma_task *task, char *core_name,
 				err, strerror(err));
 		return err;
 	} 
-	buffer_fill(task->tx_buf, task->conf.tx_size);
 	return 0;
 }
 
@@ -237,55 +230,5 @@ void zdma_task_destroy(struct zdma_task *task)
 	munmap(task->rx_buf, task->conf.rx_size);
 	close(task->fd);
 	return;
-}
-
-#define SIZE (768*1024)
-
-int main(int argc, char **argv)
-{
-	bool verify = false;
-	int err, task_num = 0, iter_num = 0;
-	if (argc >= 3) {
-		task_num = atoi(argv[1]);
-		iter_num = atoi(argv[2]);
-	}
-	if (!task_num) task_num = 1;
-	if (!iter_num) iter_num = 1;
-	if (argc == 4) verify = true;
-
-	zdma_core_register("loopback", "./loopback.bit");
-
-	struct timespec t0, t1;
-	struct zdma_task task[task_num];
-	for (int j = 0; j < task_num; ++j) {
-		err = zdma_task_init(&task[j]);
-		assert(!err);
-		err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE+1024, 0);
-		assert(!err);
-	}
-
-	zdma_debug();
-	clock_gettime(CLOCK_MONOTONIC, &t0);
-	#pragma omp parallel num_threads(task_num)
-	for (int i = 0; i < iter_num; ++i) {
-		#pragma omp for
-		for (int j = 0; j < task_num; ++j) {
-			err = zdma_task_enqueue(&task[j]);
-			///assert(!err);
-		}
-		#pragma omp for
-		for (int j = 0; j < task_num; ++j) {
-			err= zdma_task_waitfor(&task[j]);
-			//assert(!err);
-			if (verify) zdma_task_verify(&task[j]);
-		}
-	}
-	clock_gettime(CLOCK_MONOTONIC, &t1);
-	for (int j = 0; j < task_num; ++j)
-		zdma_task_destroy(&task[j]);
-	int t = tdiff(t1, t0);
-	printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
-		task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
-	return 0;
 }
 

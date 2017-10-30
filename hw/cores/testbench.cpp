@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "common.h"
-#include "testbench.h"
+#include "cvtestbench.h"
 
 int main (int argc, char** argv) {
 	hls::stream<axi_elem_t> src, dst;
@@ -12,9 +12,9 @@ int main (int argc, char** argv) {
 		if (i == size/8 - 1) x.last = 1;
 		src << x;
 	}
-	ap_uint<4> debug;
-	int ret = loopback(src, dst, &debug);
-	std::cout << "debug =" << debug << ", ret = " << ret << std::endl;
+//	ap_uint<4> debug;
+	int ret = loopback(src, dst);
+//	std::cout << "debug =" << debug << ", ret = " << ret << std::endl;
 	int err = 0;
 	i = 0;
 	do {

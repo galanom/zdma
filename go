@@ -1,7 +1,7 @@
 #!/bin/sh
 x="\e[1;92m"
 y="\e[39m"
-DESIGN="quad_dma"
+DESIGN="quad_vdma"
 
 PROJ="/home/igalanommatis/work/zdma"
 
@@ -14,6 +14,9 @@ for f in hw/*/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
 done
 
 case $1 in
+"init")
+	sudo /opt/Xilinx/Vivado/2017.3/bin/hw_server &
+	;;
 "clean")
 	;;
 "git")
@@ -30,6 +33,7 @@ case $1 in
 	scripts/hwgen
 	;;
 "dt")
+	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-pl.dtsi
 	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-user.dtsi
 	;;
 "edt")
@@ -46,7 +50,7 @@ case $1 in
 	bitbake core-image-minimal
 	;;
 "boot")
-	cmp -bs hw/quad_dma/quad_dma.runs/impl_1/quad_dma_wrapper.bit image/download.bit || \
+	cmp -bs hw/$DESIGN/$DESIGN.runs/impl_1/${DESIGN}_wrapper.bit image/download.bit || \
 		echo "WARNING! Bitstream in image directory and vivado implementation differ!"
 	scripts/boot
 	;;

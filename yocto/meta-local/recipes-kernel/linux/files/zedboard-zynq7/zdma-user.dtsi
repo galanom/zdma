@@ -85,26 +85,26 @@
 			
 			dma0: dma-client@0 {
 				compatible = "tuc,dma-client";
-				dmas = <&axi_dma_0 0
-					&axi_dma_0 1>;
+				dmas = <&axi_vdma_0 0
+					&axi_vdma_0 1>;
 				dma-names = "tx", "rx";
 			};
 			dma1: dma-client@1 {
 				compatible = "tuc,dma-client";
-				dmas = <&axi_dma_1 0
-					&axi_dma_1 1>;
+				dmas = <&axi_vdma_1 0
+					&axi_vdma_1 1>;
 				dma-names = "tx", "rx";
 			};
 			dma2: dma-client@2 {
 				compatible = "tuc,dma-client";
-				dmas = <&axi_dma_2 0
-					&axi_dma_2 1>;
+				dmas = <&axi_vdma_2 0
+					&axi_vdma_2 1>;
 				dma-names = "tx", "rx";
 			};
 			dma3: dma-client@3 {
 				compatible = "tuc,dma-client";
-				dmas = <&axi_dma_3 0
-					&axi_dma_3 1>;
+				dmas = <&axi_vdma_3 0
+					&axi_vdma_3 1>;
 				dma-names = "tx", "rx";
 			};
 		};

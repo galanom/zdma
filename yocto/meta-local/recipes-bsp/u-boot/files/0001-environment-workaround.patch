@@ -16,7 +16,7 @@ index b602e8ac46..fe49428c11 100644
  #define _ENVIRONMENT_H_
  
 +#ifndef CONFIG_ENV_SIZE
-+#define CONFIG_ENV_SIZE (128 << 10)
++#define CONFIG_ENV_SIZE (32 << 10)
 +#endif
 +
  /**************************************************************************

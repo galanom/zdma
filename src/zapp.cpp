@@ -1,9 +1,10 @@
 #include <libzdma.h>
 #include <cassert>
+#include <ctime>
 #include <cstdlib> // just for size_t !
-#include <errno.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <cerrno>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
 
 #include "macro.h"
@@ -11,7 +12,7 @@
 #define DEV_FILE "/dev/zdma"
 #define SIZE (768*1024)
 
-using namespace cv;
+//using namespace cv;
 
 int tdiff(struct timespec t1, struct timespec t0)
 {
@@ -34,17 +35,17 @@ int main(int argc, char **argv)
 
 	zdma_core_register("loopback", "./loopback.bit");
 	zdma_core_register("cvloopback", "./loopback.bit");
-	Mat src = imread("./test_1080.bmp");
+//	Mat src = imread("./test_1080.bmp");
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		if (j < task_num/2)
+//		if (j < task_num/2)
 			err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE, 0);
-		else
-			err = zdma_task_configure(&task[j], "cvloopback", -1, -1, 0); 
+//		else
+//			err = zdma_task_configure(&task[j], "cvloopback", -1, -1, 0); 
 		assert(!err);
 	}
 
@@ -67,9 +68,9 @@ int main(int argc, char **argv)
 	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (int j = 0; j < task_num; ++j)
 		zdma_task_destroy(&task[j]);
-	int t = tdiff(t1, t0);
-	printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
-		task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
+	//int t = tdiff(t1, t0);
+	//printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
+	//	task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
 	return 0;
 }
 

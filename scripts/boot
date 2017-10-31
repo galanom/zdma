@@ -17,9 +17,9 @@ foreach line $items {
 targets -set -nocase -filter {name =~ "arm*#0"}
 after 500
 dow -data "$img/u-boot-spl.bin" 0x0
-after 500
+after 1000
 rwr pc 0x0
-after 500
+after 1000
 con
 after 1000
 stop

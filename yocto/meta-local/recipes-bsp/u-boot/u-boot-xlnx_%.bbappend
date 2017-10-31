@@ -3,8 +3,6 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += "file://0001-environment-workaround.patch"
 
-#UBOOT_MAKE_TARGET_append = " EXT_DTB=${DEPLOY_DIR_IMAGE}/${MACHINE}-system.dtb"
-
 FILESEXTRAPATHS_prepend := "${THISDIR}/configs:"
 SRC_URI += "file://config.cfg file://platform-auto.h"
 

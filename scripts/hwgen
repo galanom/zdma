@@ -1,5 +1,5 @@
 #!/opt/Xilinx/SDK/2017.3/bin/hsi -source
-set design "quad_vdma"
+set design "quad_dma"
 set proj "/home/igalanommatis/work/zdma"
 exec cp -p $proj/hw/$design/$design.sdk/${design}_wrapper.hdf $proj/image/dts/system.hdf
 set_param general.maxBackupLogs 0

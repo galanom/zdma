@@ -1,7 +1,7 @@
 #!/bin/sh
 x="\e[1;92m"
 y="\e[39m"
-DESIGN="quad_vdma"
+DESIGN="quad_dma"
 
 PROJ="/home/igalanommatis/work/zdma"
 
@@ -48,10 +48,11 @@ case $1 in
 	cd yocto
 	source ./oe-init-build-env > /dev/null
 	bitbake core-image-minimal
+	echo "Root image is $((`stat -Lc %s $PROJ/image/core-image-minimal-zedboard-zynq7.cpio` / 1048576)) MiB"
 	;;
 "boot")
-	cmp -bs hw/$DESIGN/$DESIGN.runs/impl_1/${DESIGN}_wrapper.bit image/download.bit || \
-		echo "WARNING! Bitstream in image directory and vivado implementation differ!"
+	ls -l hw/$DESIGN/$DESIGN.runs/impl_1/${DESIGN}_wrapper.bit
+	cp hw/$DESIGN/$DESIGN.runs/impl_1/${DESIGN}_wrapper.bit image/download.bit 
 	scripts/boot
 	;;
 "bb")
@@ -61,7 +62,7 @@ case $1 in
 	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
 	;;
 "kgdb")
-	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC+68e6869cfb-r26/linux-zedboard_zynq7-standard-build
+	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC*/linux-zedboard_zynq7-standard-build
 	;;
 "mgdb")
 	# needs fixing

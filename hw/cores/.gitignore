@@ -1,3 +1,4 @@
-test_1080p.bmp
+*.jpg
 loopback/
 cvloopback/
+blur/

@@ -155,8 +155,9 @@ int zdma_task_configure(struct zdma_task *task, const char core_name[],
 
 	if (argc > CORE_PARAM_CNT) return -EINVAL;
 	va_start(argv, argc);
-	for (int i = 0; i < argc; i++)
+	for (int i = 0; i < argc; i++) {
 		task->conf.core_param[i] = va_arg(argv, int);
+	}
 	va_end(argv);
 
 	strncpy(task->conf.core_name, core_name, CORE_NAME_LEN);

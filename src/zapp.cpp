@@ -1,18 +1,26 @@
+#include <string>
+#include <iostream>
+
 #include <libzdma.h>
+
 #include <cassert>
 #include <ctime>
 #include <cstdlib> // just for size_t !
+#include <cstdio>
 #include <cerrno>
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/highgui/highgui.hpp>
-//#include <opencv2/imgproc/imgproc.hpp>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "macro.h"
 
 #define DEV_FILE "/dev/zdma"
+#define IMG_FILE "./sample.jpg"
 #define SIZE (768*1024)
 
-//using namespace cv;
+using namespace cv;
+using namespace std;
 
 int tdiff(struct timespec t1, struct timespec t0)
 {
@@ -24,28 +32,37 @@ int tdiff(struct timespec t1, struct timespec t0)
 int main(int argc, char **argv)
 {
 	bool verify = false;
-	int err, task_num = 0, iter_num = 0;
+	int err, task_num = 0, iter_num = 0, kern = 0;
 	if (argc >= 3) {
 		task_num = atoi(argv[1]);
-		iter_num = atoi(argv[2]);
+		kern = atoi(argv[2]);
 	}
 	if (!task_num) task_num = 1;
 	if (!iter_num) iter_num = 1;
+	if (!kern) kern = 5;
 	if (argc == 4) verify = true;
 
-	zdma_core_register("loopback", "./loopback.bit");
-	zdma_core_register("cvloopback", "./loopback.bit");
-//	Mat src = imread("./test_1080.bmp");
+	zdma_core_register("blur", "./loopback.bit");
+	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	if (!img.data) {
+		cout << "Failed to load image \"" << IMG_FILE << "\", exiting." << endl;
+		return -1;
+	}
+	int img_size = img.rows * img.cols;
+	cout << "Loaded image \"" << IMG_FILE << "\", size: " << img_size << endl;
+	img.data[0] = 42;
+	cout << "first bytes: " << int(img.data[0]) << ":" << int(img.data[1]) << ":"
+		<< int(img.data[2]) << ":" << int(img.data[3]) << endl;
+	Mat blur(img.size(), img.type());
+
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-//		if (j < task_num/2)
-			err = zdma_task_configure(&task[j], "loopback", SIZE, SIZE, 0);
-//		else
-//			err = zdma_task_configure(&task[j], "cvloopback", -1, -1, 0); 
+		err = zdma_task_configure(&task[j], "blur", img_size, img_size, 2, img.cols, 1);
+		memcpy(task[j].tx_buf, img.data, img_size);
 		assert(!err);
 	}
 
@@ -60,7 +77,11 @@ int main(int argc, char **argv)
 		}
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
-			err= zdma_task_waitfor(&task[j]);
+			err = zdma_task_waitfor(&task[j]);
+			memcpy(blur.data, task[j].rx_buf, img_size);
+			cout << "ret bytes: " << int(blur.data[0]) << ":" << int(blur.data[1]) << ":"
+				<< int(blur.data[2]) << ":" << int(blur.data[3]) << endl;
+			imwrite("out" + to_string(j) + ".jpg", blur);
 			//assert(!err);
 			if (verify) zdma_task_verify(&task[j]);
 		}
@@ -68,9 +89,9 @@ int main(int argc, char **argv)
 	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (int j = 0; j < task_num; ++j)
 		zdma_task_destroy(&task[j]);
-	//int t = tdiff(t1, t0);
-	//printf("Exec: %d tasks by %d times, time: %d.%d, %.2fMB/s\n", 
-	//	task_num, iter_num, t/1000, t%1000, task_num*iter_num*SIZE/(t*1000.0));
+	int t = tdiff(t1, t0);
+	cout << "Exec: " << task_num << " tasks by " << iter_num << " times, time: " 
+		<< t/1000 << "." << t%1000 << ", throughput: " << task_num*iter_num*SIZE/(t*1000.0) << "MiB/s" << endl;
 	return 0;
 }
 

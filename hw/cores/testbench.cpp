@@ -1,25 +1,41 @@
-#include <stdlib.h>
+#include <iostream>
 #include "common.h"
-#include "cvtestbench.h"
-
-int main (int argc, char** argv) {
+#include "hls_opencv.h"
+using namespace cv;
+using namespace std;
+int main (int argc, char* argv[]) {
+	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat imgout(img.size(), img.type());
 	hls::stream<axi_elem_t> src, dst;
-	int size = 1048576, gain = 2;
+
+	int c = 0;
 	axi_elem_t x;
-	uint64_t i;
-	for (i = 0; i < size/8; ++i) {
-		x.data = i;
+	int size = img.rows * img.cols;
+
+	union {
+		uint64_t all;
+		uint8_t at[8];
+	} pixel;
+
+	for (int i = 0; i < size/8; ++i) {
+		++c;
+		x.data = ((uint64_t *)img.data)[i];
 		if (i == size/8 - 1) x.last = 1;
+		else x.last = 0;
 		src << x;
 	}
-//	ap_uint<4> debug;
-	int ret = loopback(src, dst);
-//	std::cout << "debug =" << debug << ", ret = " << ret << std::endl;
+	ap_uint<4> debug;
+	int ret = blur(src, dst, img.cols, 1, &debug);
 	int err = 0;
-	i = 0;
+
+	c = 0;
 	do {
 		dst >> x;
-		if (x.data != i++) ++err;
+		((uint64_t *)imgout.data)[c++] = x.data;
 	} while (!x.last);
-	return err;
+
+	cout << "return value is " << ret << ", debug: " << int(debug) << endl;
+	cout << "first data is " << int(imgout.data[0]) << ":" << int(imgout.data[1]) << endl;
+	imwrite("./out.jpg", imgout);
+	return 0;
 }

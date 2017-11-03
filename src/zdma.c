@@ -433,7 +433,6 @@ static void dma_issue(struct work_struct *work)
 		p->core->name, partition->name);
 
 	u32 csr;
-	if (partition->pbase <= 0x43c20000) {
 	csr = ioread32(partition->vbase);
 	if (!(csr & CORE_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
@@ -442,25 +441,34 @@ static void dma_issue(struct work_struct *work)
 		goto dma_error;
 	}
 	
-	for (int i = 0; i < CORE_PARAM_CNT; ++i) {
-		if (p->core->reg_off[i] == 0) continue;
-		iowrite32(p->core_param[i], partition->vbase + p->core->reg_off[i]);
+	for (int i = 1; i < CORE_PARAM_CNT; ++i) {
+		if (p->core->reg_off[i+1] == 0) continue;
+		pr_info("param: part %s: off: %x, val: %x\n", 
+			partition->name, p->core->reg_off[i+1], p->core_param[i]);
+		iowrite32(p->core_param[i], partition->vbase + p->core->reg_off[i+1]);
 	}
 	iowrite32(CORE_START, partition->vbase); // ap_start = 1
-	}
 
 	zoled_print("S");
 
-	if ((p->tx.descp = dmaengine_prep_slave_single(partition->txchanp, p->tx.handle, p->tx.size, 
+	if ((p->tx.descp = dmaengine_prep_slave_single(
+			partition->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
+
+		pr_err("failed to prepare TX DMA chan 0x%p, handle %#zx, size %zuKiB\n", 
+			partition->txchanp, p->tx.handle, p->tx.size/Ki);
 		p->tx.cookie = -EBUSY;
+
 		goto dma_error;
 	}
 	
-	if ((p->rx.descp = dmaengine_prep_slave_single(partition->rxchanp, p->rx.handle, p->rx.size,
+	if ((p->rx.descp = dmaengine_prep_slave_single(
+			partition->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
-		pr_err("dmaengine_prep_slave_single() returned NULL!\n");
+		
+		pr_err("failed to prepare RX DMA chan 0x%p, handle %#zx, size %zuKiB\n", 
+			partition->rxchanp, p->rx.handle, p->rx.size/Ki);
+
 		p->rx.cookie = -EBUSY;
 		goto dma_error;
 	}
@@ -519,17 +527,14 @@ static void dma_issue(struct work_struct *work)
 		goto dma_error;
 	}
 	
-	if (partition->pbase <= 0x43c20000) {
-//	pr_info("core %s return value %d\n", p->core->name,
-//		ioread32(partition->vbase + p->core->reg_off[0]));
+	pr_info("core %s return value %d\n", p->core->name,
+		ioread32(partition->vbase + p->core->reg_off[0]));
 	csr = ioread32(partition->vbase);
-//	pr_info("core return CSR is %x\n", csr);
 	if (!(csr & CORE_DONE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, partition->name, csr);
 		goto dma_error;
-	}
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
@@ -640,6 +645,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
+		for (int i = 0; i < CORE_PARAM_CNT; ++i)
+			p->core_param[i] = client_conf.core_param[i];
+
 		if (rmalloc(p, client_conf.tx_size, client_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;

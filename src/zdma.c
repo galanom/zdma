@@ -442,10 +442,10 @@ static void dma_issue(struct work_struct *work)
 	}
 	
 	for (int i = 1; i < CORE_PARAM_CNT; ++i) {
-		if (p->core->reg_off[i+1] == 0) continue;
+		if (p->core->reg_off[i] == 0) continue;
 		pr_info("param: part %s: off: %x, val: %x\n", 
-			partition->name, p->core->reg_off[i+1], p->core_param[i]);
-		iowrite32(p->core_param[i], partition->vbase + p->core->reg_off[i+1]);
+			partition->name, p->core->reg_off[i], p->core_param[i-1]);
+		iowrite32(p->core_param[i-1], partition->vbase + p->core->reg_off[i]);
 	}
 	iowrite32(CORE_START, partition->vbase); // ap_start = 1
 
@@ -527,8 +527,12 @@ static void dma_issue(struct work_struct *work)
 		goto dma_error;
 	}
 	
-	pr_info("core %s return value %d\n", p->core->name,
-		ioread32(partition->vbase + p->core->reg_off[0]));
+	// mostly debug, register somewhere a non-zero
+	if (p->core->reg_off[0]) {
+		pr_info("core %s return value %d\n", p->core->name,
+			ioread32(partition->vbase + p->core->reg_off[0]));
+	}
+
 	csr = ioread32(partition->vbase);
 	if (!(csr & CORE_DONE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "

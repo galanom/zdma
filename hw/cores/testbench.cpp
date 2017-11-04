@@ -17,6 +17,7 @@ int main (int argc, char* argv[]) {
 		uint8_t at[8];
 	} pixel;
 
+	img.data[0] = 42;
 	for (int i = 0; i < size/8; ++i) {
 		++c;
 		x.data = ((uint64_t *)img.data)[i];
@@ -25,7 +26,7 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 	ap_uint<4> debug;
-	int ret = blur(src, dst, img.cols, 1, &debug);
+	int ret = blur(src, dst, img.cols, 11, &debug);
 	int err = 0;
 
 	c = 0;
@@ -35,7 +36,11 @@ int main (int argc, char* argv[]) {
 	} while (!x.last);
 
 	cout << "return value is " << ret << ", debug: " << int(debug) << endl;
-	cout << "first data is " << int(imgout.data[0]) << ":" << int(imgout.data[1]) << endl;
-	imwrite("./out.jpg", imgout);
+	cout << int(imgout.data[0]) << ":" << int(imgout.data[1]) << ":" <<
+			int(imgout.data[2]) << ":" << int(imgout.data[3]) << ":" <<
+			int(imgout.data[4]) << ":" << int(imgout.data[5]) << ":" <<
+			int(imgout.data[6]) << ":" << int(imgout.data[7]) << endl;
+
+	imwrite("./out1.jpg", imgout);
 	return 0;
 }

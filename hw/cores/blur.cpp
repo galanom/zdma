@@ -12,7 +12,7 @@ int32_t blur(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t k
 #pragma HLS INTERFACE ap_stable port=kernel_dim
 #pragma HLS INTERFACE ap_none port=debug
 	axi_elem_t data_in, data_out;
-	int32_t ret = 0;
+	int32_t ret = line_width;
 	uint8_t lnbuf[KERNEL_DIM][LINE_WIDTH];
 	ap_int<24> kern[KERNEL_DIM][KERNEL_DIM];
 	int32_t win[8][KERNEL_DIM][KERNEL_DIM];
@@ -27,9 +27,8 @@ int32_t blur(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t k
 
 	for(int i = 0; i < kernel_dim; ++i) for (int j = 0; j < kernel_dim; ++j) {
 		kern[i][j] = ((1 << 23) - 1) / (kernel_dim*kernel_dim);
-		*debug = 12;
 	}
-
+	*debug = kernel_dim;
 	int col = 0;
 	do {
 		src >> data_in;

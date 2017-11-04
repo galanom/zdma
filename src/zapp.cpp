@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "blur", img_size, img_size, 2, img.cols, 1);
+		err = zdma_task_configure(&task[j], "blur", img_size, img_size, 2, img.cols, kern);
 		memcpy(task[j].tx_buf, img.data, img_size);
 		assert(!err);
 	}

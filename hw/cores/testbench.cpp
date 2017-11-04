@@ -26,7 +26,8 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 	ap_uint<4> debug;
-	int ret = blur(src, dst, img.cols, 11, &debug);
+	//int ret = blur(src, dst, img.cols, 5, &debug);
+	int ret = gauss(src, dst, img.cols, &debug);
 	int err = 0;
 
 	c = 0;

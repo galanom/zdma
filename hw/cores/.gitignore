@@ -2,3 +2,8 @@
 loopback/
 cvloopback/
 blur/
+gauss/
+unsharpen/
+edge/
+sobel/
+laplace/

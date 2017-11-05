@@ -17,7 +17,6 @@
 
 #define DEV_FILE "/dev/zdma"
 #define IMG_FILE "./sample.jpg"
-#define SIZE (768*1024)
 
 using namespace cv;
 using namespace std;
@@ -35,7 +34,7 @@ int main(int argc, char **argv)
 	int err, task_num = 0, iter_num = 0, kern = 0;
 	if (argc >= 3) {
 		task_num = atoi(argv[1]);
-		kern = atoi(argv[2]);
+		iter_num = atoi(argv[2]);
 	}
 	if (!task_num) task_num = 1;
 	if (!iter_num) iter_num = 1;
@@ -43,6 +42,7 @@ int main(int argc, char **argv)
 	if (argc == 4) verify = true;
 
 	zdma_core_register("blur", "./loopback.bit");
+	zdma_core_register("gauss", "./loopback.bit");
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
 		cout << "Failed to load image \"" << IMG_FILE << "\", exiting." << endl;
@@ -50,18 +50,18 @@ int main(int argc, char **argv)
 	}
 	int img_size = img.rows * img.cols;
 	cout << "Loaded image \"" << IMG_FILE << "\", size: " << img_size << endl;
-	img.data[0] = 42;
-	cout << "first bytes: " << int(img.data[0]) << ":" << int(img.data[1]) << ":"
-		<< int(img.data[2]) << ":" << int(img.data[3]) << endl;
-	Mat blur(img.size(), img.type());
+	Mat out[task_num];
+	fill(out, out+task_num, Mat(img.size(), img.type()));
 
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
+	cout << "Running " << task_num << " tasks by " << iter_num 
+		<< " times, verify is " << (verify ? "true" : "false") << "." << endl;
 	for (int j = 0; j < task_num; ++j) {
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "blur", img_size, img_size, 2, img.cols, kern);
+		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
 		memcpy(task[j].tx_buf, img.data, img_size);
 		assert(!err);
 	}
@@ -78,12 +78,10 @@ int main(int argc, char **argv)
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_waitfor(&task[j]);
-			memcpy(blur.data, task[j].rx_buf, img_size);
-			cout << "ret bytes: " << int(blur.data[0]) << ":" << int(blur.data[1]) << ":"
-				<< int(blur.data[2]) << ":" << int(blur.data[3]) << endl;
-			imwrite("out" + to_string(j) + ".jpg", blur);
-			//assert(!err);
-			if (verify) zdma_task_verify(&task[j]);
+			if (verify) {
+				memcpy(out[j].data, task[j].rx_buf, img_size);
+				imwrite("out" + to_string(j) + ".jpg", out[j]);
+			}
 		}
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -91,7 +89,8 @@ int main(int argc, char **argv)
 		zdma_task_destroy(&task[j]);
 	int t = tdiff(t1, t0);
 	cout << "Exec: " << task_num << " tasks by " << iter_num << " times, time: " 
-		<< t/1000 << "." << t%1000 << ", throughput: " << task_num*iter_num*SIZE/(t*1000.0) << "MiB/s" << endl;
+		<< t/1000 << "." << t%1000 << ", throughput: " << 
+		task_num*iter_num*img_size/(t*1000.0) << "MiB/s" << endl;
 	return 0;
 }
 

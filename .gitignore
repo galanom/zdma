@@ -13,3 +13,5 @@ image/
 
 yocto
 !yocto/meta-local
+
+octave-workspace

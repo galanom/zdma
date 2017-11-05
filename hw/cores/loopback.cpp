@@ -1,24 +1,21 @@
 #include "common.h"
 #include "ap_int.h"
 
-int32_t loopback(axi_stream_t& src, axi_stream_t& dst)
+int32_t loopback(axi_stream_t& src, axi_stream_t& dst, ap_uint<4> *debug)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-//#pragma HLS INTERFACE s_axilite port=size bundle=CONTROL_BUS offset=0x14
-//#pragma HLS INTERFACE s_axilite port=gain bundle=CONTROL_BUS offset=0x1C
 #pragma HLS INTERFACE s_axilite port=return bundle=CONTROL_BUS offset=0x24
-//#pragma HLS INTERFACE ap_stable port=size
-//#pragma HLS INTERFACE ap_stable port=gain
-//#pragma HLS INTERFACE ap_none port=debug
+#pragma HLS INTERFACE ap_none port=debug
+	*debug = 1;
 	uint64_t ret = 0;
 	axi_elem_t x, y;
 	do {
 		src >> x;
 		y = x;
-		ret += x.data;
-	//	*debug = ret & 0xf;
+		ret += AXI_TDATA_NBYTES;
 		dst << y;
 	} while (!x.last);
+	*debug = 0;
 	return ret;
 }

@@ -3,7 +3,5 @@ loopback/
 cvloopback/
 blur/
 gauss/
-unsharpen/
-edge/
+edge_detect/
 sobel/
-laplace/

@@ -3,15 +3,13 @@
 
 #define KERN_DIM 3
 
-int32_t edge_detect(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, ap_uint<4> *debug)
+int32_t sharpen(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=line_width bundle=CONTROL_BUS offset=0x14
-#pragma HLS INTERFACE s_axilite port=return bundle=CONTROL_BUS offset=0x24
+#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x18
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x10
 #pragma HLS INTERFACE ap_stable port=line_width
-#pragma HLS INTERFACE ap_none port=debug
-	*debug = 4;
 	axi_elem_t data_in, data_out;
 	int16_t col = 0;
 	int32_t ret = 0;
@@ -24,7 +22,9 @@ int32_t edge_detect(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, ap
 	} pixel;
 
 	int8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 0
-		{{-1, -1, -1}, {-1, 8, -1}, {-1, -1, -1}};
+		{{ 0, -1,  0},
+		 {-1,  5, -1},
+		 { 0, -1,  0}};
 
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
@@ -68,6 +68,6 @@ int32_t edge_detect(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, ap
 
 		dst << data_out;
 	} while (!data_out.last);
-	*debug = 0;
 	return ret;
 }
+

@@ -1,7 +1,10 @@
 *.jpg
 loopback/
-cvloopback/
 blur/
 gauss/
-edge_detect/
+outline/
 sobel/
+emboss/
+sharpen/
+contrast/
+gamma/

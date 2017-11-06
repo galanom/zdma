@@ -51,14 +51,13 @@ int main(int argc, char **argv)
 	int img_size = img.rows * img.cols;
 	cout << "Loaded image \"" << IMG_FILE << "\", size: " << img_size << endl;
 	Mat out[task_num];
-	fill(out, out+task_num, Mat(img.size(), img.type()));
-
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
 	cout << "Running " << task_num << " tasks by " << iter_num 
 		<< " times, verify is " << (verify ? "true" : "false") << "." << endl;
 	for (int j = 0; j < task_num; ++j) {
+		out[j].create(img.size(), img.type());
 		err = zdma_task_init(&task[j]);
 		assert(!err);
 		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
@@ -78,6 +77,7 @@ int main(int argc, char **argv)
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_waitfor(&task[j]);
+			//#pragma omp critical
 			if (verify) {
 				memcpy(out[j].data, task[j].rx_buf, img_size);
 				imwrite("out" + to_string(j) + ".jpg", out[j]);

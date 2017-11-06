@@ -8,10 +8,11 @@ tmp/
 **/*.str
 .Xil
 nohup.out
-boards/
+*.jpg
+feh*
+octave-workspace
 image/
 
 yocto
 !yocto/meta-local
 
-octave-workspace

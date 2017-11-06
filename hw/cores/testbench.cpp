@@ -17,7 +17,6 @@ int main (int argc, char* argv[]) {
 		uint8_t at[8];
 	} pixel;
 
-	img.data[0] = 42;
 	for (int i = 0; i < size/8; ++i) {
 		++c;
 		x.data = ((uint64_t *)img.data)[i];
@@ -25,10 +24,17 @@ int main (int argc, char* argv[]) {
 		else x.last = 0;
 		src << x;
 	}
-	ap_uint<4> debug;
-	//int ret = blur(src, dst, img.cols, 11, &debug);
-	int ret = gauss(src, dst, img.cols, &debug);
-	//int ret = edge_detect(src, dst, img.cols, &debug);
+//	ap_uint<4> debug;
+	//int32_t ret = loopback(src, dst);
+	int ret = blur(src, dst, img.cols, 11);
+	//int ret = gauss(src, dst, img.cols);
+	//int32_t ret = outline(src, dst, img.cols);
+	//int ret = sobel(src, dst, img.cols, 0);
+	//int32_t ret = emboss(src, dst, img.cols);
+	//int32_t ret = sharpen(src, dst, img.cols);
+	//int32_t ret = contrast(src, dst, 0, 40);
+	//int32_t ret = gamma(src, dst, 0.5f);
+
 	int err = 0;
 
 	c = 0;
@@ -37,7 +43,7 @@ int main (int argc, char* argv[]) {
 		((uint64_t *)imgout.data)[c++] = x.data;
 	} while (!x.last);
 
-	cout << "return value is " << ret << ", debug: " << int(debug) << endl;
+	cout << "return value is " << ret << endl;
 	cout << int(imgout.data[0]) << ":" << int(imgout.data[1]) << ":" <<
 			int(imgout.data[2]) << ":" << int(imgout.data[3]) << ":" <<
 			int(imgout.data[4]) << ":" << int(imgout.data[5]) << ":" <<

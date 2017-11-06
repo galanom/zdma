@@ -1,9 +1,9 @@
 #include "common.h"
 #include "ap_int.h"
 
-#define KERN_DIM 5
+#define KERN_DIM 3
 
-int32_t gauss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
+int32_t emboss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
@@ -21,12 +21,10 @@ int32_t gauss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 		uint8_t at[AXI_TDATA_NBYTES];
 	} pixel;
 
-	int8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 256
-				{{ 1,  4,  6,  4,  1},
-				 { 4, 16, 24, 16,  4},
-				 { 6, 26, 36, 26,  6},
-				 { 4, 16, 24, 16,  4},
-				 { 1,  4,  6,  4,  1}};
+	int8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 0
+		{{-2, -1,  0},
+		 {-1,  1,  1},
+		 { 0,  1,  2}};
 
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
@@ -42,6 +40,7 @@ int32_t gauss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 		data_out.data = 0;
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
+
 			linebuf.shift_up(col+px);
 			linebuf.insert_top(pixel.at[px], col+px);
 
@@ -57,9 +56,9 @@ int32_t gauss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 					acc[px] += win.getval(i, j);
 				}
 			}
-			int64_t val = acc[px] >> 8; // divide by kern_sum == 256
+			int64_t val = acc[px];
 			if (val > 255) val = 255;
-			//if (val < 0) val = 0; /// kernel has no negative values
+			if (val < 0) val = 0;
 			data_out.data |= val << (px << AXI_TDATA_SHIFT);
 		}
 		col += AXI_TDATA_NBYTES;
@@ -71,3 +70,4 @@ int32_t gauss(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 	} while (!data_out.last);
 	return ret;
 }
+

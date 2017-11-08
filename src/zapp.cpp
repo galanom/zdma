@@ -60,7 +60,8 @@ int main(int argc, char **argv)
 		out[j].create(img.size(), img.type());
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
+		//err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
+		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 2, img.cols, 0);
 		memcpy(task[j].tx_buf, img.data, img_size);
 		assert(!err);
 	}

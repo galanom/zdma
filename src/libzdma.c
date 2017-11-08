@@ -96,9 +96,9 @@ int zdma_core_register(const char name[], const char fname[])
 	}
 
 	// configuration register offsets; zero for unused
-	core.reg_off[0] = 0x0024;
-	core.reg_off[1] = 0x0014;
-	core.reg_off[2] = 0x0000;//1c;
+	core.reg_off[0] = 0x0010; // return value
+	core.reg_off[1] = 0x0018; // 1st argument
+	core.reg_off[2] = 0x0020; // ...
 	core.reg_off[3] = 0x0000;
 	core.reg_off[4] = 0x0000;
 

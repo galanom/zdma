@@ -26,9 +26,9 @@ int main (int argc, char* argv[]) {
 	}
 //	ap_uint<4> debug;
 	//int32_t ret = loopback(src, dst);
-	int ret = blur(src, dst, img.cols, 11);
+	//int ret = blur(src, dst, img.cols, 11);
 	//int ret = gauss(src, dst, img.cols);
-	//int32_t ret = outline(src, dst, img.cols);
+	int32_t ret = outline(src, dst, img.cols);
 	//int ret = sobel(src, dst, img.cols, 0);
 	//int32_t ret = emboss(src, dst, img.cols);
 	//int32_t ret = sharpen(src, dst, img.cols);

@@ -11,9 +11,9 @@
 		#size-cells = <1>;
 		compatible = "simple-bus";
 		ranges ;
-		ZedboardOLED_0: ZedboardOLED@43c00000 {
+		ZedboardOLED_0: ZedboardOLED@43c40000 {
 			compatible = "xlnx,ZedboardOLED-1.0";
-			reg = <0x43c00000 0x10000>;
+			reg = <0x43c40000 0x10000>;
 			xlnx,s00-axi-addr-width = <0x7>;
 			xlnx,s00-axi-data-width = <0x20>;
 		};
@@ -113,27 +113,27 @@
 				xlnx,device-id = <0x3>;
 			};
 		};
-		blur_0: blur@43c10000 {
+		blur_0: blur@43c00000 {
+			compatible = "xlnx,blur-1.0";
+			reg = <0x43c00000 0x10000>;
+			xlnx,s-axi-control-bus-addr-width = <0x6>;
+			xlnx,s-axi-control-bus-data-width = <0x20>;
+		};
+		blur_1: blur@43c10000 {
 			compatible = "xlnx,blur-1.0";
 			reg = <0x43c10000 0x10000>;
 			xlnx,s-axi-control-bus-addr-width = <0x6>;
 			xlnx,s-axi-control-bus-data-width = <0x20>;
 		};
-		blur_1: blur@43c20000 {
+		blur_2: blur@43c20000 {
 			compatible = "xlnx,blur-1.0";
 			reg = <0x43c20000 0x10000>;
 			xlnx,s-axi-control-bus-addr-width = <0x6>;
 			xlnx,s-axi-control-bus-data-width = <0x20>;
 		};
-		blur_2: blur@43c30000 {
+		blur_3: blur@43c30000 {
 			compatible = "xlnx,blur-1.0";
 			reg = <0x43c30000 0x10000>;
-			xlnx,s-axi-control-bus-addr-width = <0x6>;
-			xlnx,s-axi-control-bus-data-width = <0x20>;
-		};
-		blur_3: blur@43c40000 {
-			compatible = "xlnx,blur-1.0";
-			reg = <0x43c40000 0x10000>;
 			xlnx,s-axi-control-bus-addr-width = <0x6>;
 			xlnx,s-axi-control-bus-data-width = <0x20>;
 		};

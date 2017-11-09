@@ -27,6 +27,7 @@ int32_t blur(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t k
 		kernel_dim = 5;
 		ret = -1;
 	}
+
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
 		ret = -1;
@@ -36,24 +37,20 @@ int32_t blur(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t k
 
 	int col = 0;
 	do {
-#pragma HLS pipeline
+//#pragma HLS pipeline
 #pragma HLS loop_tripcount min=76800 max=288000
 		src >> data_in;
 		data_out = data_in;
 		pixel.all = data_out.data;
 		data_out.data = 0;
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
-#pragma HLS pipeline
-#pragma HLS unroll
 			linebuf.shift_up(col+px);
 			linebuf.insert_top(pixel.at[px], col+px);
 
 			acc[px] = 0;
 			for (int i = 0; i < kernel_dim; i++) {
-#pragma HLS pipeline
 #pragma HLS loop_tripcount min=3 max=11
 				for (int j = 0; j < kernel_dim; j++) {
-#pragma HLS pipeline
 #pragma HLS loop_tripcount min=3 max=11
 					acc[px] += linebuf.getval(i, j+col+px);
 				}

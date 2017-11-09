@@ -47,22 +47,22 @@
 
 			partition@0 {
 				compatible = "tuc,partition";
-				reg = <0x43c10000 0x10000>;
+				reg = <0x43c00000 0x10000>;
 				transport = <&dma0>;
 			};
 			partition@1 {
 				compatible = "tuc,partition";
-				reg = <0x43c20000 0x10000>;
+				reg = <0x43c10000 0x10000>;
 				transport = <&dma1>;
 			};
 			partition@2 {
 				compatible = "tuc,partition";
-				reg = <0x43c30000 0x10000>;
+				reg = <0x43c20000 0x10000>;
 				transport = <&dma2>;
 			};
 			partition@3 {
 				compatible = "tuc,partition";
-				reg = <0x43c40000 0x10000>;
+				reg = <0x43c30000 0x10000>;
 				transport = <&dma3>;
 			};
 

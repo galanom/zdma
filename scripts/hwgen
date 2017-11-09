@@ -1,7 +1,7 @@
-#!/opt/Xilinx/SDK/2017.3/bin/hsi -source
-set design "quad_dma"
+#!/opt/Xilinx/SDK/2017.2/bin/hsi -source
+set design "base"
 set proj "/home/igalanommatis/work/zdma"
-exec cp -p $proj/hw/$design/$design.sdk/${design}_wrapper.hdf $proj/image/dts/system.hdf
+exec cp -p $proj/hw/$design/$design.sdk/quad_dma.hdf $proj/image/dts/system.hdf
 set_param general.maxBackupLogs 0
 #set hwdsgn [open_hw_design $proj/image/system.hdf]
 open_hw_design $proj/image/dts/system.hdf
@@ -12,7 +12,7 @@ generate_target -dir $proj/image/dts/
 #generate_app -quiet -hw $hwdsgn -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl -compile -sw fsbl -dir $proj/image/fsbl
 #exec cp $proj/image/fsbl/executable.elf $proj/image/zynq_fsbl.elf
 #exec cp $proj/hw/quad_dma/quad_dma.sdk/ps7_init.tcl $proj/image/
-exec cp -p $proj/hw/$design/$design.runs/impl_1/${design}_wrapper.bit $proj/image/download.bit
+exec cp -p $proj/hw/$design/$design.runs/impl_1/quad_dma_wrapper.bit $proj/image/download.bit
 #exec echo /include/ \"system-user.dtsi\" >> $proj/image/dts/system-top.dts
 quit
 

@@ -347,6 +347,7 @@ static int partition_add(struct device_node *np)
 			err = -ENOSPC;
 		goto partition_add_error;
 	}
+	pr_info("assign %p->%p\n", (void *)partition->pbase, (void *)partition->vbase);
 	partition->vbase = devm_ioremap(sys.devp, partition->pbase, partition->psize);
 	iowrite32(CORE_INIT, partition->vbase);
 	
@@ -438,11 +439,13 @@ static void dma_issue(struct work_struct *work)
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%hhx\n",
 			p->core->name, partition->name, csr);
-		goto dma_error;
+	//	goto dma_error;
 	}
 	
 	for (int i = 1; i < CORE_PARAM_CNT; ++i) {
 		if (p->core->reg_off[i] == 0) continue;
+		pr_info("part: %s, reg: %zu, val: %zu\n", partition->name,
+			p->core->reg_off[i], p->core_param[i-1]);
 		iowrite32(p->core_param[i-1], partition->vbase + p->core->reg_off[i]);
 	}
 	iowrite32(CORE_START, partition->vbase); // ap_start = 1
@@ -537,7 +540,7 @@ static void dma_issue(struct work_struct *work)
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, partition->name, csr);
-		goto dma_error;
+	//	goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);

@@ -444,8 +444,8 @@ static void dma_issue(struct work_struct *work)
 	
 	for (int i = 1; i < CORE_PARAM_CNT; ++i) {
 		if (p->core->reg_off[i] == 0) continue;
-		pr_info("part: %s, reg: %zu, val: %zu\n", partition->name,
-			p->core->reg_off[i], p->core_param[i-1]);
+//		pr_info("part: %s, reg: %zu, val: %zu\n", partition->name,
+//			p->core->reg_off[i], p->core_param[i-1]);
 		iowrite32(p->core_param[i-1], partition->vbase + p->core->reg_off[i]);
 	}
 	iowrite32(CORE_START, partition->vbase); // ap_start = 1
@@ -529,11 +529,11 @@ static void dma_issue(struct work_struct *work)
 	}
 	
 	// mostly debug, register somewhere a non-zero
-	s32 ret;
-	if (p->core->reg_off[0] && ((ret = ioread32(partition->vbase + p->core->reg_off[0])))) {
-		pr_warn("core %s at %s returned an error code %d\n", 
-			p->core->name, partition->name, ret);
-	}
+//	s32 ret;
+//	if (p->core->reg_off[0] && ((ret = ioread32(partition->vbase + p->core->reg_off[0])))) {
+//		pr_warn("core %s at %s returned an error code %d\n", 
+//			p->core->name, partition->name, ret);
+//	}
 
 	csr = ioread32(partition->vbase);
 	if (!(csr & CORE_DONE)) {

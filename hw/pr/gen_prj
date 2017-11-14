@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3"
+CORE_LIST="loopback gauss sobel emboss outline sharpen"
+
+rm -rf ./prj
+mkdir ./prj
+
+for pblock in $PBLOCK_LIST
+do
+	mkdir ./prj/$pblock
+	for core in $CORE_LIST
+	do
+		for file in ../cores/$core/solution1/impl/ip/hdl/verilog/* ../base/base.srcs/sources_1/bd/quad_dma/ip/quad_dma_${pblock}_0/synth/quad_dma_${pblock}_0.v
+		do
+			echo "verilog xil_defaultLib $file" >> ./prj/$pblock/$core.prj
+		done
+	done
+done

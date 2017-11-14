@@ -21,6 +21,7 @@ case $1 in
 	;;
 "git")
 	./go clean
+	git reset
 	git add .
 	git add -f yocto/build/conf
 	git add -f yocto/meta-local

@@ -3,12 +3,12 @@
 
 #define KERN_DIM 3
 
-int32_t sharpen(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
+int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x18
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x10
+#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x20
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0xC0
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
 	int16_t col = 0;

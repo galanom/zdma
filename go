@@ -52,8 +52,6 @@ case $1 in
 	echo "Root image is $((`stat -Lc %s $PROJ/image/core-image-minimal-zedboard-zynq7.cpio` / 1048576)) MiB"
 	;;
 "boot")
-	ls -l hw/$DESIGN/$DESIGN.runs/impl_1/quad_dma.bit
-	cp hw/$DESIGN/$DESIGN.runs/impl_1/quad_dma.bit image/download.bit 
 	scripts/boot
 	picocom -b115200 /dev/ttyACM0
 	;;

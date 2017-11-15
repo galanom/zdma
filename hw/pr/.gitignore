@@ -1,6 +1,9 @@
 Implement/
 Synth/
+Bitstreams/
+Checkpoint/
 prj/
 hd_visual/
 *.orig
 *.os
+*webtalk*

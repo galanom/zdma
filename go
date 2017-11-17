@@ -62,7 +62,7 @@ case $1 in
 	arm-linux-gnueabihf-gdb build/libzdma -iex "target remote 192.168.2.2:1234"
 	;;
 "kgdb")
-	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC*/linux-zedboard_zynq7-standard-build
+	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC*/linux-zedboard_zynq7-standard-build/vmlinux
 	;;
 "mgdb")
 	# needs fixing

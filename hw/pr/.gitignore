@@ -1,9 +1,10 @@
-Implement/
-Synth/
-Bitstreams/
-Checkpoint/
+impl/
+synth/
+bitstream*/
+dcp/
 prj/
 hd_visual/
+*.dcp
 *.orig
 *.os
 *webtalk*

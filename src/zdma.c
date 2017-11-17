@@ -29,8 +29,6 @@
 #error "OpenFirmware is not configured in kernel\n"
 #endif
 
-#define DT_NAME_LEN 32
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
@@ -63,7 +61,7 @@ enum zdma_client_state {
 };
 
 
-enum zdma_partition_state {
+enum zdma_pblock_state {
 	PART_FREE = 0,
 	PART_BUSY,
 };
@@ -87,10 +85,10 @@ enum zdma_core_state {
 
 static struct system {
 	enum zdma_system_state state;
-	atomic_t	partition_count,
+	atomic_t	pblock_count,
 			zone_count,
 			client_count;
-	spinlock_t	partitions_lock,
+	spinlock_t	pblocks_lock,
 			cores_lock,
 			zones_lock,
 			mem_lock,
@@ -99,7 +97,7 @@ static struct system {
 	struct workqueue_struct *workqueue;
 //	wait_queue_head_t waitqueue;
 
-	struct zdma_partition {
+	struct zdma_pblock {
 		atomic_t state;
 		spinlock_t lock;
 		struct list_head node;
@@ -110,14 +108,18 @@ static struct system {
 		char name[DT_NAME_LEN];
 		struct dma_chan	*txchanp,
 				*rxchanp;
-	} partitions;
+	} pblocks;
 
 	struct zdma_core {
 		struct list_head node;
 		char name[CORE_NAME_LEN];
-		void *bitstream;
-		size_t size;
-		u16 reg_off[CORE_PARAM_CNT];
+		struct zdma_bitstream {
+			struct list_head node;
+			struct zdma_pblock *pblock;
+			void *data;
+			size_t size;
+		} bitstreams;
+		spinlock_t bitstreams_lock;
 	} cores;
 
 	struct zdma_zone {
@@ -132,6 +134,7 @@ static struct system {
 		struct list_head node;
 		struct zdma_core *core;
 		u32 core_param[CORE_PARAM_CNT];
+		int core_param_count;
 		struct work_struct work;
 		struct dma_channel {
 			struct gen_pool_chunk *bank;
@@ -159,6 +162,7 @@ static void sync_callback(void *completion)
 	return;
 }
 
+
 struct zdma_core *core_lookup(char *name)
 {
 	struct zdma_core *core, *core_sel = NULL;
@@ -173,22 +177,51 @@ struct zdma_core *core_lookup(char *name)
 	return core_sel;
 }
 
+
+struct zdma_pblock *pblock_lookup(char *pblock_name)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if (strncmp(pblock->name, pblock_name, DT_NAME_LEN) == 0) {
+			pblock_sel = pblock;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+
+}
+
+struct zdma_bitstream *bitstream_lookup(struct zdma_core *core, char *pblock_name)
+{
+	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
+	rcu_read_lock();
+	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
+		if (strncmp(bitstream->pblock->name, pblock_name, DT_NAME_LEN) == 0) {
+			bitstream_sel = bitstream;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	return bitstream_sel;
+}
+
+
 static void zdma_debug(void)
 {
-	struct zdma_partition *part;
+	struct zdma_pblock *pblock;
 	struct gen_pool_chunk *chunk;
 	struct zdma_core *core;
 	struct zdma_client *client;
 	
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
-	list_for_each_entry_rcu(part, &sys.partitions.node, node)
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node)
 		pr_info("%s: core: %s, state: %d\n", 
-			part->name, part->core->name, atomic_read(&part->state));
+			pblock->name, pblock->core->name, atomic_read(&pblock->state));
 	list_for_each_entry_rcu(core, &sys.cores.node, node)
-		pr_info("core %s: bitstream: 0x%p/%zuKi, regs: [%02hx] %02hx:%02hx:%02hx:%02hx\n", 
-			core->name, core->bitstream, core->size/Ki,
-			core->reg_off[0], core->reg_off[1], core->reg_off[2], core->reg_off[3], core->reg_off[4]);
+		pr_info("core %s\n", core->name);
 	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk)
 		pr_info("mem: base %#lx at phys %#lx, size: %lu avail: %d\n", 
 			(long)chunk->phys_addr,
@@ -205,60 +238,60 @@ static void zdma_debug(void)
 }
 
 
-static int partition_setup(struct zdma_partition *partition, struct zdma_core *core)
+static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 {
-//	while (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) != PART_FREE)
+//	while (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) != PART_FREE)
 //		{};
 	
-	BUG_ON(IS_ERR_OR_NULL(partition));
+	BUG_ON(IS_ERR_OR_NULL(pblock));
 	BUG_ON(IS_ERR_OR_NULL(core));
 
-	partition->core = core;
+	pblock->core = core;
 
-//	atomic_set(&partition->state, PART_FREE);
+//	atomic_set(&pblock->state, PART_FREE);
 	return 0;
 /*part_setup_fail:
-	atomic_set(&partition->state, PART_FREE);
+	atomic_set(&pblock->state, PART_FREE);
 	return -1;*/
 }
 
 
-static struct zdma_partition *partition_reserve(struct zdma_core *core)
+static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 {
-	struct zdma_partition *partition, *partition_sel = NULL;
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
 	do {
 		rcu_read_lock();
-		list_for_each_entry_rcu(partition, &sys.partitions.node, node) {
-			if (partition->core == core) {
-				if (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) == PART_FREE) {
-					partition_sel = partition;
+		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if (pblock->core == core) {
+				if (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) == PART_FREE) {
+					pblock_sel = pblock;
 					break;
 				}
 			}
 		}
 		zoled_print(".");
-		if (partition_sel == NULL) {
-			list_for_each_entry_rcu(partition, &sys.partitions.node, node) {
-				if (atomic_cmpxchg(&partition->state, PART_FREE, PART_BUSY) == PART_FREE) {
+		if (pblock_sel == NULL) {
+			list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+				if (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) == PART_FREE) {
 					zoled_print("@");
-					int err = partition_setup(partition, core);
-					if (!err) partition_sel = partition;
+					int err = pblock_setup(pblock, core);
+					if (!err) pblock_sel = pblock;
 					else continue;
 					break;
 				}
 			}
 		}
 		rcu_read_unlock();
-		if (partition_sel != NULL) zoled_print("%c", partition_sel->name[11]);
-		if (partition_sel == NULL) schedule(); //wait_event_interruptible(core->avail, hello);
-	} while (partition_sel == NULL);
-	return partition_sel;
+		if (pblock_sel != NULL) zoled_print("%c", pblock_sel->name[11]);
+		if (pblock_sel == NULL) schedule(); //wait_event_interruptible(core->avail, hello);
+	} while (pblock_sel == NULL);
+	return pblock_sel;
 }
 
-static void partition_release(struct zdma_partition *partition)
+static void pblock_release(struct zdma_pblock *pblock)
 {
-	atomic_set(&partition->state, PART_FREE);
-//	wake_up_interruptible(&partition->core->avail);
+	atomic_set(&pblock->state, PART_FREE);
+//	wake_up_interruptible(&pblock->core->avail);
 	return;
 }
 
@@ -285,80 +318,92 @@ static int rmalloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 	return 0;
 }
 
-static int partition_add(struct device_node *np)
+static int pblock_add(struct device_node *np)
 {
 	int err = 0;
 	if (sys.state != SYS_INIT) return -EBUSY;
 
-	struct zdma_partition *partition = devm_kzalloc(sys.devp, sizeof(struct zdma_partition), GFP_KERNEL);
-	if (unlikely(partition == NULL)) {
-		pr_err("unable to allocate %zu bytes for partition description structure\n", 
-			sizeof(*partition));
+	struct zdma_pblock *pblock = devm_kzalloc(sys.devp, sizeof(struct zdma_pblock), GFP_KERNEL);
+	if (unlikely(pblock == NULL)) {
+		pr_err("unable to allocate %zu bytes for pblock description structure\n", 
+			sizeof(*pblock));
 		return -ENOMEM;
 	}
-	spin_lock_init(&partition->lock);
+	spin_lock_init(&pblock->lock);
 	
-	atomic_set(&partition->state, PART_FREE);
+	atomic_set(&pblock->state, PART_FREE);
 	char *s = strrchr(of_node_full_name(np), '/') + 1;
-	strncpy(partition->name, s, DT_NAME_LEN-1);
+	strncpy(pblock->name, s, DT_NAME_LEN);
+	*strrchr(pblock->name, '@') = '_';
 
+
+	// discover the DMA controller responsible for the core of this pblock
 	struct device_node *tnp = of_parse_phandle(np, "transport", 0);
 	if (!tnp) {
 		pr_err("devicetree: %s does not contain a phandle to a data transporter.\n",
-			partition->name);
+			pblock->name);
 		err = -EINVAL;
-		goto partition_add_error;
+		goto pblock_add_error;
 	}
 
-	// configure the DMA controller for this partition
-	partition->txchanp = of_dma_request_slave_channel(tnp, "tx");
-	if (IS_ERR_OR_NULL(partition->txchanp)) {
+	// configure the DMA controller for this pblock
+	pblock->txchanp = of_dma_request_slave_channel(tnp, "tx");
+	if (IS_ERR_OR_NULL(pblock->txchanp)) {
 		pr_err("%s: failed to reserve TX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", partition->name);
+			"DMA controller not present or driver not loaded.\n", pblock->name);
 		err = -ENODEV;
-		goto partition_add_error;
+		goto pblock_add_error;
 	}
-	partition->rxchanp = of_dma_request_slave_channel(tnp, "rx");
-	if (IS_ERR_OR_NULL(partition->rxchanp)) {
+	pblock->rxchanp = of_dma_request_slave_channel(tnp, "rx");
+	if (IS_ERR_OR_NULL(pblock->rxchanp)) {
 		pr_err("%s: failed to reserve RX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", partition->name);
-		dma_release_channel(partition->txchanp);
+			"DMA controller not present or driver not loaded.\n", pblock->name);
+		dma_release_channel(pblock->txchanp);
 		err = -ENODEV;
-		goto partition_add_error;
+		goto pblock_add_error;
 	}
 
-	// configure the partition's register space
+	// discover the core's configuration address space
+	tnp = of_parse_phandle(np, "core", 0);
+	if (!tnp) {
+		pr_err("devicetree: %s does not contain a phandle to a core definition.\n",
+			pblock->name);
+		goto pblock_add_error_late;
+	}
 
+	// configure the pblock's register space
 	u64 size;
 	const __be32 * addr;
-	partition->pbase = of_translate_address(np, addr = of_get_address(np, 0, &size, NULL));
-	partition->psize = (size_t)size;
-	if (partition->pbase == (long)OF_BAD_ADDR || !size) {
+	pblock->pbase = of_translate_address(tnp, addr = of_get_address(tnp, 0, &size, NULL));
+	pblock->psize = (size_t)size;
+	if (pblock->pbase == (long)OF_BAD_ADDR || !size) {
 		pr_err("devicetree: %s: range entry is invalid:\n"
 			"base: %p, translated: %#zx, size: %#llx.\n", 
-			partition->name, addr, partition->pbase, size);
+			pblock->name, addr, pblock->pbase, size);
 		err = -EINVAL;
-		goto partition_add_error;
+		goto pblock_add_error_late;
 	}
 	
-	if (!devm_request_mem_region(sys.devp, partition->pbase, partition->psize, partition->name)) {
+	if (!devm_request_mem_region(sys.devp, pblock->pbase, pblock->psize, pblock->name)) {
 		pr_err("%s: failed to reserve I/O space at %#zx, size: %#zx\n", 
-			partition->name, partition->pbase, partition->psize);
+			pblock->name, pblock->pbase, pblock->psize);
 			err = -ENOSPC;
-		goto partition_add_error;
+		goto pblock_add_error_late;
 	}
-	pr_info("assign %p->%p\n", (void *)partition->pbase, (void *)partition->vbase);
-	partition->vbase = devm_ioremap(sys.devp, partition->pbase, partition->psize);
-	iowrite32(CORE_INIT, partition->vbase);
+	pblock->vbase = devm_ioremap(sys.devp, pblock->pbase, pblock->psize);
+	pr_info("assign %p->%p\n", (void *)pblock->pbase, (void *)pblock->vbase);
 	
-	// now add the partition to the list
-	spin_lock(&sys.partitions_lock);
-	list_add_tail_rcu(&partition->node, &sys.partitions.node);
-	spin_unlock(&sys.partitions_lock);
-	atomic_inc(&sys.partition_count);
+	// now add the pblock to the list
+	spin_lock(&sys.pblocks_lock);
+	list_add_tail_rcu(&pblock->node, &sys.pblocks.node);
+	spin_unlock(&sys.pblocks_lock);
+	atomic_inc(&sys.pblock_count);
 	return 0;
-partition_add_error:
-	devm_kfree(sys.devp, partition);
+pblock_add_error_late:
+	dma_release_channel(pblock->txchanp);
+	dma_release_channel(pblock->rxchanp);
+pblock_add_error:
+	devm_kfree(sys.devp, pblock);
 	return err;	
 }
 
@@ -427,48 +472,48 @@ static void dma_issue(struct work_struct *work)
 	struct zdma_client *p = container_of(work, struct zdma_client, work);
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
-	struct zdma_partition *partition = partition_reserve(p->core);
-	zoled_print("R%c", partition->name[10]);
+	struct zdma_pblock *pblock = pblock_reserve(p->core);
+	zoled_print("R%c", pblock->name[10]);
 
 	if (debug) 
-		pr_debug("starting up %s at %s\n", p->core->name, partition->name);
+		pr_debug("starting up %s at %s\n", p->core->name, pblock->name);
 
 	u32 csr;
-	csr = ioread32(partition->vbase);
+	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
+	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%hhx\n",
-			p->core->name, partition->name, csr);
-	//	goto dma_error;
+			p->core->name, pblock->name, csr);
+		goto dma_error;
 	}
 	
-	for (int i = 1; i < CORE_PARAM_CNT; ++i) {
-		if (p->core->reg_off[i] == 0) continue;
-//		pr_info("part: %s, reg: %zu, val: %zu\n", partition->name,
-//			p->core->reg_off[i], p->core_param[i-1]);
-		iowrite32(p->core_param[i-1], partition->vbase + p->core->reg_off[i]);
+	for (int i = 1; i < p->core_param_count; ++i) {
+		pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
+			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i-1]);
+		iowrite32(p->core_param[i-1], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
-	iowrite32(CORE_START, partition->vbase); // ap_start = 1
+	iowrite32(CORE_START, pblock->vbase + CORE_CSR); // ap_start = 1
 
 	zoled_print("S");
 
 	if ((p->tx.descp = dmaengine_prep_slave_single(
-			partition->txchanp, p->tx.handle, p->tx.size, 
+			pblock->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 
 		pr_err("failed to prepare TX DMA chan 0x%p, handle %#zx, size %zuKiB\n", 
-			partition->txchanp, p->tx.handle, p->tx.size/Ki);
+			pblock->txchanp, p->tx.handle, p->tx.size/Ki);
 		p->tx.cookie = -EBUSY;
 
 		goto dma_error;
 	}
 	
 	if ((p->rx.descp = dmaengine_prep_slave_single(
-			partition->rxchanp, p->rx.handle, p->rx.size,
+			pblock->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
 		
 		pr_err("failed to prepare RX DMA chan 0x%p, handle %#zx, size %zuKiB\n", 
-			partition->rxchanp, p->rx.handle, p->rx.size/Ki);
+			pblock->rxchanp, p->rx.handle, p->rx.size/Ki);
 
 		p->rx.cookie = -EBUSY;
 		goto dma_error;
@@ -496,20 +541,20 @@ static void dma_issue(struct work_struct *work)
 
 	zoled_print("D");
 
-	dma_async_issue_pending(partition->txchanp);
-	dma_async_issue_pending(partition->rxchanp);
+	dma_async_issue_pending(pblock->txchanp);
+	dma_async_issue_pending(pblock->rxchanp);
 
 	tx_timeout = wait_for_completion_timeout(&p->tx.cmp, tx_timeout);
 	rx_timeout = wait_for_completion_timeout(&p->rx.cmp, rx_timeout);
-	tx_status = dma_async_is_tx_complete(partition->txchanp, p->tx.cookie, NULL, NULL);
-	rx_status = dma_async_is_tx_complete(partition->rxchanp, p->rx.cookie, NULL, NULL);
+	tx_status = dma_async_is_tx_complete(pblock->txchanp, p->tx.cookie, NULL, NULL);
+	rx_status = dma_async_is_tx_complete(pblock->rxchanp, p->rx.cookie, NULL, NULL);
 	
 	zoled_print("C");
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!tx_timeout || !rx_timeout) {
 		pr_crit("*** DMA operation timed out at controller %s, core %s, client %d, chan %s.\n",
-			partition->name, partition->core->name, p->id,
+			pblock->name, pblock->core->name, p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
 		goto dma_error;
@@ -518,7 +563,7 @@ static void dma_issue(struct work_struct *work)
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
 		pr_err("*** DMA status at controller %s, core %s, client %d: "
 			"TX: %s (t/o %ums), RX: %s (t/o %ums) ***\n", 
-			partition->name, partition->core->name, p->id,
+			pblock->name, pblock->core->name, p->id,
 			tx_status == DMA_ERROR ? "ERROR" : 
 			tx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
 			jiffies_to_msecs(tx_timeout),
@@ -529,28 +574,28 @@ static void dma_issue(struct work_struct *work)
 	}
 	
 	// mostly debug, register somewhere a non-zero
-//	s32 ret;
-//	if (p->core->reg_off[0] && ((ret = ioread32(partition->vbase + p->core->reg_off[0])))) {
-//		pr_warn("core %s at %s returned an error code %d\n", 
-//			p->core->name, partition->name, ret);
-//	}
+	s32 ret;
+	if ((ret = ioread32(pblock->vbase + CORE_PARAM_RET))) {
+		pr_warn("core %s at %s returned an error code %d\n", 
+			p->core->name, pblock->name, ret);
+	}
 
-	csr = ioread32(partition->vbase);
+	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_DONE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
-			p->core->name, partition->name, csr);
-	//	goto dma_error;
+			p->core->name, pblock->name, csr);
+		goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
-	partition_release(partition);
+	pblock_release(pblock);
 	zoled_print(".\n");
 	return;
 
 dma_error:
 	atomic_set(&p->state, CLIENT_ERROR_DMA);
-	partition_release(partition);
+	pblock_release(pblock);
 	zoled_print("!\n");
 	return;
 }
@@ -598,6 +643,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	if (sys.state != SYS_UP) return -EAGAIN;
 	struct zdma_client *p = filep->private_data;
 	struct zdma_core *core;
+	struct zdma_bitstream *bitstream = NULL;
 
 	switch (cmd) {
 	case ZDMA_DEBUG:
@@ -612,37 +658,62 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		}
 
 		core = core_lookup(core_conf.name);
-		if (core) {
-			pr_info("core [%s] is already registered in the system, ignoring\n", core->name);
-			return -EEXIST;
+		
+		if (core == NULL) {
+			core = devm_kmalloc(sys.devp, sizeof(struct zdma_core), GFP_KERNEL);
+			if (core == NULL) {
+				pr_err("could allocate memory for core descriptor\n");
+				return -ENOMEM;
+			}
+			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
+			spin_lock_init(&core->bitstreams_lock);
+			INIT_LIST_HEAD(&core->bitstreams.node);
+			spin_lock(&sys.cores_lock);
+			list_add_tail_rcu(&core->node, &sys.cores.node);
+			spin_unlock(&sys.cores_lock);
+		} else {
+			bitstream = bitstream_lookup(core, core_conf.pblock_name);
+			if (bitstream) {
+				pr_warn("this bitstream is already registered for this core\n");
+				return -EEXIST;
+			}
 		}
 
-		void *bitstream = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
-		if (bitstream == NULL) {
-			pr_err("error allocating %zu bytes of memory for bitstream %s\n",
+		bitstream = devm_kmalloc(sys.devp, sizeof(struct zdma_bitstream), GFP_KERNEL);
+		if (!bitstream) {
+			pr_err("error allocating %zu bytes of memory for bitstream %s@%s structures\n",
+				sizeof(struct zdma_bitstream), core_conf.name, core_conf.pblock_name);
+			return -ENOMEM;
+		}
+		
+		bitstream->pblock = pblock_lookup(core_conf.pblock_name);
+		if (!bitstream->pblock) {
+			pr_warn("core %s contains bitstream for pblock %s that does not exist, ignoring.\n",
+				core_conf.name, core_conf.pblock_name);
+			devm_kfree(sys.devp, bitstream);
+			return -ENODEV;
+		}
+		
+		bitstream->size = core_conf.size;
+		bitstream->data = devm_kmalloc(sys.devp, bitstream->size, GFP_KERNEL);
+		if (!bitstream->data) {
+			devm_kfree(sys.devp, bitstream);
+			pr_err("error allocating %zu bytes of memory for bitstream %s data\n",
 				core_conf.size, core_conf.name);
 			return -ENOMEM;
 		}
-		if (copy_from_user(bitstream, (void __user *)core_conf.bitstream, core_conf.size)) {
+		if (copy_from_user(bitstream->data, (void __user *)core_conf.bitstream, core_conf.size)) {
 			pr_err("could not load user bitstream to kernel memory\n");
 			return -EIO;
 		}
-		core = devm_kmalloc(sys.devp, sizeof(*core), GFP_KERNEL);
-		if (core == NULL) {
-			pr_err("could allocate memory for core descriptor\n");
-			return -ENOMEM;
-		}
-		strncpy(core->name, core_conf.name, CORE_NAME_LEN);
-		core->size = core_conf.size;
-		core->bitstream = bitstream;
-//		init_waitqueue_head(&core->avail);
-		for (int i = 0; i < CORE_PARAM_CNT; ++i)
-			core->reg_off[i] = core_conf.reg_off[i];
-	
-		spin_lock(&sys.cores_lock);
-		list_add_tail_rcu(&core->node, &sys.cores.node);
-		spin_unlock(&sys.cores_lock);
-		pr_info("core [%s] with size %zdKi registered\n", core->name, core->size/Ki);
+
+
+		spin_lock(&core->bitstreams_lock);
+		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
+		spin_unlock(&core->bitstreams_lock);
+
+		pr_info("core %s for pblock %s with size %zdKi registered\n", 
+			core->name, bitstream->pblock->name, bitstream->size/Ki);
 		break;
 	case ZDMA_CLIENT_CONFIG:
 		;
@@ -651,8 +722,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
-		for (int i = 0; i < CORE_PARAM_CNT; ++i)
+		for (int i = 0; i < (p->core_param_count = client_conf.core_param_count); ++i) {
 			p->core_param[i] = client_conf.core_param[i];
+		}
 
 		if (rmalloc(p, client_conf.tx_size, client_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
@@ -752,10 +824,10 @@ static int zdma_remove(struct platform_device *pdev)
 		device_unregister(&zone->dev);
 	}
 
-	struct zdma_partition *partition;
-	list_for_each_entry(partition, &sys.partitions.node, node) {
-		if (partition->txchanp) dma_release_channel(partition->txchanp);
-		if (partition->rxchanp) dma_release_channel(partition->rxchanp);
+	struct zdma_pblock *pblock;
+	list_for_each_entry(pblock, &sys.pblocks.node, node) {
+		if (pblock->txchanp) dma_release_channel(pblock->txchanp);
+		if (pblock->rxchanp) dma_release_channel(pblock->rxchanp);
 	}
 	sys.state = SYS_DOWN;
 	pr_info("zdma is down\n");
@@ -788,12 +860,12 @@ static int zdma_probe(struct platform_device *pdev)
 
 	// basic data structure initialization
 	sys.workqueue = alloc_workqueue("zdma", WQ_FREEZABLE, 0);
-	INIT_LIST_HEAD(&sys.partitions.node);
-	INIT_LIST_HEAD(&sys.partitions.node);
+	INIT_LIST_HEAD(&sys.pblocks.node);
+	INIT_LIST_HEAD(&sys.pblocks.node);
 	INIT_LIST_HEAD(&sys.cores.node);
 	INIT_LIST_HEAD(&sys.zones.node);
 	INIT_LIST_HEAD(&sys.clients.node);
-	atomic_set(&sys.partition_count, 0);
+	atomic_set(&sys.pblock_count, 0);
 //	atomic_set(&sys.core_count, 0);
 	atomic_set(&sys.zone_count, 0);
 	atomic_set(&sys.client_count, 0);
@@ -804,11 +876,11 @@ static int zdma_probe(struct platform_device *pdev)
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
 
-	for_each_compatible_node(np, NULL, "tuc,partition") {
-		res = partition_add(np);
+	for_each_compatible_node(np, NULL, "tuc,pblock") {
+		res = pblock_add(np);
 		if (res) return res;
 	}
-	if (atomic_read(&sys.partition_count) == 0) {
+	if (atomic_read(&sys.pblock_count) == 0) {
 		pr_err("devicetree: no DMA controllers were detected\n");
 		return -ENODEV;
 	}
@@ -834,7 +906,7 @@ static int zdma_probe(struct platform_device *pdev)
 	}
 	
 	pr_info("devicetree: found %d DMA controller(s) and %d memory zone(s)\n", 
-		atomic_read(&sys.partition_count), atomic_read(&sys.zone_count));
+		atomic_read(&sys.pblock_count), atomic_read(&sys.zone_count));
 
 	sys.state = SYS_UP;
 	return 0;
@@ -871,7 +943,7 @@ static int __init mod_init(void)
 	sys.state = SYS_INIT;
 	zoled_print("init\n");
 
-	spin_lock_init(&sys.partitions_lock);
+	spin_lock_init(&sys.pblocks_lock);
 	spin_lock_init(&sys.zones_lock);
 	spin_lock_init(&sys.cores_lock);
 	spin_lock_init(&sys.clients_lock);

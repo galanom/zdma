@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 	if (!kern) kern = 5;
 	if (argc == 4) verify = true;
 
-	zdma_core_register("blur", "./loopback.bit");
-	zdma_core_register("gauss", "./loopback.bit");
+	zdma_core_register("sharpen");
+	zdma_core_register("gauss");
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
 		cout << "Failed to load image \"" << IMG_FILE << "\", exiting." << endl;
@@ -54,16 +54,15 @@ int main(int argc, char **argv)
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
-	cout << "Running " << task_num << " tasks by " << iter_num 
-		<< " times, verify is " << (verify ? "true" : "false") << "." << endl;
+//	cout << "Running " << task_num << " tasks by " << iter_num 
+//		<< " times, verify is " << (verify ? "true" : "false") << "." << endl;
 	for (int j = 0; j < task_num; ++j) {
 		out[j].create(img.size(), img.type());
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		//err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
-		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 2, img.cols, 0);
-		memcpy(task[j].tx_buf, img.data, img_size);
+		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
 		assert(!err);
+		memcpy(task[j].tx_buf, img.data, img_size);
 	}
 
 	zdma_debug();
@@ -73,12 +72,11 @@ int main(int argc, char **argv)
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_enqueue(&task[j]);
-			///assert(!err);
+			assert(!err);
 		}
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_waitfor(&task[j]);
-			//#pragma omp critical
 			if (verify) {
 				memcpy(out[j].data, task[j].rx_buf, img_size);
 				imwrite("out" + to_string(j) + ".jpg", out[j]);

@@ -11,55 +11,30 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <time.h>
+#include <dirent.h>
 
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
 
+#include "libzdma.h"
 #include "macro.h"
-#include "glue.h"
 
 #define DEV_FILE "/dev/zdma"
 
-struct zdma_task {
-	int fd;
-	void *tx_buf, *rx_buf;
-	struct zdma_client_config conf;
-};
 
-
-int buffer_fill(void *p, int len)
-{
-	for (int i = 0; i < len/4; ++i) {
-		((int32_t *)p)[i] = mrand48();
-	}
-	return 0;
-}
-
-
-int buffer_compare(void *p, void *q, int len)
-{
-	int errors = 0;
-	if (p == NULL || q == NULL) return -EFAULT;
-
-	for (int i = 0; i < len/4; ++i) {
-		uint32_t x = ((int32_t *)p)[i], y = ((int32_t *)q)[i];
-		if (x != y) ++errors;
-	}
-	if (errors) {
-		fprintf(stderr, "%llx->%llx\n", *(uint64_t *)p, *(uint64_t *)q);
-		fprintf(stderr, "*** Verification failed: %d%% word mismatch ***\n",
-			100*errors/(len/4));
-	} else printf("Verification OK\n");
-	return errors;
-}
-
-
-int zdma_core_register(const char name[], const char fname[])
+int zdma_core_register(const char name[])
 {
 	int fd, fddev, err;
 	struct stat st;
 	struct zdma_core_config core;
+
+	int nlen = strlen(name);
+	if (nlen > CORE_NAME_LEN-1) {
+		fprintf(stderr, "zdma_core_register(): core name may be up to %d bytes.\n", CORE_NAME_LEN-1);
+		return -EINVAL;
+	}
+
 	fddev = open(DEV_FILE, O_RDONLY);
 	err = errno;
 	if (fddev < 0) {
@@ -67,52 +42,78 @@ int zdma_core_register(const char name[], const char fname[])
 			err, strerror(err));
 		return err;
 	}
-	
-	fd = open(fname, O_RDONLY);
-	err = errno;
-	if (fd < 0) {
-		fprintf(stderr, "error %d (%s) opening bitstream file %s\n",
-			err, strerror(err), fname);
-		return err;
-	}
-	fstat(fd, &st);
-	core.size = st.st_size;
-	strncpy(core.name, name, CORE_NAME_LEN);
-	core.bitstream = malloc(core.size);
-	if (core.bitstream == NULL) {
-		fprintf(stderr, "error allocating %zu bytes of memory "
-			"for bitstream\n", core.size);
-		return -ENOMEM;
-	}
-	ssize_t nbytes = read(fd, core.bitstream, core.size);
-	if (nbytes == -1) {
+
+	DIR *dir = opendir(CORE_DIRECTORY);
+	struct dirent *entry;
+	char pblock[DT_NAME_LEN];
+	int count = 0;
+	char *token;
+	char buf[256];
+	while ((entry = readdir(dir))) {
+		strcpy(buf, entry->d_name);
+		if ((token = strtok(buf, ".")) == NULL) continue;
+		if (strncmp(token, name, CORE_NAME_LEN)) continue;
+		if ((token = strtok(NULL, ".")) == NULL) continue;
+		strncpy(pblock, token, DT_NAME_LEN);
+		if ((token = strtok(NULL, "\0")) == NULL) continue;
+		if (strcmp(token, "bin.xz")) continue;
+
+		printf("found %s: core %s for pblock %s\n", entry->d_name, name, pblock);
+		fd = openat(dirfd(dir), entry->d_name, O_RDONLY);
 		err = errno;
-		fprintf(stderr, "error %d (%s) reading bitstream from file %s\n",
-			err, strerror(err), fname);
-		return err;
-	} else if (nbytes != core.size) {
-		fprintf(stderr, "bitstream reading was interrupted at %zd\n", nbytes);
-		return -EINTR;
-	}
+		if (fd < 0) {
+			fprintf(stderr, "error %d (%s) opening bitstream file %s\n",
+				err, strerror(err), entry->d_name);
+			goto error_early;
+		}
+		
+		fstat(fd, &st);
+		core.size = st.st_size;
+		strcpy(core.name, name);
+		strcpy(core.pblock_name, pblock); 
+		core.bitstream = malloc(core.size);
+		if (core.bitstream == NULL) {
+			fprintf(stderr, "error allocating %zu bytes of memory "
+				"for bitstream\n", core.size);
+			err = -ENOMEM;
+			goto error;
+		}
+		ssize_t nbytes = read(fd, core.bitstream, core.size);
+		if (nbytes == -1) {
+			err = errno;
+			fprintf(stderr, "error %d (%s) reading bitstream from file %s\n",
+				err, strerror(err), entry->d_name);
+			goto error;
+		} else if (nbytes != core.size) {
+			fprintf(stderr, "bitstream reading was interrupted at %zd\n", nbytes);
+			err = -EINTR;
+			goto error;
+		}
+		close(fd);
 
-	// configuration register offsets; zero for unused
-	core.reg_off[0] = 0x00C0; // return value
-	core.reg_off[1] = 0x0010; // 1st argument
-	core.reg_off[2] = 0x0020; // ...
-	core.reg_off[3] = 0x0000;
-	core.reg_off[4] = 0x0000;
+		err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
 
-	err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
-	if (err) {
-		fprintf(stderr, "ioctl error %d (%s) registering user core\n",
-			err, strerror(err));
-		return err;
+		if (err) {
+			fprintf(stderr, "ioctl error %d (%s) registering user core\n",
+				err, strerror(err));
+			goto error;
+		}
+		free(core.bitstream);
+		++count;
 	}
-	free(core.bitstream);
+	closedir(dir);
+
 	close(fddev);
+	printf("user core %s registered %d bitstreams\n", core.name, count);
+	return !count;
+error:
+	free(core.bitstream);
+error_early:
+	fprintf(stderr, "zdma_register_core(): aborting due to error!\n");
+	closedir(dir);
 	close(fd);
-	printf("user core %s was registered successfully\n", core.name);
-	return 0;
+	close(fddev);
+	return err;
 }
 
 
@@ -154,6 +155,7 @@ int zdma_task_configure(struct zdma_task *task, const char core_name[],
 	va_list argv;
 
 	if (argc > CORE_PARAM_CNT) return -EINVAL;
+	task->conf.core_param_count = argc;
 	va_start(argv, argc);
 	for (int i = 0; i < argc; i++) {
 		task->conf.core_param[i] = va_arg(argv, int);
@@ -216,12 +218,6 @@ int zdma_task_waitfor(struct zdma_task *task)
 		return err;
 	}
 	return 0;
-}
-
-
-int zdma_task_verify(struct zdma_task *task)
-{
-	return buffer_compare(task->tx_buf, task->rx_buf, task->conf.tx_size);
 }
 
 

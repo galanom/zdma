@@ -18,7 +18,6 @@ S = "${WORKDIR}"
 PACKAGES = "${PN} ${PN}-dev ${PN}-dbg ${PN}-staticdev"
 FILES_${PN} = "${libdir}/libzdma.so.1"
 FILES_${PN}-dev = "${libdir}/libzdma.so ${includedir}/*.h"
-#RPROVIDES_${PN} = "libzdma"
 
 do_compile() {
 	oe_runmake

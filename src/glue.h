@@ -16,16 +16,14 @@ struct zdma_client_config {
 	int	pri;				// task priority
 	char	core_name[CORE_NAME_LEN];	// requested core
 	u32	core_param[CORE_PARAM_CNT];	// core parameters
-		// do not change type without modifying iowriteXX()'s in driver
+	int	core_param_count;
 };
 
 struct zdma_core_config {
 	char	name[CORE_NAME_LEN];	// core name in ASCII (utf8 not tested)
-	size_t	size;			// bitstream size
+	char	pblock_name[DT_NAME_LEN];	// pblock name
+	size_t	size;			// bitstream size (initially compressed)
 	void	*bitstream;		// the bitstream to load
-	u16	reg_off[CORE_PARAM_CNT];// configuration register offsets 
-				// counted from core base addr, zero for unused
-				// 64k space ought to be enough for everybody
 };
 
 #define MAGIC 'Z'

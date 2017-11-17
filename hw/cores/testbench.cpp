@@ -24,16 +24,8 @@ int main (int argc, char* argv[]) {
 		else x.last = 0;
 		src << x;
 	}
-//	ap_uint<4> debug;
-	//int32_t ret = loopback(src, dst);
-	//int ret = blur(src, dst, img.cols, 11);
-	//int ret = gauss(src, dst, img.cols);
-	int32_t ret = outline(src, dst, img.cols);
-	//int ret = sobel(src, dst, img.cols, 0);
-	//int32_t ret = emboss(src, dst, img.cols);
-	//int32_t ret = sharpen(src, dst, img.cols);
-	//int32_t ret = contrast(src, dst, 0, 40);
-	//int32_t ret = gamma(src, dst, 0.5f);
+
+	int32_t ret = zdma_core(src, dst, img.cols);
 
 	int err = 0;
 

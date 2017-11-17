@@ -35,17 +35,12 @@ set verbose      1
 set dcpLevel     1
 
 ####Output Directories
-set synthDir  "./Synth"
-set implDir   "./Implement"
-set dcpDir    "./Checkpoint"
-set bitDir    "./Bitstreams"
+set synthDir  "./synth"
+set implDir   "./impl"
+set dcpDir    "./dcp"
+set bitDir    "./bitstream"
 
-####Input Directories
-set srcDir     "./srcs"
-set xdcDir     "./constrs"
-set rtlDir     "$srcDir/hdl"
-set ipDir      "$srcDir/ip"
-set prjDir     "$srcDir/prj"
+set srcDir	""
 
 ###############################################################
 ### Top Definition
@@ -59,7 +54,7 @@ set static "static"
 add_module $static
 set_attribute module $static moduleName      $top
 set_attribute module $static top_level       1
-set_attribute module $static synthCheckpoint "./static_with_bbox.dcp"
+set_attribute module $static synthCheckpoint "./static.dcp"
 
 ####################################################################
 ### RP Module Definitions

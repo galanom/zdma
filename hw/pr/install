@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+TARGET="../../yocto/meta-local/recipes-bsp/zdma-firmware/files"
+
+rm -f $TARGET/*
+
+for f in bitstream/*pcap*bin
+do
+	install -m 644 $f "$TARGET/`echo $f | sed 's/bitstream\///;s/config_//;s/_pblock/\.pblock/;s/_partial_pcap//'`"
+done
+
+cp bitstream/config_loopback.bit ../../image/download.bit
+
+for f in $TARGET/*.bin
+do
+	xz -9 $f
+done
+

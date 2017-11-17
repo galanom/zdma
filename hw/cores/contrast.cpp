@@ -3,13 +3,13 @@
 
 #define KERN_DIM 3
 
-int32_t contrast(axi_stream_t& src, axi_stream_t& dst, int32_t brightness, int32_t contrast)
+int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t brightness, int32_t contrast)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=brightness bundle=control offset=0x18
-#pragma HLS INTERFACE s_axilite port=contrast bundle=control offset=0x20
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x10
+#pragma HLS INTERFACE s_axilite port=brightness bundle=control offset=0x20
+#pragma HLS INTERFACE s_axilite port=contrast bundle=control offset=0x30
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0xC0
 #pragma HLS INTERFACE ap_stable port=brightness
 #pragma HLS INTERFACE ap_stable port=contrast
 	axi_elem_t data_in, data_out;

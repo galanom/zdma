@@ -45,24 +45,24 @@
 			#size-cells = <1>;
 			ranges;
 
-			partition@0 {
-				compatible = "tuc,partition";
-				reg = <0x43c00000 0x10000>;
+			pblock@0 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_0>;
 				transport = <&dma0>;
 			};
-			partition@1 {
-				compatible = "tuc,partition";
-				reg = <0x43c10000 0x10000>;
+			pblock@1 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_1>;
 				transport = <&dma1>;
 			};
-			partition@2 {
-				compatible = "tuc,partition";
-				reg = <0x43c20000 0x10000>;
+			pblock@2 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_2>;
 				transport = <&dma2>;
 			};
-			partition@3 {
-				compatible = "tuc,partition";
-				reg = <0x43c30000 0x10000>;
+			pblock@3 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_3>;
 				transport = <&dma3>;
 			};
 

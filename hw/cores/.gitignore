@@ -1,5 +1,6 @@
 *.jpg
 loopback/
+negative/
 blur/
 gauss/
 outline/
@@ -7,4 +8,5 @@ sobel/
 emboss/
 sharpen/
 contrast/
+brightness/
 gamma/

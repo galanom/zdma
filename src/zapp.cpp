@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 		memcpy(task[j].tx_buf, img.data, img_size);
 	}
 
-	zdma_debug();
+//	zdma_debug();
 	clock_gettime(CLOCK_MONOTONIC, &t0);
 	#pragma omp parallel num_threads(task_num)
 	for (int i = 0; i < iter_num; ++i) {

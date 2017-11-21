@@ -7,12 +7,14 @@
 #include <linux/timex.h>
 #include <linux/cdev.h>
 
+#include <linux/dma/xilinx_dma.h>
 #include <linux/dmaengine.h>
 #include <linux/dma-mapping.h>
 #include <linux/dma-contiguous.h>
 #include <linux/genalloc.h>
 #include <linux/uaccess.h>
 #include <linux/wait.h>
+#include <linux/xz.h>
 
 #include <linux/of_dma.h>
 #include <linux/of_address.h>
@@ -32,7 +34,12 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
-MODULE_VERSION("0.3");
+MODULE_VERSION("0.4");
+
+//int xilinx_dma_chan_pause(struct dma_chan *);
+//int xilinx_dma_chan_resume(struct dma_chan *);
+int xilinx_dma_chan_safe_reset(struct dma_chan *);
+
 
 bool debug = true;
 module_param(debug, bool, 0);
@@ -75,14 +82,6 @@ enum zdma_core_state {
 	CORE_AUTOSTART = 1<<7,
 };
 
-/*enum zdma_core_state {
-	CORE_UNLOADED = 0,
-	CORE_LOADING,
-	CORE_LOADED,
-	CORE_UNLOADING,
-};*/
-
-
 static struct system {
 	enum zdma_system_state state;
 	atomic_t	pblock_count,
@@ -108,6 +107,7 @@ static struct system {
 		char name[DT_NAME_LEN];
 		struct dma_chan	*txchanp,
 				*rxchanp;
+		struct clk *clk_mm2s, *clk_s2mm;
 	} pblocks;
 
 	struct zdma_core {
@@ -152,6 +152,7 @@ static struct system {
 	dev_t cdev_num;
 	struct cdev cdev;
 	struct file_operations cdev_fops;
+	struct xz_dec *decompressor;
 } sys;
 
 
@@ -338,8 +339,8 @@ static int pblock_add(struct device_node *np)
 
 
 	// discover the DMA controller responsible for the core of this pblock
-	struct device_node *tnp = of_parse_phandle(np, "transport", 0);
-	if (!tnp) {
+	struct device_node *dma_client_np = of_parse_phandle(np, "transport", 0);
+	if (!dma_client_np) {
 		pr_err("devicetree: %s does not contain a phandle to a data transporter.\n",
 			pblock->name);
 		err = -EINVAL;
@@ -347,14 +348,16 @@ static int pblock_add(struct device_node *np)
 	}
 
 	// configure the DMA controller for this pblock
-	pblock->txchanp = of_dma_request_slave_channel(tnp, "tx");
+	pblock->txchanp = of_dma_request_slave_channel(dma_client_np, "tx");
 	if (IS_ERR_OR_NULL(pblock->txchanp)) {
 		pr_err("%s: failed to reserve TX DMA channel -- devicetree misconfiguration, "
 			"DMA controller not present or driver not loaded.\n", pblock->name);
 		err = -ENODEV;
 		goto pblock_add_error;
 	}
-	pblock->rxchanp = of_dma_request_slave_channel(tnp, "rx");
+
+
+	pblock->rxchanp = of_dma_request_slave_channel(dma_client_np, "rx");
 	if (IS_ERR_OR_NULL(pblock->rxchanp)) {
 		pr_err("%s: failed to reserve RX DMA channel -- devicetree misconfiguration, "
 			"DMA controller not present or driver not loaded.\n", pblock->name);
@@ -363,9 +366,21 @@ static int pblock_add(struct device_node *np)
 		goto pblock_add_error;
 	}
 
+//	xilinx_dma_chan_pause(pblock->txchanp);
+	//xilinx_dma_chan_pause(pblock->rxchanp);
+/*	struct xilinx_vdma_config cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	err = xilinx_vdma_channel_set_config(pblock->txchanp, &cfg);
+	if (err) pr_info("failed to reset TX chan\n");
+	err = xilinx_vdma_channel_set_config(pblock->rxchanp, &cfg);
+	if (err) pr_info("failed to reset RX chan\n");
+
+*/
+
+
 	// discover the core's configuration address space
-	tnp = of_parse_phandle(np, "core", 0);
-	if (!tnp) {
+	struct device_node *core_np = of_parse_phandle(np, "core", 0);
+	if (!core_np) {
 		pr_err("devicetree: %s does not contain a phandle to a core definition.\n",
 			pblock->name);
 		goto pblock_add_error_late;
@@ -374,7 +389,7 @@ static int pblock_add(struct device_node *np)
 	// configure the pblock's register space
 	u64 size;
 	const __be32 * addr;
-	pblock->pbase = of_translate_address(tnp, addr = of_get_address(tnp, 0, &size, NULL));
+	pblock->pbase = of_translate_address(core_np, addr = of_get_address(core_np, 0, &size, NULL));
 	pblock->psize = (size_t)size;
 	if (pblock->pbase == (long)OF_BAD_ADDR || !size) {
 		pr_err("devicetree: %s: range entry is invalid:\n"
@@ -469,33 +484,43 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 
 static void dma_issue(struct work_struct *work)
 {
+	s32 ret;
 	struct zdma_client *p = container_of(work, struct zdma_client, work);
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p->core);
-	zoled_print("R%c", pblock->name[10]);
+	zoled_print("R%c", pblock->name[8]);
 
 	if (debug) 
 		pr_debug("starting up %s at %s\n", p->core->name, pblock->name);
 
+
 	u32 csr;
 	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
 	csr = ioread32(pblock->vbase + CORE_CSR);
+	pr_info("core CSR is %x\n", csr);
 	if (!(csr & CORE_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
-			"ap_idle is not asserted. CSR=%hhx\n",
+			"ap_idle is not asserted. CSR=%x\n",
 			p->core->name, pblock->name, csr);
 		goto dma_error;
 	}
-	
-	for (int i = 1; i < p->core_param_count; ++i) {
+
+	pr_info("param cnt is %d\n", p->core_param_count);
+	for (int i = 0; i < p->core_param_count; ++i) {
 		pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
-			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i-1]);
-		iowrite32(p->core_param[i-1], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
+			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);
+		iowrite32(p->core_param[i], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
 	iowrite32(CORE_START, pblock->vbase + CORE_CSR); // ap_start = 1
+	csr = ioread32(pblock->vbase + CORE_CSR);
+	pr_info("core started, CSR=0x%x\n", csr);
 
 	zoled_print("S");
+	xilinx_dma_chan_safe_reset(pblock->txchanp);
+	
+	//xilinx_dma_chan_resume(pblock->txchanp);
+	//xilinx_dma_chan_resume(pblock->rxchanp);
 
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
@@ -537,7 +562,6 @@ static void dma_issue(struct work_struct *work)
 	init_completion(&p->rx.cmp);
 
 	unsigned long tx_timeout = msecs_to_jiffies(2000), rx_timeout = msecs_to_jiffies(2000);
-	enum dma_status tx_status, rx_status;
 
 	zoled_print("D");
 
@@ -546,9 +570,15 @@ static void dma_issue(struct work_struct *work)
 
 	tx_timeout = wait_for_completion_timeout(&p->tx.cmp, tx_timeout);
 	rx_timeout = wait_for_completion_timeout(&p->rx.cmp, rx_timeout);
-	tx_status = dma_async_is_tx_complete(pblock->txchanp, p->tx.cookie, NULL, NULL);
-	rx_status = dma_async_is_tx_complete(pblock->rxchanp, p->rx.cookie, NULL, NULL);
 	
+//	xilinx_dma_chan_pause(pblock->txchanp);
+//	xilinx_dma_chan_pause(pblock->rxchanp);
+
+	struct dma_tx_state tx_state, rx_state;
+	enum dma_status 
+		tx_status = dmaengine_tx_status(pblock->txchanp, p->tx.cookie, &tx_state),
+		rx_status = dmaengine_tx_status(pblock->txchanp, p->tx.cookie, &tx_state);
+
 	zoled_print("C");
 
 	// determine if the transaction completed without a timeout and withtout any errors
@@ -557,35 +587,34 @@ static void dma_issue(struct work_struct *work)
 			pblock->name, pblock->core->name, p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
-		goto dma_error;
+//		goto dma_error;
 	}
 
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
-		pr_err("*** DMA status at controller %s, core %s, client %d: "
-			"TX: %s (t/o %ums), RX: %s (t/o %ums) ***\n", 
+		pr_crit("*** DMA status at %s/%s, client %d: "
+			"TX: %s [res %u], RX: %s [res %u] ***\n", 
 			pblock->name, pblock->core->name, p->id,
 			tx_status == DMA_ERROR ? "ERROR" : 
 			tx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
-			jiffies_to_msecs(tx_timeout),
+			tx_state.residue,
 			rx_status == DMA_ERROR ? "ERROR" : 
 			rx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
-			jiffies_to_msecs(rx_timeout));
-		goto dma_error;
+			rx_state.residue);
+
+//		goto dma_error;
 	}
 	
 	// mostly debug, register somewhere a non-zero
-	s32 ret;
-	if ((ret = ioread32(pblock->vbase + CORE_PARAM_RET))) {
-		pr_warn("core %s at %s returned an error code %d\n", 
-			p->core->name, pblock->name, ret);
-	}
+	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
+	pr_warn("core %s at %s return value %d\n", 
+		p->core->name, pblock->name, ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_DONE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, pblock->name, csr);
-		goto dma_error;
+	//	goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
@@ -681,8 +710,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		bitstream = devm_kmalloc(sys.devp, sizeof(struct zdma_bitstream), GFP_KERNEL);
 		if (!bitstream) {
-			pr_err("error allocating %zu bytes of memory for bitstream %s@%s structures\n",
-				sizeof(struct zdma_bitstream), core_conf.name, core_conf.pblock_name);
+			pr_err("could not allocate %zu bytes for bitstream %s/%s structures\n",
+				sizeof(struct zdma_bitstream), core_conf.pblock_name, core_conf.name);
 			return -ENOMEM;
 		}
 		
@@ -695,18 +724,43 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		}
 		
 		bitstream->size = core_conf.size;
-		bitstream->data = devm_kmalloc(sys.devp, bitstream->size, GFP_KERNEL);
-		if (!bitstream->data) {
+		void *buffer = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
+		if (!buffer) {
 			devm_kfree(sys.devp, bitstream);
-			pr_err("error allocating %zu bytes of memory for bitstream %s data\n",
-				core_conf.size, core_conf.name);
+			pr_err("could not allocate %zu bytes for compressed bitstream %s/%s data\n",
+				core_conf.size, core_conf.pblock_name, core_conf.name);
 			return -ENOMEM;
 		}
-		if (copy_from_user(bitstream->data, (void __user *)core_conf.bitstream, core_conf.size)) {
+		if (copy_from_user(buffer, (void __user *)core_conf.bitstream, core_conf.size)) {
 			pr_err("could not load user bitstream to kernel memory\n");
 			return -EIO;
 		}
 
+		bitstream->data = devm_kmalloc(sys.devp, PARTIAL_SIZE_MAX, GFP_KERNEL);
+		if (!bitstream->data) {
+			devm_kfree(sys.devp, bitstream);
+			devm_kfree(sys.devp, buffer);
+			pr_err("could not allocate %zu bytes for bitstream %s/%s data\n",
+				PARTIAL_SIZE_MAX, core_conf.pblock_name, core_conf.name);
+			return -ENOMEM;
+		}
+		struct xz_buf xz_ctrl;
+		xz_ctrl.in = buffer;
+		xz_ctrl.in_pos = 0;
+		xz_ctrl.in_size = core_conf.size;
+		xz_ctrl.out = bitstream->data;
+		xz_ctrl.out_pos = 0;
+		xz_ctrl.out_size = PARTIAL_SIZE_MAX;
+		enum xz_ret dec_ret = xz_dec_run(sys.decompressor, &xz_ctrl);
+		pr_info("xz_dec_run finished with out_pos=%zu, ret=%d\n", xz_ctrl.out_pos, dec_ret);
+		devm_kfree(sys.devp, buffer);
+		if (dec_ret != XZ_STREAM_END) {
+			pr_err("error decompressing bitstream (xz decoder ret = %d)\n", dec_ret);
+			devm_kfree(sys.devp, bitstream->data);
+			devm_kfree(sys.devp, bitstream);
+			return -ENOMEM;
+		}
+		bitstream->size = xz_ctrl.out_pos;
 
 		spin_lock(&core->bitstreams_lock);
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
@@ -932,6 +986,7 @@ static struct platform_driver zdma_driver = {
 
 static void __exit mod_exit(void)
 {
+	xz_dec_end(sys.decompressor);
 	platform_driver_unregister(&zdma_driver);
 	cdev_del(&sys.cdev);
 	unregister_chrdev_region(sys.cdev_num, 1 /* count */);
@@ -965,6 +1020,9 @@ static int __init mod_init(void)
 		pr_err("error registering character device\n");
 		return -ENOSPC;
 	}
+
+	//xz_crc32_init();
+	sys.decompressor = xz_dec_init(XZ_SINGLE, 0);
 
 	// register the driver to the kernel
 	if (platform_driver_register(&zdma_driver)) {

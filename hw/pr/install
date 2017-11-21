@@ -8,10 +8,15 @@ do
 	install -m 644 $f "$TARGET/`echo $f | sed 's/bitstream\///;s/config_//;s/_pblock/\.pblock/;s/_partial_pcap//'`"
 done
 
-cp bitstream/config_loopback.bit ../../image/download.bit
+install -m 644 bitstream/config_loopback.bit ../../image/download.bit
 
 for f in $TARGET/*.bin
 do
-	xz -9 $f
+	xz --check=crc32 --lzma2=dict=512KiB $f
 done
 
+for x in loopback sobel sharpen outline gauss emboss negative brightness
+do
+	cp bitstream/config_${x}.bit ../../image
+	cp bitstream/config_${x}_pblock_0_partial_pcap.bin ../../image/${x}.bin
+done

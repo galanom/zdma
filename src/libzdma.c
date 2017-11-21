@@ -58,7 +58,6 @@ int zdma_core_register(const char name[])
 		if ((token = strtok(NULL, "\0")) == NULL) continue;
 		if (strcmp(token, "bin.xz")) continue;
 
-		printf("found %s: core %s for pblock %s\n", entry->d_name, name, pblock);
 		fd = openat(dirfd(dir), entry->d_name, O_RDONLY);
 		err = errno;
 		if (fd < 0) {
@@ -93,13 +92,13 @@ int zdma_core_register(const char name[])
 
 		err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
 
-		if (err) {
+/*		if (err) {
 			fprintf(stderr, "ioctl error %d (%s) registering user core\n",
 				err, strerror(err));
 			goto error;
-		}
+		}*/
 		free(core.bitstream);
-		++count;
+		if (!err) ++count;
 	}
 	closedir(dir);
 

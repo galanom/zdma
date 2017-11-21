@@ -14,6 +14,7 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t brightness, int3
 #pragma HLS INTERFACE ap_stable port=contrast
 	axi_elem_t data_in, data_out;
 	int32_t ret = 0;
+#pragma HLS reset variable=ret
 	int64_t val[AXI_TDATA_NBYTES];
 	ap_int<20> alpha_1, alpha_2, beta;
 	ap_fixed<32,16> alpha;
@@ -31,20 +32,19 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t brightness, int3
 		alpha_1 = 259*contrast;
 		contrast = 4 - contrast;
 		alpha_2 = 255*contrast;
-#pragma HLS DEPENDENCE variable=alpha_1 inter WAR false
-#pragma HLS DEPENDENCE variable=alpha_2 inter WAR false
 	}
 
 	beta = brightness + 128;
 	{
 #pragma HLS inline off
-#pragma HLS latency max=4
+#pragma HLS latency max=2
 #pragma HLS expression_balance off
 		alpha = alpha_1 / alpha_2;
 	}
 
 	do {
 #pragma HLS loop_tripcount min=76800 max=288000
+#pragma HLS pipeline
 		src >> data_in;
 		data_out = data_in;
 		pixel.all = data_out.data;
@@ -57,8 +57,8 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t brightness, int3
 		}
 
 		data_out.data =
-				val[7] << 56 | val[6] << 48 |
-				val[5] << 40 | val[4] << 32 |
+//				val[7] << 56 | val[6] << 48 |
+	//			val[5] << 40 | val[4] << 32 |
 				val[3] << 24 | val[2] << 16 |
 				val[1] <<  8 | val[0];
 

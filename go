@@ -48,10 +48,11 @@ case $1 in
 "build")
 	cd yocto
 	source ./oe-init-build-env > /dev/null
-	bitbake core-image-minimal
+	bitbake core-image-minimal || exit 1
 	echo "Root image is $((`stat -Lc %s $PROJ/image/core-image-minimal-zedboard-zynq7.cpio` / 1048576)) MiB"
 	;;
 "boot")
+	ls -l image/download.bit
 	scripts/boot
 	picocom -b115200 /dev/ttyACM0
 	;;

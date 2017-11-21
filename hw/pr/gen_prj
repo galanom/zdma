@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3"
-CORE_LIST="loopback gauss sobel emboss outline sharpen"
+CORE_LIST="loopback gauss sobel emboss outline sharpen negative brightness"
 
 rm -rf ./prj
 mkdir ./prj

@@ -54,18 +54,18 @@ set static "static"
 add_module $static
 set_attribute module $static moduleName      $top
 set_attribute module $static top_level       1
-set_attribute module $static synthCheckpoint "./static.dcp"
+set_attribute module $static synthCheckpoint "$dcpDir/static_4_32b_100mhz.dcp"
 
 ####################################################################
 ### RP Module Definitions
 ####################################################################
 
-foreach core [list "sobel" "gauss" "sharpen" "emboss" "outline" "loopback"] {
+foreach core [list "sobel" "gauss" "sharpen" "emboss" "outline" "loopback" "negative" "brightness"] {
 	set part_list [list [list $static $top [expr {$core == "sobel" ? "implement" : "import"}] ] ]
 	
 	foreach module_instance [list "zdma_core_0" "zdma_core_1" "zdma_core_2" "zdma_core_3"] {
 		set variant "${module_instance}_${core}"
-		lappend part_list [list $variant $module_instance "implement"]
+		lappend part_list [list $variant quad_dma_i/$module_instance "implement"]
 		add_module $variant
 		set_attribute module $variant moduleName "quad_dma_${module_instance}_0"
 		set_attribute module $variant prj	"./prj/${module_instance}/$core.prj"

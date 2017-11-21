@@ -1,7 +1,7 @@
 #include "common.h"
 #include "ap_int.h"
 
-#define KERN_DIM 5
+#define KERN_DIM 3
 
 int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
@@ -11,9 +11,9 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 #pragma HLS INTERFACE s_axilite port=return bundle=control offset=0xC0
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
-	int16_t col = 0;
-	int32_t ret = 0;
-	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH, uint8_t> linebuf;
+	int16_t col;
+	int32_t ret;
+	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
 	hls::Window<KERN_DIM, KERN_DIM, int32_t> win;
 	int32_t acc[AXI_TDATA_NBYTES];
 	union {
@@ -22,17 +22,22 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 	} pixel;
 
 	int8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 256
-				{{ 1,  4,  6,  4,  1},
+				{{1, 2, 1},
+				 {2, 4, 2},
+				 {1, 2, 1}};
+
+				/*{{ 1,  4,  6,  4,  1},
 				 { 4, 16, 24, 16,  4},
 				 { 6, 26, 36, 26,  6},
 				 { 4, 16, 24, 16,  4},
-				 { 1,  4,  6,  4,  1}};
-
+				 { 1,  4,  6,  4,  1}};*/
+	ret = 0;
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
 		ret = -1;
 	}
 
+	col = 0;
 	do {
 #pragma HLS loop_tripcount min=76800 max=288000
 #pragma HLS pipeline
@@ -57,10 +62,10 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 					acc[px] += win.getval(i, j);
 				}
 			}
-			int64_t val = acc[px] >> 8; // divide by kern_sum == 256
+			int64_t val = acc[px] >> 4;
 			if (val > 255) val = 255;
 			//if (val < 0) val = 0; /// kernel has no negative values
-			data_out.data |= val << (px << AXI_TDATA_SHIFT);
+			data_out.data |= val << (px << 3);
 		}
 		col += AXI_TDATA_NBYTES;
 
@@ -71,4 +76,3 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 	} while (!data_out.last);
 	return ret;
 }
-

@@ -13,18 +13,19 @@ int main (int argc, char* argv[]) {
 	int size = img.rows * img.cols;
 
 	union {
-		uint64_t all;
-		uint8_t at[8];
+		axi_data_t all;
+		uint8_t at[AXI_TDATA_NBYTES];
 	} pixel;
 
-	for (int i = 0; i < size/8; ++i) {
+	for (int i = 0; i < size/AXI_TDATA_NBYTES; ++i) {
 		++c;
-		x.data = ((uint64_t *)img.data)[i];
-		if (i == size/8 - 1) x.last = 1;
+		x.data = ((axi_data_t *)img.data)[i];
+		if (i == size/AXI_TDATA_NBYTES - 1) x.last = 1;
 		else x.last = 0;
 		src << x;
 	}
 
+	cout << "cols=" << img.cols << endl;
 	int32_t ret = zdma_core(src, dst, img.cols);
 
 	int err = 0;
@@ -32,7 +33,7 @@ int main (int argc, char* argv[]) {
 	c = 0;
 	do {
 		dst >> x;
-		((uint64_t *)imgout.data)[c++] = x.data;
+		((axi_data_t *)imgout.data)[c++] = x.data;
 	} while (!x.last);
 
 	cout << "return value is " << ret << endl;
@@ -41,6 +42,6 @@ int main (int argc, char* argv[]) {
 			int(imgout.data[4]) << ":" << int(imgout.data[5]) << ":" <<
 			int(imgout.data[6]) << ":" << int(imgout.data[7]) << endl;
 
-	imwrite("./out1.jpg", imgout);
+	imwrite("./out.jpg", imgout);
 	return 0;
 }

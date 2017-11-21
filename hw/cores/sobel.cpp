@@ -13,9 +13,9 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int3
 #pragma HLS INTERFACE ap_stable port=line_width
 #pragma HLS INTERFACE ap_stable port=func
 	axi_elem_t data_in, data_out;
-	int16_t col = 0;
-	int32_t ret = 0;
-	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH, uint8_t> linebuf;
+	int16_t col;
+	int32_t ret;
+	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
 	hls::Window<KERN_DIM, KERN_DIM, int32_t> win_x, win_y;
 	int32_t acc_x[AXI_TDATA_NBYTES], acc_y[AXI_TDATA_NBYTES];
 	uint8_t pixel_tmp;
@@ -42,6 +42,7 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int3
 		  {  0,  0,  0},
 		  { -3,-10, -3}}};
 
+	ret = 0;
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
 		ret = -1;
@@ -52,10 +53,12 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int3
 		ret = -1;
 	}
 
+	col = 0;
 	do {
 #pragma HLS loop_tripcount min=76800 max=288000
 #pragma HLS pipeline
 		src >> data_in;
+		ret += AXI_TDATA_NBYTES;
 		data_out = data_in;
 		pixel.all = data_out.data;
 		data_out.data = 0;
@@ -85,7 +88,7 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int3
 			int64_t val = abs(acc_x[px]) + abs(acc_y[px]);
 			if (val > 255) val = 255;
 			if (val < 0) val = 0;
-			data_out.data |= val << (px << AXI_TDATA_SHIFT);
+			data_out.data |= val << (px << 3);
 		}
 		col += AXI_TDATA_NBYTES;
 

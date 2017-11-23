@@ -14,6 +14,8 @@
 #include <linux/genalloc.h>
 #include <linux/uaccess.h>
 #include <linux/wait.h>
+#include <linux/delay.h>
+#include <linux/swab.h>
 #include <linux/xz.h>
 
 #include <linux/of_dma.h>
@@ -35,11 +37,6 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("0.4");
-
-//int xilinx_dma_chan_pause(struct dma_chan *);
-//int xilinx_dma_chan_resume(struct dma_chan *);
-int xilinx_dma_chan_safe_reset(struct dma_chan *);
-
 
 bool debug = true;
 module_param(debug, bool, 0);
@@ -69,8 +66,8 @@ enum zdma_client_state {
 
 
 enum zdma_pblock_state {
-	PART_FREE = 0,
-	PART_BUSY,
+	PBLOCK_FREE = 0,
+	PBLOCK_BUSY,
 };
 
 enum zdma_core_state {
@@ -117,6 +114,7 @@ static struct system {
 			struct list_head node;
 			struct zdma_pblock *pblock;
 			void *data;
+			dma_addr_t dma_handle;
 			size_t size;
 		} bitstreams;
 		spinlock_t bitstreams_lock;
@@ -237,23 +235,31 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	return;
 }
-
+int xdevcfg_program(dma_addr_t, size_t, bool);
 
 static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 {
-//	while (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) != PART_FREE)
-//		{};
-	
+	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
 	BUG_ON(IS_ERR_OR_NULL(pblock));
 	BUG_ON(IS_ERR_OR_NULL(core));
+	rcu_read_lock();
+	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
+		if (bitstream->pblock == pblock) {
+			bitstream_sel = bitstream;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	
+	if (!bitstream_sel)
+		return -EEXIST;
 
-	pblock->core = core;
-
-//	atomic_set(&pblock->state, PART_FREE);
-	return 0;
-/*part_setup_fail:
-	atomic_set(&pblock->state, PART_FREE);
-	return -1;*/
+	int err = xdevcfg_program(bitstream->dma_handle, bitstream->size, true);
+	if (err)
+		pr_crit("Error %d during FPGA reconfiguration!\n", err);
+	else
+		pblock->core = core;
+	return err;
 }
 
 
@@ -261,37 +267,49 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 {
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 	do {
+		// at first, try to find an already running core
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 			if (pblock->core == core) {
-				if (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) == PART_FREE) {
+				if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
 					pblock_sel = pblock;
 					break;
 				}
 			}
 		}
-		zoled_print(".");
-		if (pblock_sel == NULL) {
-			list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-				if (atomic_cmpxchg(&pblock->state, PART_FREE, PART_BUSY) == PART_FREE) {
-					zoled_print("@");
-					int err = pblock_setup(pblock, core);
-					if (!err) pblock_sel = pblock;
-					else continue;
-					break;
-				}
+		rcu_read_unlock();
+		
+		if (pblock_sel) 
+			return pblock_sel;
+
+		// if a running core was not found, program the first free pblock
+		rcu_read_lock();
+		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
+				pblock_sel = pblock;
+				break;
 			}
 		}
 		rcu_read_unlock();
-		if (pblock_sel != NULL) zoled_print("%c", pblock_sel->name[11]);
-		if (pblock_sel == NULL) schedule(); //wait_event_interruptible(core->avail, hello);
+
+		// if we found a free pblock, try to program it if a bitstream is available
+		// FIXME unecessary performance penalty if a core is not loadable on all cores
+		if (pblock_sel) {
+			int err = pblock_setup(pblock, core);
+			if (err) 
+				pblock_sel = NULL;	// free pblock but had no bitstream available
+		}
+		
+		// either no free pblock or no bitstream for the chosen pblock
+		// concede cpu to other task to wait a bit and then redo from start
+		if (pblock_sel == NULL) schedule();
 	} while (pblock_sel == NULL);
 	return pblock_sel;
 }
 
 static void pblock_release(struct zdma_pblock *pblock)
 {
-	atomic_set(&pblock->state, PART_FREE);
+	atomic_set(&pblock->state, PBLOCK_FREE);
 //	wake_up_interruptible(&pblock->core->avail);
 	return;
 }
@@ -332,7 +350,7 @@ static int pblock_add(struct device_node *np)
 	}
 	spin_lock_init(&pblock->lock);
 	
-	atomic_set(&pblock->state, PART_FREE);
+	atomic_set(&pblock->state, PBLOCK_FREE);
 	char *s = strrchr(of_node_full_name(np), '/') + 1;
 	strncpy(pblock->name, s, DT_NAME_LEN);
 	*strrchr(pblock->name, '@') = '_';
@@ -356,7 +374,6 @@ static int pblock_add(struct device_node *np)
 		goto pblock_add_error;
 	}
 
-
 	pblock->rxchanp = of_dma_request_slave_channel(dma_client_np, "rx");
 	if (IS_ERR_OR_NULL(pblock->rxchanp)) {
 		pr_err("%s: failed to reserve RX DMA channel -- devicetree misconfiguration, "
@@ -365,18 +382,6 @@ static int pblock_add(struct device_node *np)
 		err = -ENODEV;
 		goto pblock_add_error;
 	}
-
-//	xilinx_dma_chan_pause(pblock->txchanp);
-	//xilinx_dma_chan_pause(pblock->rxchanp);
-/*	struct xilinx_vdma_config cfg;
-	memset(&cfg, 0, sizeof(cfg));
-	err = xilinx_vdma_channel_set_config(pblock->txchanp, &cfg);
-	if (err) pr_info("failed to reset TX chan\n");
-	err = xilinx_vdma_channel_set_config(pblock->rxchanp, &cfg);
-	if (err) pr_info("failed to reset RX chan\n");
-
-*/
-
 
 	// discover the core's configuration address space
 	struct device_node *core_np = of_parse_phandle(np, "core", 0);
@@ -489,15 +494,13 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p->core);
-	zoled_print("R%c", pblock->name[8]);
-
-	if (debug) 
-		pr_debug("starting up %s at %s\n", p->core->name, pblock->name);
-
+	zoled_print("ISS %s@%c\n", p->core->name, pblock->name[7]);
 
 	u32 csr;
 	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
+	zoled_print("WRITE OK\n");
 	csr = ioread32(pblock->vbase + CORE_CSR);
+	zoled_print("CSR %x\n", csr);
 	pr_info("core CSR is %x\n", csr);
 	if (!(csr & CORE_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
@@ -517,10 +520,9 @@ static void dma_issue(struct work_struct *work)
 	pr_info("core started, CSR=0x%x\n", csr);
 
 	zoled_print("S");
-	xilinx_dma_chan_safe_reset(pblock->txchanp);
-	
-	//xilinx_dma_chan_resume(pblock->txchanp);
-	//xilinx_dma_chan_resume(pblock->rxchanp);
+	ret = xilinx_dma_reset_intr(pblock->txchanp);
+	if (ret)
+		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
 
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
@@ -736,7 +738,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			return -EIO;
 		}
 
-		bitstream->data = devm_kmalloc(sys.devp, PARTIAL_SIZE_MAX, GFP_KERNEL);
+		bitstream->data = dmam_alloc_coherent(sys.devp, PARTIAL_SIZE_MAX, &bitstream->dma_handle, GFP_KERNEL);
 		if (!bitstream->data) {
 			devm_kfree(sys.devp, bitstream);
 			devm_kfree(sys.devp, buffer);
@@ -752,15 +754,41 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		xz_ctrl.out_pos = 0;
 		xz_ctrl.out_size = PARTIAL_SIZE_MAX;
 		enum xz_ret dec_ret = xz_dec_run(sys.decompressor, &xz_ctrl);
-		pr_info("xz_dec_run finished with out_pos=%zu, ret=%d\n", xz_ctrl.out_pos, dec_ret);
 		devm_kfree(sys.devp, buffer);
 		if (dec_ret != XZ_STREAM_END) {
 			pr_err("error decompressing bitstream (xz decoder ret = %d)\n", dec_ret);
-			devm_kfree(sys.devp, bitstream->data);
+			dmam_free_coherent(sys.devp, PARTIAL_SIZE_MAX, bitstream->data, bitstream->dma_handle);
 			devm_kfree(sys.devp, bitstream);
 			return -ENOMEM;
 		}
 		bitstream->size = xz_ctrl.out_pos;
+
+		size_t pos;
+		bool swap = false;
+		for (pos = 0; pos < bitstream->size - sizeof(u32); ++pos) {
+			u32 *ptr = bitstream->data + pos;
+			if (*ptr == be32_to_cpu(0x665599AA))
+				break;
+			if (*ptr == le32_to_cpu(0x665599AA)) {
+				swap = true;
+				break;
+			}
+		}
+
+		if (pos >= bitstream->size - sizeof(u32)) {
+			pr_warn("Failed to detect bitstream magic number; aborting...");
+			dmam_free_coherent(sys.devp, PARTIAL_SIZE_MAX, bitstream->data, bitstream->dma_handle);
+			devm_kfree(sys.devp, bitstream);
+			return -EINVAL;
+		}
+
+		bitstream->size -= pos;
+		memmove(bitstream->data, bitstream->data + pos, bitstream->size);
+
+		if (swap) for (int i = 0; i < bitstream->size - sizeof(u32); i += sizeof(u32)) {
+			*(u32 *)(bitstream->data + i) = swab32(*(u32 *)(bitstream->data + i));
+		}
+
 
 		spin_lock(&core->bitstreams_lock);
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);

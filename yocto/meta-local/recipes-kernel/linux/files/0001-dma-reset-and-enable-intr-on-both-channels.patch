@@ -1,0 +1,54 @@
+From ff5a3ead8994978f17053dcf6cb9cabf08ad6a5b Mon Sep 17 00:00:00 2001
+From: Ioannis Galanommatis <galanom@gmail.com>
+Date: Tue, 21 Nov 2017 22:44:41 +0200
+Subject: [PATCH] dma reset and enable intr on both channels
+
+---
+ drivers/dma/xilinx/xilinx_dma.c | 20 ++++++++++++++++++++
+ include/linux/dma/xilinx_dma.h  |  1 +
+ 2 files changed, 21 insertions(+)
+
+diff --git a/drivers/dma/xilinx/xilinx_dma.c b/drivers/dma/xilinx/xilinx_dma.c
+index 283b76555cd8..439165201cf9 100644
+--- a/drivers/dma/xilinx/xilinx_dma.c
++++ b/drivers/dma/xilinx/xilinx_dma.c
+@@ -2340,6 +2340,26 @@ static void xdma_disable_allclks(struct xilinx_dma_device *xdev)
+ }
+ 
+ /**
++ * xilinx_dma_reset_intr - Reset DMA engine and enable IRQs
++ * Resets DMA and enables all IRQs on both channels
++ *
++ * @ch: A dma_chan structure representing either MM2S or S2MM channel
++ *
++ * Return: '0' on success and failure value on error
++ */
++int xilinx_dma_reset_intr(struct dma_chan *ch)
++{
++	struct xilinx_dma_chan *chan = to_xilinx_chan(ch);
++	int ret = xilinx_dma_reset(chan);
++	dma_write(chan, XILINX_DMA_MM2S_CTRL_OFFSET + XILINX_DMA_REG_DMACR, 
++		dma_read(chan, XILINX_DMA_MM2S_CTRL_OFFSET + XILINX_DMA_REG_DMACR) | XILINX_DMA_DMAXR_ALL_IRQ_MASK);
++	dma_write(chan, XILINX_DMA_S2MM_CTRL_OFFSET + XILINX_DMA_REG_DMACR, 
++		dma_read(chan, XILINX_DMA_S2MM_CTRL_OFFSET + XILINX_DMA_REG_DMACR) | XILINX_DMA_DMAXR_ALL_IRQ_MASK);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xilinx_dma_reset_intr);
++
++/**
+  * xilinx_dma_chan_probe - Per Channel Probing
+  * It get channel features from the device tree entry and
+  * initialize special channel handling routines
+diff --git a/include/linux/dma/xilinx_dma.h b/include/linux/dma/xilinx_dma.h
+index 3ae300052553..b87d09d9853d 100644
+--- a/include/linux/dma/xilinx_dma.h
++++ b/include/linux/dma/xilinx_dma.h
+@@ -58,4 +58,5 @@ enum xdma_ip_type {
+ int xilinx_vdma_channel_set_config(struct dma_chan *dchan,
+ 					struct xilinx_vdma_config *cfg);
+ 
++int xilinx_dma_reset_intr(struct dma_chan *ch);
+ #endif
+-- 
+2.13.0
+

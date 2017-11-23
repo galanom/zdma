@@ -25,6 +25,7 @@ case $1 in
 	git add .
 	git add -f yocto/build/conf
 	git add -f yocto/meta-local
+	git reset yocto/meta-local/recipes-bsp/zdma-firmware/files/*.xz
 	git status
 	;;
 "conf")

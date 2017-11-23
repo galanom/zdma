@@ -41,8 +41,7 @@ int main(int argc, char **argv)
 	if (!kern) kern = 5;
 	if (argc == 4) verify = true;
 
-	zdma_core_register("sharpen");
-	zdma_core_register("gauss");
+	zdma_core_register("sobel");
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
 		cout << "Failed to load image \"" << IMG_FILE << "\", exiting." << endl;
@@ -60,7 +59,7 @@ int main(int argc, char **argv)
 		out[j].create(img.size(), img.type());
 		err = zdma_task_init(&task[j]);
 		assert(!err);
-		err = zdma_task_configure(&task[j], "gauss", img_size, img_size, 1, img.cols);
+		err = zdma_task_configure(&task[j], "sobel", img_size, img_size, 2, img.cols, 0);
 		assert(!err);
 		memcpy(task[j].tx_buf, img.data, img_size);
 	}

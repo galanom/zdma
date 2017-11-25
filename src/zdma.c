@@ -36,7 +36,7 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
-MODULE_VERSION("0.8");
+MODULE_VERSION("1.0");
 
 bool debug = true;
 module_param(debug, bool, 0);
@@ -190,12 +190,26 @@ struct zdma_pblock *pblock_lookup(char *pblock_name)
 
 }
 
-struct zdma_bitstream *bitstream_lookup(struct zdma_core *core, char *pblock_name)
+struct zdma_bitstream *bitstream_lookup_by_name(struct zdma_core *core, char *pblock_name)
 {
 	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
 	rcu_read_lock();
 	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
 		if (strncmp(bitstream->pblock->name, pblock_name, DT_NAME_LEN) == 0) {
+			bitstream_sel = bitstream;
+			break;
+		}
+	}
+	rcu_read_unlock();
+	return bitstream_sel;
+}
+
+struct zdma_bitstream *bitstream_lookup_by_pointer(struct zdma_core *core, struct zdma_pblock *pblock)
+{
+	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
+	rcu_read_lock();
+	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
+		if (bitstream->pblock == pblock) {
 			bitstream_sel = bitstream;
 			break;
 		}
@@ -264,15 +278,25 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 	}
 	rcu_read_unlock();
 	
-	if (!bitstream_sel)
+	if (!bitstream_sel) {
+		atomic_set(&pblock->state, PBLOCK_FREE);
 		return -EEXIST;
+	}
 
 	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
-	if (err)
+	if (err) {
 		pr_crit("Error %d during FPGA reconfiguration!\n", err);
-	else
-		pblock->core = core;
-	return err;
+		return -EIO;
+	}
+
+	err = xilinx_dma_reset_intr(pblock->txchanp);
+	if (err) {
+		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
+		return -EIO;
+	}
+
+	pblock->core = core;
+	return 0;
 }
 
 
@@ -280,7 +304,7 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 {
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 	do {
-		// at first, try to find an already running core
+		// at first, try to lock an already running core
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 			if (pblock->core == core) {
@@ -294,10 +318,11 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		
 		if (pblock_sel) 
 			return pblock_sel;
-
-		// if a running core was not found, program the first free pblock
+		// if a running core was not available, program the
+		// first free pblock for which a bitstream is available
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if (bitstream_lookup_by_pointer(core, pblock) == NULL) continue;
 			if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
 				pblock_sel = pblock;
 				break;
@@ -323,17 +348,21 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 static void pblock_release(struct zdma_pblock *pblock)
 {
 	atomic_set(&pblock->state, PBLOCK_FREE);
-//	wake_up_interruptible(&pblock->core->avail);
 	return;
 }
 
 
-static int rmalloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
+static int psram_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
-	if (sys.state != SYS_UP) return -EBUSY;
-	if (p->tx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
-	if (p->rx.vaddr) gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
-	if (tx_size == 0 || rx_size == 0) return 0;
+	if (sys.state != SYS_UP)
+		return -EBUSY;
+	
+	if (p->tx.vaddr)
+		gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
+	if (p->rx.vaddr)
+		gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
+	if (tx_size == 0 || rx_size == 0)
+		return 0;
 
 	if (gen_pool_dma_alloc_pair(sys.mem,
 			tx_size, &p->tx.vaddr, &p->tx.handle, 
@@ -505,7 +534,7 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p->core);
-	zoled_print("Issue %s@%c\n", p->core->name, pblock->name[7]);
+//	zoled_print("Issue %s@%c\n", p->core->name, pblock->name[7]);
 
 	u32 csr;
 	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
@@ -525,10 +554,6 @@ static void dma_issue(struct work_struct *work)
 	iowrite32(CORE_START, pblock->vbase + CORE_CSR); // ap_start = 1
 	csr = ioread32(pblock->vbase + CORE_CSR);
 
-	ret = xilinx_dma_reset_intr(pblock->txchanp);
-	if (ret)
-		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
-
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
@@ -543,7 +568,7 @@ static void dma_issue(struct work_struct *work)
 	if ((p->rx.descp = dmaengine_prep_slave_single(
 			pblock->rxchanp, p->rx.handle, p->rx.size,
 			DMA_DEV_TO_MEM, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
-		
+
 		pr_err("failed to prepare RX DMA chan 0x%p, handle %#zx, size %zuKiB\n", 
 			pblock->rxchanp, p->rx.handle, p->rx.size/Ki);
 
@@ -619,7 +644,6 @@ static void dma_issue(struct work_struct *work)
 	
 	atomic_set(&p->state, CLIENT_READY);
 	pblock_release(pblock);
-	zoled_print(".\n");
 	return;
 
 dma_error:
@@ -635,7 +659,8 @@ static int dev_open(struct inode *inodep, struct file *filep)
 	static atomic_t id = ATOMIC_INIT(0);
 	if (sys.state != SYS_UP) return -EAGAIN;
 	struct zdma_client *p;
-	if ((p = filep->private_data = devm_kzalloc(sys.devp, sizeof(struct zdma_client), GFP_KERNEL)) == NULL) {
+	if ((p = filep->private_data = devm_kzalloc(sys.devp, 
+			sizeof(struct zdma_client), GFP_KERNEL)) == NULL) {
 		pr_err("error allocating memory for client private data!\n");
 		return -ENOMEM;
 	}
@@ -653,7 +678,7 @@ static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
 	flush_work(&p->work);
-	rmalloc(p, 0, 0);
+	psram_alloc(p, 0, 0);
 
 	spin_lock(&sys.clients_lock);
 	list_del_rcu(&p->node);
@@ -678,7 +703,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		zdma_debug();
 		break;
 	case ZDMA_CORE_REGISTER:
-		;
+		if (!capable(CAP_SYS_ADMIN))
+			return -EACCES;
 		struct zdma_core_config core_conf;
 		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
@@ -700,7 +726,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			list_add_tail_rcu(&core->node, &sys.cores.node);
 			spin_unlock(&sys.cores_lock);
 		} else {
-			bitstream = bitstream_lookup(core, core_conf.pblock_name);
+			bitstream = bitstream_lookup_by_name(core, core_conf.pblock_name);
 			if (bitstream) {
 				pr_warn("this bitstream is already registered for this core\n");
 				return -EEXIST;
@@ -796,6 +822,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		break;
 	case ZDMA_CLIENT_CONFIG:
 		;
+		pr_info("entry\n");
 		struct zdma_client_config client_conf;
 		if (copy_from_user(&client_conf, (void __user *)arg, sizeof(client_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
@@ -805,7 +832,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			p->core_param[i] = client_conf.core_param[i];
 		}
 
-		if (rmalloc(p, client_conf.tx_size, client_conf.rx_size)) {
+		if (psram_alloc(p, client_conf.tx_size, client_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
@@ -912,10 +939,7 @@ static int zdma_remove(struct platform_device *pdev)
 static int zdma_probe(struct platform_device *pdev)
 {
 	int res;
-	zoled_print("probe\n");
 	if (!debug) zoled_disable();
-
-//	while (atomic_read(&driver.state) == SHUTTING_DOWN); //wait to finish shutdown
 
 	if (sys.state == SYS_UP) {
 		pr_crit("\n"
@@ -939,7 +963,6 @@ static int zdma_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&sys.zones.node);
 	INIT_LIST_HEAD(&sys.clients.node);
 	atomic_set(&sys.pblock_count, 0);
-//	atomic_set(&sys.core_count, 0);
 	atomic_set(&sys.zone_count, 0);
 	atomic_set(&sys.client_count, 0);
 	sys.mem = devm_gen_pool_create(sys.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
@@ -1039,9 +1062,6 @@ static int __init mod_init(void)
 		return -ENOSPC;
 	}
 
-	pr_info("got %d minor\n", sys.miscdev.minor);
-
-	//xz_crc32_init();
 	sys.decompressor = xz_dec_init(XZ_SINGLE, 0);
 
 	// register the driver to the kernel
@@ -1056,3 +1076,4 @@ static int __init mod_init(void)
 
 module_init(mod_init);
 module_exit(mod_exit);
+

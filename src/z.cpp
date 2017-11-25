@@ -31,17 +31,23 @@ int tdiff(struct timespec t1, struct timespec t0)
 int main(int argc, char **argv)
 {
 	bool verify = false;
-	int err, iter_num = 0;
+	int err, task_num = 0, iter_num = 0;
 
-	if (argc >= 2) 
-		iter_num = atoi(argv[1]);
+	if (argc >= 3) {
+		task_num = atoi(argv[1]);
+		iter_num = atoi(argv[2]);
+	}
+	if (!task_num)
+		task_num = 1;
 	if (!iter_num) 
 		iter_num = 1;
-	if (argc >= 3)
+	if (argc >= 4)
 		verify = true;
 
 	zdma_core_register("sobel");
 	zdma_core_register("gauss");
+	/*zdma_core_register("outline");
+	zdma_core_register("negative");*/
 
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
@@ -50,7 +56,6 @@ int main(int argc, char **argv)
 	}
 	int img_size = img.rows * img.cols;
 	
-	int task_num = 2;
 	Mat out[task_num];
 	struct zdma_task task[task_num];
 
@@ -59,17 +64,12 @@ int main(int argc, char **argv)
 		out[i].create(img.size(), img.type());
 		err = zdma_task_init(&task[i]);
 		assert(!err);
-	}
-
-	// task list
-	err  = zdma_task_configure(&task[0], "sobel", img_size, img_size, 2, img.cols, 0);
-	err |= zdma_task_configure(&task[1], "gauss", img_size, img_size, 1, img.cols);
-	assert(!err);
-
-	// post-configure buffer setup
-	for (int i = 0; i < task_num; ++i) {
+		if (i < task_num/2)
+			err  = zdma_task_configure(&task[i], "sobel", img_size, img_size, 2, img.cols, 0);
+		else
+			err  = zdma_task_configure(&task[i], "gauss", img_size, img_size, 1, img.cols);
 		memcpy(task[i].tx_buf, img.data, img_size);
-	}	
+	}
 
 	zdma_debug();
 	

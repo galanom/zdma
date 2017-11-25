@@ -153,7 +153,9 @@ int zdma_task_configure(struct zdma_task *task, const char core_name[],
 	int err;
 	va_list argv;
 
-	if (argc > CORE_PARAM_CNT) return -EINVAL;
+	if (argc > CORE_PARAM_CNT)
+		return -EINVAL;
+	
 	task->conf.core_param_count = argc;
 	va_start(argv, argc);
 	for (int i = 0; i < argc; i++) {
@@ -164,6 +166,7 @@ int zdma_task_configure(struct zdma_task *task, const char core_name[],
 	strncpy(task->conf.core_name, core_name, CORE_NAME_LEN);
 	task->conf.tx_size = tx_size;
 	task->conf.rx_size = rx_size;
+	
 	if (ioctl(task->fd, ZDMA_CLIENT_CONFIG, &task->conf) < 0) {
 		err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while configuring DMA task\n",

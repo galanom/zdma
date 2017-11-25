@@ -92,7 +92,7 @@ int zdma_core_register(const char name[])
 
 		err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
 
-/*		if (err) {
+		/*if (err) {
 			fprintf(stderr, "ioctl error %d (%s) registering user core\n",
 				err, strerror(err));
 			goto error;
@@ -103,7 +103,7 @@ int zdma_core_register(const char name[])
 	closedir(dir);
 
 	close(fddev);
-	printf("user core %s registered %d bitstreams\n", core.name, count);
+	printf("Core %s registered %d bitstream(s)\n", core.name, count);
 	return !count;
 error:
 	free(core.bitstream);

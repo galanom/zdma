@@ -1,8 +1,8 @@
 CXXFLAGS=-std=c++17 -ggdb -Wall -fdiagnostics-color=always -fmax-errors=4 -Werror \
     -Wno-misleading-indentation -Wno-unused-function -ftrack-macro-expansion=0 -fopenmp
 
-APP = zapp
-APP_OBJS = zapp.o
+APP = z
+APP_OBJS = z.o
 
 all: build
 

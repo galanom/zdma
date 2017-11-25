@@ -36,7 +36,7 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
-MODULE_VERSION("0.4");
+MODULE_VERSION("0.8");
 
 bool debug = true;
 module_param(debug, bool, 0);
@@ -517,7 +517,6 @@ static void dma_issue(struct work_struct *work)
 		goto dma_error;
 	}
 
-	pr_info("param cnt is %d\n", p->core_param_count);
 	for (int i = 0; i < p->core_param_count; ++i) {
 		/*pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
 			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);*/
@@ -607,8 +606,8 @@ static void dma_issue(struct work_struct *work)
 	
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
-	pr_warn("core %s at %s return value %d\n", 
-		p->core->name, pblock->name, ret);
+	if (ret < 0)
+		pr_warn("core %s at %s return value %d\n", p->core->name, pblock->name, ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_DONE)) {

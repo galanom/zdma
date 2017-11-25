@@ -53,8 +53,6 @@ int main(int argc, char **argv)
 
 	struct timespec t0, t1;
 	struct zdma_task task[task_num];
-//	cout << "Running " << task_num << " tasks by " << iter_num 
-//		<< " times, verify is " << (verify ? "true" : "false") << "." << endl;
 	for (int j = 0; j < task_num; ++j) {
 		out[j].create(img.size(), img.type());
 		err = zdma_task_init(&task[j]);
@@ -64,7 +62,7 @@ int main(int argc, char **argv)
 		memcpy(task[j].tx_buf, img.data, img_size);
 	}
 
-//	zdma_debug();
+	zdma_debug();
 	clock_gettime(CLOCK_MONOTONIC, &t0);
 	#pragma omp parallel num_threads(task_num)
 	for (int i = 0; i < iter_num; ++i) {

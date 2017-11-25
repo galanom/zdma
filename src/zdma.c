@@ -5,7 +5,7 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/timex.h>
-#include <linux/cdev.h>
+#include <linux/miscdevice.h>
 
 #include <linux/dma/xilinx_dma.h>
 #include <linux/dmaengine.h>
@@ -147,9 +147,7 @@ static struct system {
 	} clients;
 
 	struct device *devp;
-	dev_t cdev_num;
-	struct cdev cdev;
-	struct file_operations cdev_fops;
+	struct miscdevice miscdev;
 	struct xz_dec *decompressor;
 } sys;
 
@@ -213,24 +211,39 @@ static void zdma_debug(void)
 	struct gen_pool_chunk *chunk;
 	struct zdma_core *core;
 	struct zdma_client *client;
+	struct zdma_bitstream *bitstream;
 	
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
-	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node)
-		pr_info("%s: core: %s, state: %d\n", 
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		pr_info("PBLOCK %s: core: %s, state: %d\n", 
 			pblock->name, pblock->core->name, atomic_read(&pblock->state));
-	list_for_each_entry_rcu(core, &sys.cores.node, node)
-		pr_info("core %s\n", core->name);
-	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk)
-		pr_info("mem: base %#lx at phys %#lx, size: %lu avail: %d\n", 
+	}
+
+	list_for_each_entry_rcu(core, &sys.cores.node, node) {
+		pr_info("CORE %s: ", core->name);
+		if (&core->bitstreams.node == core->bitstreams.node.next)
+			printk("<EMPTY>");
+		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
+			pr_cont("<%s> ", bitstream->pblock->name);
+		}
+		pr_cont("\n");
+	}
+	
+	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk) {
+		pr_info("MEM phys %#lx mapped at %#lx, size: %lu avail: %d\n", 
 			(long)chunk->phys_addr,
 			chunk->start_addr, 
 			(chunk->end_addr - chunk->start_addr + 1)/Ki,
 			atomic_read(&chunk->avail)/Ki);
-	list_for_each_entry_rcu(client, &sys.clients.node, node)
-		pr_info("client %d: core: %s, mem: %#x->%#x, size: %zu->%zu KiB, state: %d\n",
+	}
+	
+	list_for_each_entry_rcu(client, &sys.clients.node, node) {
+		pr_info("CLIENT %d: core: %s, mem: %#x->%#x, size: %zu->%zu KiB, state: %d\n",
 			client->id, client->core->name, client->tx.handle, client->rx.handle,
 			client->tx.size/Ki, client->rx.size/Ki, atomic_read(&client->state));
+	}
+
 	rcu_read_unlock();
 	pr_info("------------------------------------------------------\n");
 	return;
@@ -245,7 +258,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 	rcu_read_lock();
 	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
 		if (bitstream->pblock == pblock) {
-			bitstream_sel = bitstream;
+			bitstream_sel = bitstream;	// TODO test if it can be simplified
 			break;
 		}
 	}
@@ -254,7 +267,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 	if (!bitstream_sel)
 		return -EEXIST;
 
-	int err = xdevcfg_program(bitstream->dma_handle, bitstream->size, true);
+	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
 	if (err)
 		pr_crit("Error %d during FPGA reconfiguration!\n", err);
 	else
@@ -411,7 +424,6 @@ static int pblock_add(struct device_node *np)
 		goto pblock_add_error_late;
 	}
 	pblock->vbase = devm_ioremap(sys.devp, pblock->pbase, pblock->psize);
-	pr_info("assign %p->%p\n", (void *)pblock->pbase, (void *)pblock->vbase);
 	
 	// now add the pblock to the list
 	spin_lock(&sys.pblocks_lock);
@@ -458,8 +470,7 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 	}
 
 	dma_addr_t handle;
-	void *vaddr = dmam_alloc_coherent(&zone->dev, size, &handle, 
-		GFP_KERNEL);
+	void *vaddr = dmam_alloc_coherent(&zone->dev, size, &handle, GFP_KERNEL);
 	if (!vaddr) {
 		pr_err("error: cannot claim reserved memory of size %zuKiB\n", size/Ki);
 		return -ENOMEM;
@@ -494,14 +505,11 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p->core);
-	zoled_print("ISS %s@%c\n", p->core->name, pblock->name[7]);
+	zoled_print("Issue %s@%c\n", p->core->name, pblock->name[7]);
 
 	u32 csr;
 	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
-	zoled_print("WRITE OK\n");
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	zoled_print("CSR %x\n", csr);
-	pr_info("core CSR is %x\n", csr);
 	if (!(csr & CORE_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%x\n",
@@ -511,15 +519,13 @@ static void dma_issue(struct work_struct *work)
 
 	pr_info("param cnt is %d\n", p->core_param_count);
 	for (int i = 0; i < p->core_param_count; ++i) {
-		pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
-			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);
+		/*pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
+			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);*/
 		iowrite32(p->core_param[i], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
 	iowrite32(CORE_START, pblock->vbase + CORE_CSR); // ap_start = 1
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	pr_info("core started, CSR=0x%x\n", csr);
 
-	zoled_print("S");
 	ret = xilinx_dma_reset_intr(pblock->txchanp);
 	if (ret)
 		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
@@ -565,23 +571,16 @@ static void dma_issue(struct work_struct *work)
 
 	unsigned long tx_timeout = msecs_to_jiffies(2000), rx_timeout = msecs_to_jiffies(2000);
 
-	zoled_print("D");
-
 	dma_async_issue_pending(pblock->txchanp);
 	dma_async_issue_pending(pblock->rxchanp);
 
 	tx_timeout = wait_for_completion_timeout(&p->tx.cmp, tx_timeout);
 	rx_timeout = wait_for_completion_timeout(&p->rx.cmp, rx_timeout);
 	
-//	xilinx_dma_chan_pause(pblock->txchanp);
-//	xilinx_dma_chan_pause(pblock->rxchanp);
-
 	struct dma_tx_state tx_state, rx_state;
 	enum dma_status 
 		tx_status = dmaengine_tx_status(pblock->txchanp, p->tx.cookie, &tx_state),
 		rx_status = dmaengine_tx_status(pblock->txchanp, p->tx.cookie, &tx_state);
-
-	zoled_print("C");
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!tx_timeout || !rx_timeout) {
@@ -589,7 +588,7 @@ static void dma_issue(struct work_struct *work)
 			pblock->name, pblock->core->name, p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
-//		goto dma_error;
+			//goto dma_error;
 	}
 
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
@@ -603,7 +602,7 @@ static void dma_issue(struct work_struct *work)
 			rx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
 			rx_state.residue);
 
-//		goto dma_error;
+		goto dma_error;
 	}
 	
 	// mostly debug, register somewhere a non-zero
@@ -616,7 +615,7 @@ static void dma_issue(struct work_struct *work)
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, pblock->name, csr);
-	//	goto dma_error;
+		goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
@@ -654,7 +653,6 @@ static int dev_open(struct inode *inodep, struct file *filep)
 static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
-//	pr_info("client %d exiting\n", p->id);
 	flush_work(&p->work);
 	rmalloc(p, 0, 0);
 
@@ -885,12 +883,6 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 			CLIENT_MMAP_TX_DONE : CLIENT_MMAP_RX_DONE);
 	} else 	atomic_set(&p->state, CLIENT_READY);
 
-/*	pr_info("%s: phys 0x%8p mapped at 0x%8p, size=%zuKiB\n", 
-		(vma->vm_flags & VM_WRITE) ? "TX" : "RX", 
-		(void *)paddr,
-		chan->vaddr,
-		(size_t)psize/Ki);
-*/
 	return 0;
 }
 
@@ -987,7 +979,7 @@ static int zdma_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 	
-	pr_info("devicetree: found %d DMA controller(s) and %d memory zone(s)\n", 
+	pr_info("ZDMA initialized. Detected %d partition block(s) and %d memory banks(s)\n", 
 		atomic_read(&sys.pblock_count), atomic_read(&sys.zone_count));
 
 	sys.state = SYS_UP;
@@ -1016,38 +1008,39 @@ static void __exit mod_exit(void)
 {
 	xz_dec_end(sys.decompressor);
 	platform_driver_unregister(&zdma_driver);
-	cdev_del(&sys.cdev);
-	unregister_chrdev_region(sys.cdev_num, 1 /* count */);
+	misc_deregister(&sys.miscdev);
+	return;
 }
 
 
 static int __init mod_init(void)
 {
 	sys.state = SYS_INIT;
-	zoled_print("init\n");
 
 	spin_lock_init(&sys.pblocks_lock);
 	spin_lock_init(&sys.zones_lock);
 	spin_lock_init(&sys.cores_lock);
 	spin_lock_init(&sys.clients_lock);
-	
-	// create character device
-	sys.cdev_fops.owner = THIS_MODULE;
-	sys.cdev_fops.open = dev_open;
-	sys.cdev_fops.release = dev_release;
-	sys.cdev_fops.mmap = dev_mmap;
-	sys.cdev_fops.unlocked_ioctl = dev_ioctl;
 
-	if (alloc_chrdev_region(&sys.cdev_num, 0 /* first minor */, 1 /* count */, KBUILD_MODNAME) < 0) {
+	static struct file_operations fops;
+	fops.owner = THIS_MODULE;
+	fops.open = dev_open;
+	fops.release = dev_release;
+	fops.mmap = dev_mmap;
+	fops.unlocked_ioctl = dev_ioctl;
+
+	// create character device
+	sys.miscdev.minor = MISC_DYNAMIC_MINOR;
+	sys.miscdev.name = "zdma";
+	sys.miscdev.fops = &fops;
+
+	int ret = misc_register(&sys.miscdev);
+	if (ret) {
 		pr_err("error registering /dev entry\n");
 		return -ENOSPC;
 	}
-	
-	cdev_init(&sys.cdev, &sys.cdev_fops);
-	if (cdev_add(&sys.cdev, sys.cdev_num, 1 /* count */)) {
-		pr_err("error registering character device\n");
-		return -ENOSPC;
-	}
+
+	pr_info("got %d minor\n", sys.miscdev.minor);
 
 	//xz_crc32_init();
 	sys.decompressor = xz_dec_init(XZ_SINGLE, 0);

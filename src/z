@@ -3,16 +3,6 @@ MODULE="zdma"
 [ $# -eq 0 ] && action="init" || action=$1
 
 case $action in
-"init")
-	for MODULE in zdma zoled
-	do
-	        major=`awk "\\$2==\"$MODULE\" { print \\$1 }" /proc/devices`
-		[ "$major" -eq "" ] && { echo "Could not find $MODULE in /proc/devices"; exit -1; }
-		rm -f /dev/$MODULE
-		mknod /dev/$MODULE c $major 0
-	done
-
-	;;
 "prog")
 	echo "Programming $2.bin..."
 	tftp -gr $2.bin 192.168.2.1

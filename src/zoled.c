@@ -26,6 +26,7 @@
 #include <linux/io.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
+#include <linux/miscdevice.h>
 
 #include <linux/of_address.h>
 #include <linux/of_device.h>
@@ -36,7 +37,7 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ioannis Galanommatis");
-MODULE_VERSION("0.1");
+MODULE_VERSION("1.0");
 MODULE_DESCRIPTION("Driver for OLED IP Core of Ali Aljaani, TAMUQ Univ.");
 
 #define DRIVER_NAME "zoled"
@@ -47,9 +48,7 @@ MODULE_DESCRIPTION("Driver for OLED IP Core of Ali Aljaani, TAMUQ Univ.");
 
 struct {
 	bool enabled;
-	dev_t cdev_num;
-	struct cdev cdev;
-	struct file_operations cdev_fops;
+	struct miscdevice miscdev;
 
 	phys_addr_t base;
 	unsigned long size;
@@ -106,7 +105,6 @@ EXPORT_SYMBOL_GPL(zoled_refresh);
 void zoled_move(int r, int c)
 {
 	if (r >= OLED_ROWS) {
-		// memcpy() requires buffers do not overlap, but YOLO!
 		memmove(&zoled.data, 
 			&zoled.data[1], 
 			(OLED_ROWS-1)*OLED_COLS);
@@ -264,15 +262,12 @@ static int zoled_probe(struct platform_device *pdev)
 	zoled.r = 0;
 	zoled.c = 0;
 	zoled.enabled = true;
-	pr_info("Zedboard OLED driver probing done\n");
 	return 0;
 }
 
 
 static int zoled_remove(struct platform_device *pdev)
 {
-	pr_info("Zedboard OLED driver is removed\n");
-	//release_mem_region(zoled.base, zoled.size);
 	return 0;
 }
 
@@ -302,33 +297,30 @@ static struct platform_driver zoled_driver = {
 static int __init zoled_init(void)
 {
 	zoled.enabled = false;
-	pr_info("Zedboard OLED driver initializing...\n");
-	zoled.cdev_fops.owner = THIS_MODULE;
-	zoled.cdev_fops.open = dev_open;
-	zoled.cdev_fops.write = dev_write;
-	zoled.cdev_fops.release = dev_release;
 
-	if (alloc_chrdev_region(&zoled.cdev_num, 0 /* first minor */, 1 /* count */, KBUILD_MODNAME) < 0) {
+	static struct file_operations fops;
+	fops.owner = THIS_MODULE;
+	fops.open = dev_open;
+	fops.write = dev_write;
+	fops.release = dev_release;
+
+	zoled.miscdev.minor = MISC_DYNAMIC_MINOR;
+	zoled.miscdev.name = "zoled";
+	zoled.miscdev.fops = &fops;
+	int ret = misc_register(&zoled.miscdev);	
+	if (ret) {
 		pr_err("error registering /dev entry\n");
 		return -ENOSPC;
 	}
 	
-	cdev_init(&zoled.cdev, &zoled.cdev_fops);
-	if (cdev_add(&zoled.cdev, zoled.cdev_num, 1 /* count */)) {
-		pr_err("error registering character device\n");
-		return -ENOSPC;
-	}
-
 	return platform_driver_register(&zoled_driver);
 }
 
 
 static void __exit zoled_exit(void)
 {
-	cdev_del(&zoled.cdev);
-	unregister_chrdev_region(zoled.cdev_num, 1 /* count */);
+	misc_deregister(&zoled.miscdev);
 	platform_driver_unregister(&zoled_driver);
-	pr_info("Zedboard OLED driver exiting...\n");
 	return;
 }
 

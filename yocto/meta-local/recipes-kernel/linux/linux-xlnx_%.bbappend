@@ -8,7 +8,7 @@ SRC_URI += "file://0001-chunk-selection-algo-during-alloc.patch \
             file://zdma-pl.dtsi;subdir=git/arch/${ARCH}/boot/dts \
             file://zdma-user.dtsi;subdir=git/arch/${ARCH}/boot/dts \
             "
-PR = "r30"
+PR = "r31"
 
 PACKAGE_ARCH = "zedboard-zynq7"
 

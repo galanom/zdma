@@ -23,7 +23,7 @@
 #define DEV_FILE "/dev/zdma"
 
 
-int zdma_core_register(const char name[])
+int zdma_core_register(const char *name, int priority, const char *affinity)
 {
 	int fd, fddev, err;
 	struct stat st;
@@ -58,6 +58,8 @@ int zdma_core_register(const char name[])
 		if ((token = strtok(NULL, "\0")) == NULL) continue;
 		if (strcmp(token, "bin.xz")) continue;
 
+		if (affinity && !strstr(affinity, pblock)) continue;
+
 		fd = openat(dirfd(dir), entry->d_name, O_RDONLY);
 		err = errno;
 		if (fd < 0) {
@@ -70,6 +72,7 @@ int zdma_core_register(const char name[])
 		core.size = st.st_size;
 		strcpy(core.name, name);
 		strcpy(core.pblock_name, pblock); 
+		core.priority = priority;
 		core.bitstream = malloc(core.size);
 		if (core.bitstream == NULL) {
 			fprintf(stderr, "error allocating %zu bytes of memory "
@@ -116,19 +119,40 @@ error_early:
 }
 
 
+int zdma_core_unregister(const char *name, const char *affinity)
+{
+	int name_len = strlen(name);
+	int affinity_len = affinity ? strlen(affinity) : 0;
+	if (name_len + affinity_len > TEMP_BUF_SIZE - 2)
+		return -ENOMEM;
+	char buf[TEMP_BUF_SIZE];
+	strcpy(buf, name);
+	strcpy(buf + name_len, ".*");
+	if (affinity)
+		strcpy(buf + name_len + 1, affinity);	// will overwrite the .*
+
+	int fddev = open(DEV_FILE, O_RDONLY);
+	int ret = ioctl(fddev, ZDMA_CORE_UNREGISTER, buf);
+	close(fddev);
+	return ret;
+}
+
+
 int zdma_debug()
 {
-	int fddev, err;
-	fddev = open(DEV_FILE, O_RDONLY);
-	err = errno;
-	if (ioctl(fddev, ZDMA_DEBUG, 0)) {
-		err = errno;
-		fprintf(stderr, "ioctl error %d (%s) requesting debug info\n",
-			err, strerror(err));
-		return err;
-	}
+	int fddev = open(DEV_FILE, O_RDONLY);
+	int ret = ioctl(fddev, ZDMA_DEBUG, 0);
 	close(fddev);
-	return 0;
+	return ret;
+}
+
+
+int zdma_barrier()
+{
+	int fddev = open(DEV_FILE, O_RDONLY);
+	int ret = ioctl(fddev, ZDMA_BARRIER, 0);
+	close(fddev);
+	return ret;
 }
 
 
@@ -147,7 +171,7 @@ int zdma_task_init(struct zdma_task *task)
 }
 
 
-int zdma_task_configure(struct zdma_task *task, const char core_name[],
+int zdma_task_configure(struct zdma_task *task, const char *core_name,
 	int tx_size, int rx_size, int argc, ...)
 {
 	int err;
@@ -213,7 +237,7 @@ int zdma_task_enqueue(struct zdma_task *task)
 int zdma_task_waitfor(struct zdma_task *task)
 {
 	int err;
-	if (ioctl(task->fd, ZDMA_CLIENT_BARRIER, 0)) {
+	if (ioctl(task->fd, ZDMA_CLIENT_WAIT, 0)) {
 		err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while flushing work queue\n",
 			err, strerror(err));

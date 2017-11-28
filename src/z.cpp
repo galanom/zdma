@@ -44,8 +44,10 @@ int main(int argc, char **argv)
 	if (argc >= 4)
 		verify = true;
 
-	zdma_core_register("sobel");
-	zdma_core_register("gauss");
+	zdma_core_register("sobel", 0, "pblock_0:pblock_1");
+	zdma_core_register("gauss", 0, "pblock_2:pblock_3");
+	zdma_core_unregister("gauss", "pblock_2");
+	zdma_core_unregister("sobel", NULL);
 	/*zdma_core_register("outline");
 	zdma_core_register("negative");*/
 

@@ -17,6 +17,7 @@
 #include <linux/delay.h>
 #include <linux/swab.h>
 #include <linux/xz.h>
+#include <linux/string.h>
 
 #include <linux/of_dma.h>
 #include <linux/of_address.h>
@@ -48,7 +49,6 @@ enum zdma_system_state {
 	SYS_DEINIT,
 };
 
-
 enum zdma_client_state {
 	CLIENT_OPENED = 0,
 	CLIENT_CONFIGURED,
@@ -64,19 +64,19 @@ enum zdma_client_state {
 	CLIENT_ERROR_DMA,
 };
 
-
 enum zdma_pblock_state {
 	PBLOCK_FREE = 0,
 	PBLOCK_BUSY,
 };
 
-enum zdma_core_state {
-	CORE_INIT = 0,
-	CORE_START = 1<<0,
-	CORE_DONE = 1<<1,
-	CORE_IDLE = 1<<2,
-	CORE_READY = 1<<3,
-	CORE_AUTOSTART = 1<<7,
+
+enum zdma_core_csr {
+	CORE_CSR_INIT = 0,
+	CORE_CSR_START = 1<<0,
+	CORE_CSR_DONE = 1<<1,
+	CORE_CSR_IDLE = 1<<2,
+	CORE_CSR_READY = 1<<3,
+	CORE_CSR_AUTOSTART = 1<<7,
 };
 
 static struct system {
@@ -91,8 +91,12 @@ static struct system {
 			clients_lock;
 	
 	struct workqueue_struct *workqueue;
-//	wait_queue_head_t waitqueue;
 
+	struct zdma_config {
+		enum config	sec_policy_ioctl,
+				sec_policy_buf,
+				scheduler;
+	} config;
 	struct zdma_pblock {
 		atomic_t state;
 		spinlock_t lock;
@@ -236,11 +240,8 @@ static void zdma_debug(void)
 
 	list_for_each_entry_rcu(core, &sys.cores.node, node) {
 		pr_info("CORE %s: ", core->name);
-		if (&core->bitstreams.node == core->bitstreams.node.next)
-			printk("<EMPTY>");
-		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
-			pr_cont("<%s> ", bitstream->pblock->name);
-		}
+		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node)
+				pr_cont("<%s> ", bitstream->pblock->name);
 		pr_cont("\n");
 	}
 	
@@ -537,9 +538,9 @@ static void dma_issue(struct work_struct *work)
 //	zoled_print("Issue %s@%c\n", p->core->name, pblock->name[7]);
 
 	u32 csr;
-	iowrite32(CORE_INIT, pblock->vbase + CORE_CSR);
+	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	if (!(csr & CORE_IDLE)) {
+	if (!(csr & CORE_CSR_IDLE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%x\n",
 			p->core->name, pblock->name, csr);
@@ -551,7 +552,7 @@ static void dma_issue(struct work_struct *work)
 			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);*/
 		iowrite32(p->core_param[i], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
-	iowrite32(CORE_START, pblock->vbase + CORE_CSR); // ap_start = 1
+	iowrite32(CORE_CSR_START, pblock->vbase + CORE_CSR); // ap_start = 1
 	csr = ioread32(pblock->vbase + CORE_CSR);
 
 	if ((p->tx.descp = dmaengine_prep_slave_single(
@@ -635,7 +636,7 @@ static void dma_issue(struct work_struct *work)
 		pr_warn("core %s at %s return value %d\n", p->core->name, pblock->name, ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	if (!(csr & CORE_DONE)) {
+	if (!(csr & CORE_CSR_DONE)) {
 		pr_emerg("core %s at %s is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, pblock->name, csr);
@@ -694,18 +695,49 @@ static int dev_release(struct inode *inodep, struct file *filep)
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
 	if (sys.state != SYS_UP) return -EAGAIN;
-	struct zdma_client *p = filep->private_data;
 	struct zdma_core *core;
 	struct zdma_bitstream *bitstream = NULL;
+	struct zdma_core_config core_conf;
+	struct zdma_client_config client_conf;
+	struct zdma_client *p = NULL;
+	if (filep) p = filep->private_data;
 
 	switch (cmd) {
 	case ZDMA_DEBUG:
 		zdma_debug();
 		break;
-	case ZDMA_CORE_REGISTER:
-		if (!capable(CAP_SYS_ADMIN))
+	case ZDMA_BARRIER:
+		rcu_read_lock();
+		struct zdma_client *client;
+		list_for_each_entry_rcu(client, &sys.clients.node, node)
+			flush_work(&client->work);
+		rcu_read_unlock();
+		break;
+	case ZDMA_CONFIG:
+		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
-		struct zdma_core_config core_conf;
+		switch (arg) {
+		case CONFIG_GENALLOC_BITMAP_FIRST_FIT:
+			gen_pool_set_algo(sys.mem, gen_pool_first_fit, NULL);
+			break;
+		case CONFIG_GENALLOC_BITMAP_BEST_FIT:
+			gen_pool_set_algo(sys.mem, gen_pool_best_fit, NULL);
+			break;
+		case CONFIG_GENALLOC_CHUNK_FIRST_FIT:
+			gen_pool_set_chunk_algo(sys.mem, gen_chunk_first_fit);
+			break;
+		case CONFIG_GENALLOC_CHUNK_MAX_AVAIL:
+			gen_pool_set_chunk_algo(sys.mem, gen_chunk_max_avail);
+			break;
+		case CONFIG_GENALLOC_CHUNK_LEAST_USED:
+			gen_pool_set_chunk_algo(sys.mem, gen_chunk_least_used);
+			break;
+		default:
+			return -EINVAL;	
+		};
+	case ZDMA_CORE_REGISTER:
+		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
+			return -EACCES;
 		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
@@ -820,15 +852,65 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		pr_info("core %s for pblock %s with size %zdKi registered\n", 
 			core->name, bitstream->pblock->name, bitstream->size/Ki);
 		break;
+	case ZDMA_CORE_UNREGISTER:
+		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
+			return -EACCES;
+		char buf[TEMP_BUF_SIZE];
+		if (strncpy_from_user(buf, (char __user *)arg, TEMP_BUF_SIZE-1) <= 0) {
+			pr_err("could not read request data, ioctl ignored\n");
+			return -EIO;
+		}
+		char *aff = strchr(buf, '.');
+		*aff++ = '\0';
+		bool clear_all = false;
+		if (*aff == '*' && *(aff+1) == '\0')
+			clear_all = true;
+
+		core = core_lookup(buf);
+		
+		if (core == NULL) {
+			pr_warn("core %s is not currently registered\n", core_conf.name);
+			return -EEXIST;
+		}
+
+		while (true) {
+			rcu_read_lock();
+			struct zdma_bitstream *victim = NULL;
+			list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
+				if (clear_all || strstr(aff, bitstream->pblock->name)) {
+					victim = bitstream;
+					while (atomic_cmpxchg(&victim->pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
+						;
+					spin_lock(&core->bitstreams_lock);
+					list_del_rcu(&victim->node);
+					atomic_set(&victim->pblock->state, PBLOCK_FREE);
+					spin_unlock(&core->bitstreams_lock);
+					break;
+				}
+			}
+			rcu_read_unlock();
+			if (!victim) break;
+			synchronize_rcu();
+			dmam_free_coherent(sys.devp, PARTIAL_SIZE_MAX, victim->data, victim->dma_handle); 
+			devm_kfree(sys.devp, bitstream);
+		}
+
+		if (list_empty(&core->bitstreams.node)) {
+			spin_lock(&sys.cores_lock);
+			list_del_rcu(&core->node);
+			spin_unlock(&sys.cores_lock);
+			synchronize_rcu();
+			devm_kfree(sys.devp, core);
+		}
+		break;
 	case ZDMA_CLIENT_CONFIG:
-		;
-		pr_info("entry\n");
-		struct zdma_client_config client_conf;
 		if (copy_from_user(&client_conf, (void __user *)arg, sizeof(client_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
-		for (int i = 0; i < (p->core_param_count = client_conf.core_param_count); ++i) {
+
+		p->core_param_count = client_conf.core_param_count;
+		for (int i = 0; i < client_conf.core_param_count; ++i) {
 			p->core_param[i] = client_conf.core_param[i];
 		}
 
@@ -851,7 +933,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			return -EAGAIN;
 		queue_work(sys.workqueue, &p->work);
 		break;
-	case ZDMA_CLIENT_BARRIER:
+	case ZDMA_CLIENT_WAIT:
 		flush_work(&p->work);
 		break;
 	default:
@@ -966,8 +1048,8 @@ static int zdma_probe(struct platform_device *pdev)
 	atomic_set(&sys.zone_count, 0);
 	atomic_set(&sys.client_count, 0);
 	sys.mem = devm_gen_pool_create(sys.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
-	gen_pool_set_algo(sys.mem, gen_pool_first_fit, NULL);
-	gen_pool_set_chunk_algo(sys.mem, gen_chunk_least_used);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_GENALLOC_BITMAP_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_GENALLOC_CHUNK_DEFAULT);
 
 	// find dma clients in device tree
 	struct device_node *np = NULL, *tnp = NULL;
@@ -1063,6 +1145,9 @@ static int __init mod_init(void)
 	}
 
 	sys.decompressor = xz_dec_init(XZ_SINGLE, 0);
+	sys.config.sec_policy_ioctl = CONFIG_SECURITY_IOCTL_DEFAULT;
+	sys.config.sec_policy_buf = CONFIG_SECURITY_BUFFER_DEFAULT;
+	sys.config.scheduler = CONFIG_SCHEDULER_DEFAULT;
 
 	// register the driver to the kernel
 	if (platform_driver_register(&zdma_driver)) {

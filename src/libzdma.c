@@ -35,7 +35,7 @@ int zdma_core_register(const char *name, int priority, const char *affinity)
 		return -EINVAL;
 	}
 
-	fddev = open(DEV_FILE, O_RDONLY);
+	fddev = open(DEV_FILE, O_RDWR);
 	err = errno;
 	if (fddev < 0) {
 		fprintf(stderr, "error %d (%s) opening device file\n",
@@ -133,6 +133,15 @@ int zdma_core_unregister(const char *name, const char *affinity)
 
 	int fddev = open(DEV_FILE, O_RDONLY);
 	int ret = ioctl(fddev, ZDMA_CORE_UNREGISTER, buf);
+	close(fddev);
+	return ret;
+}
+
+
+int zdma_config(enum config arg)
+{
+	int fddev = open(DEV_FILE, O_RDONLY);
+	int ret = ioctl(fddev, ZDMA_CONFIG, (long)arg);
 	close(fddev);
 	return ret;
 }

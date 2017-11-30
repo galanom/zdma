@@ -18,6 +18,8 @@
 #include <linux/swab.h>
 #include <linux/xz.h>
 #include <linux/string.h>
+#include <linux/soc/xilinx/xdevcfg.h>
+#include <linux/cred.h>
 
 #include <linux/of_dma.h>
 #include <linux/of_address.h>
@@ -93,9 +95,10 @@ static struct system {
 	struct workqueue_struct *workqueue;
 
 	struct zdma_config {
-		enum config	sec_policy_ioctl,
-				sec_policy_buf,
-				scheduler;
+		bool	clear_buffer,
+			block_user_ioctl,
+			sched_pri,
+			sched_dyn;
 	} config;
 	struct zdma_pblock {
 		atomic_t state;
@@ -108,7 +111,6 @@ static struct system {
 		char name[DT_NAME_LEN];
 		struct dma_chan	*txchanp,
 				*rxchanp;
-		struct clk *clk_mm2s, *clk_s2mm;
 	} pblocks;
 
 	struct zdma_core {
@@ -132,6 +134,7 @@ static struct system {
 	struct gen_pool *mem;
 	struct zdma_client {
 		int id;
+		uid_t uid;
 		atomic_t state;
 		struct list_head node;
 		struct zdma_core *core;
@@ -208,6 +211,7 @@ struct zdma_bitstream *bitstream_lookup_by_name(struct zdma_core *core, char *pb
 	return bitstream_sel;
 }
 
+
 struct zdma_bitstream *bitstream_lookup_by_pointer(struct zdma_core *core, struct zdma_pblock *pblock)
 {
 	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
@@ -263,7 +267,7 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	return;
 }
-int xdevcfg_program(dma_addr_t, size_t, bool);
+
 
 static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 {
@@ -356,14 +360,13 @@ static void pblock_release(struct zdma_pblock *pblock)
 static int psram_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP)
-		return -EBUSY;
-	
+		return -EBUSY;	
 	if (p->tx.vaddr)
 		gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
 	if (p->rx.vaddr)
 		gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
 	if (tx_size == 0 || rx_size == 0)
-		return 0;
+		return -EINVAL;
 
 	if (gen_pool_dma_alloc_pair(sys.mem,
 			tx_size, &p->tx.vaddr, &p->tx.handle, 
@@ -373,8 +376,10 @@ static int psram_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
 		atomic_set(&p->state, CLIENT_ERROR_MEMORY);
 		return -ENOMEM;
 	}
-	memset(p->tx.vaddr, 0x00, tx_size);
-	memset(p->rx.vaddr, 0x00, rx_size);
+	if (sys.config.clear_buffer) { 
+		memset(p->tx.vaddr, 0x00, tx_size);
+		memset(p->rx.vaddr, 0x00, rx_size);
+	}
 	p->tx.size = tx_size;
 	p->rx.size = rx_size;
 	return 0;
@@ -472,7 +477,8 @@ pblock_add_error:
 
 static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 {
-	if (sys.state != SYS_INIT) return -EBUSY;	// this will never happen
+	if (sys.state != SYS_INIT)
+		return -EBUSY;	// this will never happen
 	struct zdma_zone *zone = devm_kzalloc(sys.devp, sizeof(struct zdma_zone), GFP_KERNEL);
 	if (unlikely(zone == NULL)) {
 		pr_err("unable to allocate %zu bytes for zone description\n",
@@ -666,6 +672,7 @@ static int dev_open(struct inode *inodep, struct file *filep)
 		return -ENOMEM;
 	}
 	INIT_WORK(&p->work, dma_issue);
+	p->uid = current_uid().val;
 	spin_lock(&sys.clients_lock);
 	list_add_tail_rcu(&p->node, &sys.clients.node);
 	spin_unlock(&sys.clients_lock);
@@ -714,7 +721,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		rcu_read_unlock();
 		break;
 	case ZDMA_CONFIG:
-		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
+		;
+//		kuid_t user = current_uid();
+		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
 		switch (arg) {
 		case CONFIG_GENALLOC_BITMAP_FIRST_FIT:
@@ -732,11 +741,35 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_GENALLOC_CHUNK_LEAST_USED:
 			gen_pool_set_chunk_algo(sys.mem, gen_chunk_least_used);
 			break;
+		case CONFIG_SECURITY_IOCTL_ALLOW_USER:
+			sys.config.block_user_ioctl = false;
+			break;
+		case CONFIG_SECURITY_IOCTL_BLOCK_USER:
+			sys.config.block_user_ioctl = true;
+			break;
+		case CONFIG_SECURITY_BUFFER_KEEP:
+			sys.config.clear_buffer = false;
+			break;
+		case CONFIG_SECURITY_BUFFER_CLEAR:
+			sys.config.clear_buffer = true;
+			break;
+		case CONFIG_SCHEDULER_FIRST_FIT:
+			sys.config.sched_pri = false;
+			break;
+		case CONFIG_SCHEDULER_STATIC_PRI:
+			sys.config.sched_pri = true;
+			sys.config.sched_dyn = false;
+			break;
+		case CONFIG_SCHEDULER_DYNAMIC_PRI:
+			sys.config.sched_pri = true;
+			sys.config.sched_dyn = true;
+			break;			
 		default:
-			return -EINVAL;	
+			return -ENOTTY;	
 		};
+		break;
 	case ZDMA_CORE_REGISTER:
-		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
+		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
 		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
@@ -853,7 +886,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			core->name, bitstream->pblock->name, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
-		if (sys.config.sec_policy_ioctl == CONFIG_SECURITY_IOCTL_DEFAULT && !capable(CAP_SYS_ADMIN))
+		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
 		char buf[TEMP_BUF_SIZE];
 		if (strncpy_from_user(buf, (char __user *)arg, TEMP_BUF_SIZE-1) <= 0) {
@@ -949,7 +982,7 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 	if (sys.state != SYS_UP) 
 		return -EAGAIN;
 	struct zdma_client *p = filep->private_data;
-
+	
 	if (	atomic_read(&p->state) != CLIENT_CONFIGURED && 
 		atomic_read(&p->state) != CLIENT_MMAP_TX_DONE && 
 		atomic_read(&p->state) != CLIENT_MMAP_RX_DONE) 
@@ -1145,9 +1178,10 @@ static int __init mod_init(void)
 	}
 
 	sys.decompressor = xz_dec_init(XZ_SINGLE, 0);
-	sys.config.sec_policy_ioctl = CONFIG_SECURITY_IOCTL_DEFAULT;
-	sys.config.sec_policy_buf = CONFIG_SECURITY_BUFFER_DEFAULT;
-	sys.config.scheduler = CONFIG_SCHEDULER_DEFAULT;
+
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_IOCTL_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_BUFFER_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHEDULER_DEFAULT);
 
 	// register the driver to the kernel
 	if (platform_driver_register(&zdma_driver)) {

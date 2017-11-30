@@ -46,11 +46,6 @@ int main(int argc, char **argv)
 
 	zdma_core_register("sobel", 0, "pblock_0:pblock_1");
 	zdma_core_register("gauss", 0, "pblock_2:pblock_3");
-	zdma_core_unregister("gauss", "pblock_2");
-	zdma_core_unregister("sobel", NULL);
-	zdma_config(CONFIG_GENALLOC_BITMAP_FIRST_FIT);
-	/*zdma_core_register("outline");
-	zdma_core_register("negative");*/
 
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
@@ -71,6 +66,7 @@ int main(int argc, char **argv)
 			err  = zdma_task_configure(&task[i], "sobel", img_size, img_size, 2, img.cols, 0);
 		else
 			err  = zdma_task_configure(&task[i], "gauss", img_size, img_size, 1, img.cols);
+		assert(!err);
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}
 
@@ -101,7 +97,7 @@ int main(int argc, char **argv)
 	int t = tdiff(t1, t0);
 	cout << "Exec: " << task_num << " tasks by " << iter_num << " times, time: " 
 		<< t/1000 << "." << t%1000 << ", throughput: " << 
-		task_num*iter_num*img_size/(t*1000.0) << "MiB/s" << endl;
+		task_num*iter_num*(long long)img_size/(t*1000.0) << "MiB/s" << endl;
 	return 0;
 }
 

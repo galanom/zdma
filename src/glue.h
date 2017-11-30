@@ -8,6 +8,7 @@
 #include <stdlib.h>
 typedef uint32_t u32;
 typedef uint16_t u16;
+typedef int8_t s8;
 #endif /* __KERNEL__ */
 
 
@@ -39,7 +40,6 @@ enum config {
 struct zdma_client_config {
 	size_t	tx_size, rx_size;		// TX, RX buffer sizes
 	u32	flags;				// various flags
-//	int	pri;				// task priority
 	char	core_name[CORE_NAME_LEN];	// requested core
 	u32	core_param[CORE_PARAM_CNT];	// core parameters
 	int	core_param_count;
@@ -56,7 +56,7 @@ struct zdma_core_config {
 	char	pblock_name[DT_NAME_LEN];	// pblock name
 	size_t	size;			// bitstream size (initially compressed)
 	void	*bitstream;		// the bitstream to load
-	int	priority;
+	s8	priority;
 };
 
 #define MAGIC 'Z'

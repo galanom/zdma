@@ -7,7 +7,7 @@ extern "C" {
 
 extern int buffer_fill(void *p, int len);
 extern int buffer_compare(void *p, void *q, int len);
-extern int zdma_core_register(const char *name, int priority, const char *affinity);
+extern int zdma_core_register(const char *name, signed char priority, const char *affinity);
 extern int zdma_core_unregister(const char *name, const char *affinity);
 extern int zdma_config(enum config arg);
 extern int zdma_debug(void);

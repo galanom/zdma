@@ -116,6 +116,7 @@ static struct system {
 	struct zdma_core {
 		struct list_head node;
 		char name[CORE_NAME_LEN];
+		s8 priority;
 		struct zdma_bitstream {
 			struct list_head node;
 			struct zdma_pblock *pblock;
@@ -274,6 +275,11 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
 	BUG_ON(IS_ERR_OR_NULL(pblock));
 	BUG_ON(IS_ERR_OR_NULL(core));
+
+	if (pblock->core == core)
+		return 0;
+
+//	pr_info("programming %s (%s->%s)\n", pblock->name, pblock->core->name, core->name);
 	rcu_read_lock();
 	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
 		if (bitstream->pblock == pblock) {
@@ -323,21 +329,47 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		
 		if (pblock_sel) 
 			return pblock_sel;
+
 		// if a running core was not available, program the
 		// first free pblock for which a bitstream is available
+		s8 max_pri = 127;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-			if (bitstream_lookup_by_pointer(core, pblock) == NULL) continue;
-			if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
-				pblock_sel = pblock;
-				break;
-			}
+			if (atomic_read(&pblock->state) == PBLOCK_BUSY)
+				continue;
+			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
+				continue;
+
+			pblock_sel = pblock;
+			if (sys.config.sched_pri) {
+				max_pri = pblock->core->priority;
+			} else 	break;
+
+/*			if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
+				if (sys.config.sched_pri) {
+					if (pblock->core->priority < max_pri) {
+						if (pblock_sel) 
+							atomic_set(&pblock_sel->state, PBLOCK_FREE);
+						max_pri = pblock->core->priority;
+						pblock_sel = pblock;
+					}
+					continue;
+				} else {
+					pblock_sel = pblock;
+					break;
+				}
+			}*/
 		}
 		rcu_read_unlock();
+		if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
+			pblock_sel = NULL;
+			
 
 		// if we found a free pblock, try to program it if a bitstream is available
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
+//			pr_info("elected victim %s, core %s->%s\n", 
+//				pblock_sel->name, pblock_sel->core->name, core->name);
 			int err = pblock_setup(pblock, core);
 			if (err) 
 				pblock_sel = NULL;	// free pblock but had no bitstream available
@@ -349,6 +381,7 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 	} while (pblock_sel == NULL);
 	return pblock_sel;
 }
+
 
 static void pblock_release(struct zdma_pblock *pblock)
 {
@@ -541,7 +574,7 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p->core);
-//	zoled_print("Issue %s@%c\n", p->core->name, pblock->name[7]);
+	//pr_info("BEGIN %s at <%s>\n", p->core->name, pblock->name);
 
 	u32 csr;
 	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
@@ -560,7 +593,7 @@ static void dma_issue(struct work_struct *work)
 	}
 	iowrite32(CORE_CSR_START, pblock->vbase + CORE_CSR); // ap_start = 1
 	csr = ioread32(pblock->vbase + CORE_CSR);
-
+	//msleep(1000);
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
@@ -651,6 +684,7 @@ static void dma_issue(struct work_struct *work)
 	
 	atomic_set(&p->state, CLIENT_READY);
 	pblock_release(pblock);
+	//pr_info("END %s at <%s>\n", p->core->name, pblock->name);
 	return;
 
 dma_error:
@@ -721,8 +755,6 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		rcu_read_unlock();
 		break;
 	case ZDMA_CONFIG:
-		;
-//		kuid_t user = current_uid();
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
 		switch (arg) {
@@ -785,6 +817,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 				return -ENOMEM;
 			}
 			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
+			core->priority = core_conf.priority;
 			spin_lock_init(&core->bitstreams_lock);
 			INIT_LIST_HEAD(&core->bitstreams.node);
 			spin_lock(&sys.cores_lock);
@@ -882,8 +915,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
 		spin_unlock(&core->bitstreams_lock);
 
-		pr_info("core %s for pblock %s with size %zdKi registered\n", 
-			core->name, bitstream->pblock->name, bitstream->size/Ki);
+		pr_info("Registered core [%s] at [%s], priority %d, size %zdKi\n",
+			core->name, bitstream->pblock->name, core->priority, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))

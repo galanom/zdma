@@ -23,7 +23,7 @@
 #define DEV_FILE "/dev/zdma"
 
 
-int zdma_core_register(const char *name, int priority, const char *affinity)
+int zdma_core_register(const char *name, signed char priority, const char *affinity)
 {
 	int fd, fddev, err;
 	struct stat st;

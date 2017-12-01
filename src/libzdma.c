@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -23,7 +24,7 @@
 #define DEV_FILE "/dev/zdma"
 
 
-int zdma_core_register(const char *name, signed char priority, const char *affinity)
+int zdma_core_register(const char *name, signed char priority, unsigned long affinity)
 {
 	int fd, fddev, err;
 	struct stat st;
@@ -45,20 +46,35 @@ int zdma_core_register(const char *name, signed char priority, const char *affin
 
 	DIR *dir = opendir(CORE_DIRECTORY);
 	struct dirent *entry;
-	char pblock[DT_NAME_LEN];
 	int count = 0;
 	char *token;
 	char buf[256];
+	int i;
 	while ((entry = readdir(dir))) {
 		strcpy(buf, entry->d_name);
-		if ((token = strtok(buf, ".")) == NULL) continue;
-		if (strncmp(token, name, CORE_NAME_LEN)) continue;
-		if ((token = strtok(NULL, ".")) == NULL) continue;
-		strncpy(pblock, token, DT_NAME_LEN);
-		if ((token = strtok(NULL, "\0")) == NULL) continue;
-		if (strcmp(token, "bin.xz")) continue;
+		if ((token = strtok(buf, ".")) == NULL)
+			continue;
+		if (strncmp(token, name, CORE_NAME_LEN))
+			continue;
+		if ((token = strtok(NULL, ".")) == NULL)
+			continue;
+		
+		for (i = 0; i < strlen(token); ++i)
+			if (!isdigit(token[i])) // no whitespace pls
+				break;
+		if (i != strlen(token)) // loop was interrupted
+			continue;
+		int id = atoi(token);
+		if (i < 0 || i > 63)
+			continue;
 
-		if (affinity && !strstr(affinity, pblock)) continue;
+		if ((token = strtok(NULL, "\0")) == NULL)
+			continue;
+		if (strcmp(token, "bin.xz"))
+			continue;
+
+		if ((1 << id) & ~affinity)
+			continue;
 
 		fd = openat(dirfd(dir), entry->d_name, O_RDONLY);
 		err = errno;
@@ -71,7 +87,7 @@ int zdma_core_register(const char *name, signed char priority, const char *affin
 		fstat(fd, &st);
 		core.size = st.st_size;
 		strcpy(core.name, name);
-		strcpy(core.pblock_name, pblock); 
+		core.pblock = id;
 		core.priority = priority;
 		core.bitstream = malloc(core.size);
 		if (core.bitstream == NULL) {
@@ -94,19 +110,14 @@ int zdma_core_register(const char *name, signed char priority, const char *affin
 		close(fd);
 
 		err = ioctl(fddev, ZDMA_CORE_REGISTER, &core);
-
-		/*if (err) {
-			fprintf(stderr, "ioctl error %d (%s) registering user core\n",
-				err, strerror(err));
-			goto error;
-		}*/
+		
 		free(core.bitstream);
 		if (!err) ++count;
 	}
 	closedir(dir);
 
 	close(fddev);
-	printf("Core %s registered %d bitstream(s)\n", core.name, count);
+	printf("Core %s registered %d bitstream(s)\n", name, count);
 	return !count;
 error:
 	free(core.bitstream);
@@ -119,20 +130,15 @@ error_early:
 }
 
 
-int zdma_core_unregister(const char *name, const char *affinity)
+int zdma_core_unregister(const char *name, unsigned long affinity)
 {
-	int name_len = strlen(name);
-	int affinity_len = affinity ? strlen(affinity) : 0;
-	if (name_len + affinity_len > TEMP_BUF_SIZE - 2)
-		return -ENOMEM;
-	char buf[TEMP_BUF_SIZE];
-	strcpy(buf, name);
-	strcpy(buf + name_len, ".*");
-	if (affinity)
-		strcpy(buf + name_len + 1, affinity);	// will overwrite the .*
-
+	if (strlen(name) > DT_NAME_LEN - 1)
+		return -EINVAL;
+	struct zdma_core_config core;
+	strcpy(core.name, name);
+	core.pblock = affinity;
 	int fddev = open(DEV_FILE, O_RDONLY);
-	int ret = ioctl(fddev, ZDMA_CORE_UNREGISTER, buf);
+	int ret = ioctl(fddev, ZDMA_CORE_UNREGISTER, &core);
 	close(fddev);
 	return ret;
 }

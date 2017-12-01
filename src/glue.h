@@ -33,13 +33,9 @@ enum config {
 	CONFIG_SCHEDULER_DEFAULT = CONFIG_SCHEDULER_FIRST_FIT,
 };
 
-/*struct zdma_config {
-	int		
-};*/
-
 struct zdma_client_config {
 	size_t	tx_size, rx_size;		// TX, RX buffer sizes
-	u32	flags;				// various flags
+//	u32	flags;				// various flags
 	char	core_name[CORE_NAME_LEN];	// requested core
 	u32	core_param[CORE_PARAM_CNT];	// core parameters
 	int	core_param_count;
@@ -53,7 +49,8 @@ struct zdma_task {
 
 struct zdma_core_config {
 	char	name[CORE_NAME_LEN];	// core name in ASCII (utf8 not tested)
-	char	pblock_name[DT_NAME_LEN];	// pblock name
+	unsigned long			// pblock id if registering,
+		pblock;			// pblock set if unregistering
 	size_t	size;			// bitstream size (initially compressed)
 	void	*bitstream;		// the bitstream to load
 	s8	priority;

@@ -102,13 +102,13 @@ static struct system {
 	} config;
 	struct zdma_pblock {
 		atomic_t state;
+		u8 id;
 		spinlock_t lock;
 		struct list_head node;
 		struct zdma_core *core;
 		phys_addr_t	pbase,
 				psize;
 		void __iomem	*vbase;
-		char name[DT_NAME_LEN];
 		struct dma_chan	*txchanp,
 				*rxchanp;
 	} pblocks;
@@ -117,6 +117,7 @@ static struct system {
 		struct list_head node;
 		char name[CORE_NAME_LEN];
 		s8 priority;
+		unsigned long affinity;
 		struct zdma_bitstream {
 			struct list_head node;
 			struct zdma_pblock *pblock;
@@ -183,12 +184,12 @@ struct zdma_core *core_lookup(char *name)
 }
 
 
-struct zdma_pblock *pblock_lookup(char *pblock_name)
+struct zdma_pblock *pblock_lookup(unsigned long id)
 {
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-		if (strncmp(pblock->name, pblock_name, DT_NAME_LEN) == 0) {
+		if (pblock->id == id) {
 			pblock_sel = pblock;
 			break;
 		}
@@ -198,12 +199,12 @@ struct zdma_pblock *pblock_lookup(char *pblock_name)
 
 }
 
-struct zdma_bitstream *bitstream_lookup_by_name(struct zdma_core *core, char *pblock_name)
+struct zdma_bitstream *bitstream_lookup_by_id(struct zdma_core *core, unsigned long id)
 {
 	struct zdma_bitstream *bitstream, *bitstream_sel = NULL;
 	rcu_read_lock();
 	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
-		if (strncmp(bitstream->pblock->name, pblock_name, DT_NAME_LEN) == 0) {
+		if (bitstream->pblock->id == id) {
 			bitstream_sel = bitstream;
 			break;
 		}
@@ -239,14 +240,14 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-		pr_info("PBLOCK %s: core: %s, state: %d\n", 
-			pblock->name, pblock->core->name, atomic_read(&pblock->state));
+		pr_info("PBLOCK %d: core: %s, state: %d\n", 
+			pblock->id, pblock->core->name, atomic_read(&pblock->state));
 	}
 
 	list_for_each_entry_rcu(core, &sys.cores.node, node) {
 		pr_info("CORE %s: ", core->name);
 		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node)
-				pr_cont("<%s> ", bitstream->pblock->name);
+				pr_cont("<%d> ", bitstream->pblock->id);
 		pr_cont("\n");
 	}
 	
@@ -345,20 +346,6 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 				max_pri = pblock->core->priority;
 			} else 	break;
 
-/*			if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
-				if (sys.config.sched_pri) {
-					if (pblock->core->priority < max_pri) {
-						if (pblock_sel) 
-							atomic_set(&pblock_sel->state, PBLOCK_FREE);
-						max_pri = pblock->core->priority;
-						pblock_sel = pblock;
-					}
-					continue;
-				} else {
-					pblock_sel = pblock;
-					break;
-				}
-			}*/
 		}
 		rcu_read_unlock();
 		if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
@@ -368,8 +355,9 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		// if we found a free pblock, try to program it if a bitstream is available
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
-//			pr_info("elected victim %s, core %s->%s\n", 
-//				pblock_sel->name, pblock_sel->core->name, core->name);
+			if (debug)
+				pr_info("programming pblock %hhu, core %s->%s\n", 
+					pblock_sel->id, pblock_sel->core->name, core->name);
 			int err = pblock_setup(pblock, core);
 			if (err) 
 				pblock_sel = NULL;	// free pblock but had no bitstream available
@@ -432,16 +420,20 @@ static int pblock_add(struct device_node *np)
 	spin_lock_init(&pblock->lock);
 	
 	atomic_set(&pblock->state, PBLOCK_FREE);
-	char *s = strrchr(of_node_full_name(np), '/') + 1;
-	strncpy(pblock->name, s, DT_NAME_LEN);
-	*strrchr(pblock->name, '@') = '_';
+	char *pblock_name = strrchr(of_node_full_name(np), '/') + 1;
+	err = kstrtou8(strrchr(of_node_full_name(np), '@') + 1, 10, &pblock->id);
+	if (err) {
+		pr_err("devicetree: error parsing pblock address unit, %s\n", pblock_name);
+		return -EINVAL;
+	}
+	pr_info("adding pblock %d (%s)\n", pblock->id, pblock_name);
 
 
 	// discover the DMA controller responsible for the core of this pblock
 	struct device_node *dma_client_np = of_parse_phandle(np, "transport", 0);
 	if (!dma_client_np) {
-		pr_err("devicetree: %s does not contain a phandle to a data transporter.\n",
-			pblock->name);
+		pr_err("devicetree: pblock %d does not contain a phandle to a data transporter.\n",
+			pblock->id);
 		err = -EINVAL;
 		goto pblock_add_error;
 	}
@@ -449,16 +441,16 @@ static int pblock_add(struct device_node *np)
 	// configure the DMA controller for this pblock
 	pblock->txchanp = of_dma_request_slave_channel(dma_client_np, "tx");
 	if (IS_ERR_OR_NULL(pblock->txchanp)) {
-		pr_err("%s: failed to reserve TX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", pblock->name);
+		pr_err("pblock %d: failed to reserve TX DMA channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", pblock->id);
 		err = -ENODEV;
 		goto pblock_add_error;
 	}
 
 	pblock->rxchanp = of_dma_request_slave_channel(dma_client_np, "rx");
 	if (IS_ERR_OR_NULL(pblock->rxchanp)) {
-		pr_err("%s: failed to reserve RX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", pblock->name);
+		pr_err("pblock %d: failed to reserve RX DMA channel -- devicetree misconfiguration, "
+			"DMA controller not present or driver not loaded.\n", pblock->id);
 		dma_release_channel(pblock->txchanp);
 		err = -ENODEV;
 		goto pblock_add_error;
@@ -467,8 +459,8 @@ static int pblock_add(struct device_node *np)
 	// discover the core's configuration address space
 	struct device_node *core_np = of_parse_phandle(np, "core", 0);
 	if (!core_np) {
-		pr_err("devicetree: %s does not contain a phandle to a core definition.\n",
-			pblock->name);
+		pr_err("devicetree: pblock %d does not contain a phandle to a core definition.\n",
+			pblock->id);
 		goto pblock_add_error_late;
 	}
 
@@ -478,16 +470,16 @@ static int pblock_add(struct device_node *np)
 	pblock->pbase = of_translate_address(core_np, addr = of_get_address(core_np, 0, &size, NULL));
 	pblock->psize = (size_t)size;
 	if (pblock->pbase == (long)OF_BAD_ADDR || !size) {
-		pr_err("devicetree: %s: range entry is invalid:\n"
+		pr_err("devicetree: pblock %d: range entry is invalid:\n"
 			"base: %p, translated: %#zx, size: %#llx.\n", 
-			pblock->name, addr, pblock->pbase, size);
+			pblock->id, addr, pblock->pbase, size);
 		err = -EINVAL;
 		goto pblock_add_error_late;
 	}
-	
-	if (!devm_request_mem_region(sys.devp, pblock->pbase, pblock->psize, pblock->name)) {
+
+	if (!devm_request_mem_region(sys.devp, pblock->pbase, pblock->psize, pblock_name)) {
 		pr_err("%s: failed to reserve I/O space at %#zx, size: %#zx\n", 
-			pblock->name, pblock->pbase, pblock->psize);
+			pblock_name, pblock->pbase, pblock->psize);
 			err = -ENOSPC;
 		goto pblock_add_error_late;
 	}
@@ -580,9 +572,9 @@ static void dma_issue(struct work_struct *work)
 	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_IDLE)) {
-		pr_emerg("core %s at %s is in an unexpected state: "
+		pr_emerg("core %s/%d is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%x\n",
-			p->core->name, pblock->name, csr);
+			p->core->name, pblock->id, csr);
 		goto dma_error;
 	}
 
@@ -648,17 +640,17 @@ static void dma_issue(struct work_struct *work)
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!tx_timeout || !rx_timeout) {
-		pr_crit("*** DMA operation timed out at controller %s, core %s, client %d, chan %s.\n",
-			pblock->name, pblock->core->name, p->id,
+		pr_crit("*** DMA operation timed out for core %s/%d, client %d, chan %s.\n",
+			pblock->core->name, pblock->id, p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
 			//goto dma_error;
 	}
 
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
-		pr_crit("*** DMA status at %s/%s, client %d: "
+		pr_crit("*** DMA status at %s/%d, client %d: "
 			"TX: %s [res %u], RX: %s [res %u] ***\n", 
-			pblock->name, pblock->core->name, p->id,
+			pblock->core->name, pblock->id, p->id,
 			tx_status == DMA_ERROR ? "ERROR" : 
 			tx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
 			tx_state.residue,
@@ -672,13 +664,13 @@ static void dma_issue(struct work_struct *work)
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
 	if (ret < 0)
-		pr_warn("core %s at %s return value %d\n", p->core->name, pblock->name, ret);
+		pr_warn("core %s/%d return value %d\n", p->core->name, pblock->id, ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_DONE)) {
-		pr_emerg("core %s at %s is in an unexpected state: "
+		pr_emerg("core %s/%d is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
-			p->core->name, pblock->name, csr);
+			p->core->name, pblock->id, csr);
 		goto dma_error;
 	}
 	
@@ -818,14 +810,15 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			}
 			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
 			core->priority = core_conf.priority;
+			//core->affinity = 0;
 			spin_lock_init(&core->bitstreams_lock);
 			INIT_LIST_HEAD(&core->bitstreams.node);
 			spin_lock(&sys.cores_lock);
 			list_add_tail_rcu(&core->node, &sys.cores.node);
 			spin_unlock(&sys.cores_lock);
 		} else {
-			bitstream = bitstream_lookup_by_name(core, core_conf.pblock_name);
-			if (bitstream) {
+			//if (core->affinity & (1ul << core_conf.pblock)) {
+			if (bitstream_lookup_by_id(core, (u8)core_conf.pblock)) {
 				pr_warn("this bitstream is already registered for this core\n");
 				return -EEXIST;
 			}
@@ -833,15 +826,15 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		bitstream = devm_kmalloc(sys.devp, sizeof(struct zdma_bitstream), GFP_KERNEL);
 		if (!bitstream) {
-			pr_err("could not allocate %zu bytes for bitstream %s/%s structures\n",
-				sizeof(struct zdma_bitstream), core_conf.pblock_name, core_conf.name);
+			pr_err("could not allocate %zu bytes for bitstream %s/%hhu structures\n",
+				sizeof(struct zdma_bitstream), core_conf.name, (u8)core_conf.pblock);
 			return -ENOMEM;
 		}
 		
-		bitstream->pblock = pblock_lookup(core_conf.pblock_name);
+		bitstream->pblock = pblock_lookup((u8)core_conf.pblock);
 		if (!bitstream->pblock) {
-			pr_warn("core %s contains bitstream for pblock %s that does not exist, ignoring.\n",
-				core_conf.name, core_conf.pblock_name);
+			pr_warn("core %s contains bitstream for pblock id %hhu that does not exist, ignoring.\n",
+				core_conf.name, (u8)core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
 			return -ENODEV;
 		}
@@ -849,9 +842,9 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		bitstream->size = core_conf.size;
 		void *buffer = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
 		if (!buffer) {
+			pr_err("could not allocate %zu bytes for compressed bitstream %s/%hhu data\n",
+				core_conf.size, core_conf.name, (u8)core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
-			pr_err("could not allocate %zu bytes for compressed bitstream %s/%s data\n",
-				core_conf.size, core_conf.pblock_name, core_conf.name);
 			return -ENOMEM;
 		}
 		if (copy_from_user(buffer, (void __user *)core_conf.bitstream, core_conf.size)) {
@@ -861,10 +854,10 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		bitstream->data = dmam_alloc_coherent(sys.devp, PARTIAL_SIZE_MAX, &bitstream->dma_handle, GFP_KERNEL);
 		if (!bitstream->data) {
+			pr_err("could not allocate %zu bytes for bitstream %s/%hhu data\n",
+				PARTIAL_SIZE_MAX, core_conf.name, (u8)core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
 			devm_kfree(sys.devp, buffer);
-			pr_err("could not allocate %zu bytes for bitstream %s/%s data\n",
-				PARTIAL_SIZE_MAX, core_conf.pblock_name, core_conf.name);
 			return -ENOMEM;
 		}
 		struct xz_buf xz_ctrl;
@@ -915,24 +908,18 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
 		spin_unlock(&core->bitstreams_lock);
 
-		pr_info("Registered core [%s] at [%s], priority %d, size %zdKi\n",
-			core->name, bitstream->pblock->name, core->priority, bitstream->size/Ki);
+		pr_info("Registered core [%s] at pblock %hhu, priority %d, size %zdKi\n",
+			core->name, bitstream->pblock->id, core->priority, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
-		char buf[TEMP_BUF_SIZE];
-		if (strncpy_from_user(buf, (char __user *)arg, TEMP_BUF_SIZE-1) <= 0) {
-			pr_err("could not read request data, ioctl ignored\n");
+		if (copy_from_user(&core_conf, (void __user *)arg, sizeof(core_conf))) {
+			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
-		char *aff = strchr(buf, '.');
-		*aff++ = '\0';
-		bool clear_all = false;
-		if (*aff == '*' && *(aff+1) == '\0')
-			clear_all = true;
 
-		core = core_lookup(buf);
+		core = core_lookup(core_conf.name);
 		
 		if (core == NULL) {
 			pr_warn("core %s is not currently registered\n", core_conf.name);
@@ -943,7 +930,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			rcu_read_lock();
 			struct zdma_bitstream *victim = NULL;
 			list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
-				if (clear_all || strstr(aff, bitstream->pblock->name)) {
+				if (core_conf.pblock & (1ul << bitstream->pblock->id)) {
 					victim = bitstream;
 					while (atomic_cmpxchg(&victim->pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
 						;
@@ -955,7 +942,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 				}
 			}
 			rcu_read_unlock();
-			if (!victim) break;
+			if (!victim)
+				break;
 			synchronize_rcu();
 			dmam_free_coherent(sys.devp, PARTIAL_SIZE_MAX, victim->data, victim->dma_handle); 
 			devm_kfree(sys.devp, bitstream);

@@ -1,7 +1,7 @@
 #pragma once
 
 #define CPU_FREQ 667
-#define PARTIAL_SIZE_MAX 1048576
+#define PARTIAL_SIZE_MAX (768*1024)
 
 // Core register offset from base
 #define CORE_CSR	0x00

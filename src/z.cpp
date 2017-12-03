@@ -33,10 +33,10 @@ int main(int argc, char **argv)
 	bool verify = false;
 	int err, task_num = 0, iter_num = 0;
 
-	if (argc >= 3) {
+	if (argc >= 2)
 		task_num = atoi(argv[1]);
+	if (argc >= 3)
 		iter_num = atoi(argv[2]);
-	}
 	if (!task_num)
 		task_num = 1;
 	if (!iter_num) 

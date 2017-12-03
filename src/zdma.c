@@ -792,13 +792,11 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_GENALLOC_CHUNK_FIRST_FIT:
 			gen_pool_set_chunk_algo(sys.mem, gen_chunk_first_fit);
 			break;
-		case CONFIG_GENALLOC_CHUNK_MAX_AVAIL:
-			pr_info("chunk max avail\n");
-			gen_pool_set_chunk_algo(sys.mem, gen_chunk_max_avail);
+		case CONFIG_GENALLOC_CHUNK_WORST_FIT:
+			gen_pool_set_chunk_algo(sys.mem, gen_chunk_worst_fit);
 			break;
-		case CONFIG_GENALLOC_CHUNK_LEAST_USED:
-			pr_info("chunk least used\n");
-			gen_pool_set_chunk_algo(sys.mem, gen_chunk_least_used);
+		case CONFIG_GENALLOC_CHUNK_BEST_FIT:
+			gen_pool_set_chunk_algo(sys.mem, gen_chunk_best_fit);
 			break;
 		case CONFIG_SECURITY_IOCTL_ALLOW_USER:
 			sys.config.block_user_ioctl = false;

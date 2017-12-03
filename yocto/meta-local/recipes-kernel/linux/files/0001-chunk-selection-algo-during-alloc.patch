@@ -60,10 +60,10 @@ index 29d4385903d4..19183ce83216 100644
 +extern struct gen_pool_chunk *gen_chunk_first_fit(struct gen_pool *pool,
 +		struct gen_pool_chunk *last_chunk);
 +
-+extern struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool,
++extern struct gen_pool_chunk *gen_chunk_worst_fit(struct gen_pool *pool,
 +		struct gen_pool_chunk *last_chunk);
 +
-+extern struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool,
++extern struct gen_pool_chunk *gen_chunk_best_fit(struct gen_pool *pool,
 +		struct gen_pool_chunk *last_chunk);
  
  extern struct gen_pool *devm_gen_pool_create(struct device *dev,
@@ -236,14 +236,14 @@ index 144fe6b1a03e..8c854a4c96ca 100644
 +EXPORT_SYMBOL_GPL(gen_chunk_first_fit);
 +
 +/**
-+ * gen_chunk_max_avail - find the next chunk with most available space
++ * gen_chunk_worst_fit - find the next chunk with most available space
 + * @pool:	the memory pool
 + * @last_chunk:	the chunk after which the search will take place
 + *
 + * Returns the chunk after last_chunk that has the most available space
 + * but no more than of last_chunk or NULL if the end of the list is reached.
 + */
-+struct gen_pool_chunk *gen_chunk_max_avail(struct gen_pool *pool, 
++struct gen_pool_chunk *gen_chunk_worst_fit(struct gen_pool *pool, 
 +	struct gen_pool_chunk *last_chunk)
 +{
 +	size_t avail_curr, avail_last, avail_max = 0;
@@ -275,10 +275,10 @@ index 144fe6b1a03e..8c854a4c96ca 100644
 +	}
 +	return chunk_sel;
 +}
-+EXPORT_SYMBOL_GPL(gen_chunk_max_avail);
++EXPORT_SYMBOL_GPL(gen_chunk_worst_fit);
 +
 +/**
-+ * gen_chunk_least_used - find the next least used chunk
++ * gen_chunk_best_fit - find the next chunk with least available space
 + * @pool:	the memory pool
 + * @last_chunk:	the chunk after which the search will take place
 + *
@@ -286,15 +286,15 @@ index 144fe6b1a03e..8c854a4c96ca 100644
 + * independently of it's total size, or NULL the end of the list
 + * is reached.
 + */
-+struct gen_pool_chunk *gen_chunk_least_used(struct gen_pool *pool, 
++struct gen_pool_chunk *gen_chunk_best_fit(struct gen_pool *pool, 
 +	struct gen_pool_chunk *last_chunk)
 +{
-+	size_t used_curr, used_last, used_min;
++	size_t avail_curr, avail_last, avail_min;
 +	struct gen_pool_chunk *chunk, *chunk_sel = NULL;
 +	bool found_last = false;
 +	
-+	if (last_chunk == NULL) used_min = -1u;
-+	else used_min = used_last = 
++	if (last_chunk == NULL) avail_min = -1u;
++	else avail_min = avail_last = 
 +		chunk_size(last_chunk) - atomic_read(&last_chunk->avail);
 +	
 +	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
@@ -303,20 +303,20 @@ index 144fe6b1a03e..8c854a4c96ca 100644
 +			continue;
 +		}
 +
-+		used_curr = chunk_size(chunk) - atomic_read(&chunk->avail);
-+		if (used_curr == used_last && found_last) {
++		avail_curr = atomic_read(&chunk->avail);
++		if (avail_curr == avail_last && found_last) {
 +			chunk_sel = chunk; // first chunk that has equal available
 +			break;		   // space with last_chunk
 +		}
-+		if (used_curr < used_min) {
-+			used_min = used_curr;
++		if (avail_curr < avail_min) {
++			avail_min = avail_curr;
 +			chunk_sel = chunk;
 +		}
 +	}
 +
 +	return chunk_sel;
 +}
-+EXPORT_SYMBOL_GPL(gen_chunk_least_used);
++EXPORT_SYMBOL_GPL(gen_chunk_best_fit);
 +
  /**
   * gen_pool_avail - get available free space of the pool

@@ -241,9 +241,19 @@ int zdma_task_configure(struct zdma_task *task, const char *core_name,
 
 int zdma_task_enqueue(struct zdma_task *task)
 {
-	int err;
-	if (ioctl(task->fd, ZDMA_CLIENT_ENQUEUE, 0)) {
-		err = errno;
+	if (ioctl(task->fd, ZDMA_CLIENT_ENQUEUE_BLOCK, 0)) {
+		int err = errno;
+		fprintf(stderr, "ioctl error %d (%s) while enqueueing DMA task\n",
+			err, strerror(err));
+		return err;
+	}
+	return 0;
+}
+
+int zdma_task_enqueue_nb(struct zdma_task *task)
+{
+	if (ioctl(task->fd, ZDMA_CLIENT_ENQUEUE_NOBLOCK, 0)) {
+		int err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while enqueueing DMA task\n",
 			err, strerror(err));
 		return err;
@@ -252,11 +262,11 @@ int zdma_task_enqueue(struct zdma_task *task)
 }
 
 
+
 int zdma_task_waitfor(struct zdma_task *task)
 {
-	int err;
 	if (ioctl(task->fd, ZDMA_CLIENT_WAIT, 0)) {
-		err = errno;
+		int err = errno;
 		fprintf(stderr, "ioctl error %d (%s) while flushing work queue\n",
 			err, strerror(err));
 		return err;
@@ -267,6 +277,7 @@ int zdma_task_waitfor(struct zdma_task *task)
 
 void zdma_task_destroy(struct zdma_task *task)
 {
+	(void)zdma_task_waitfor(task);
 	munmap(task->tx_buf, task->conf.tx_size);
 	munmap(task->rx_buf, task->conf.rx_size);
 	close(task->fd);

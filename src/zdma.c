@@ -244,13 +244,13 @@ static void zdma_debug(void)
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 		pr_info("PBLOCK %lu: core: %s, state: %d\n", 
-			pblock->id, pblock->core->name, atomic_read(&pblock->state));
+			__fls(pblock->id), pblock->core->name, atomic_read(&pblock->state));
 	}
 
 	list_for_each_entry_rcu(core, &sys.cores.node, node) {
-		pr_info("CORE %s: ", core->name);
+		pr_info("CORE %s: mask=0x%lx ", core->name, core->affinity);
 		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node)
-				pr_cont("<%lu> ", bitstream->pblock->id);
+				pr_cont("<%lu> ", __fls(bitstream->pblock->id));
 		pr_cont("\n");
 	}
 	
@@ -283,11 +283,10 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 	if (pblock->core == core)
 		return 0;
 
-//	pr_info("programming %s (%s->%s)\n", pblock->name, pblock->core->name, core->name);
 	rcu_read_lock();
 	list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
 		if (bitstream->pblock == pblock) {
-			bitstream_sel = bitstream;	// TODO test if it can be simplified
+			bitstream_sel = bitstream;
 			break;
 		}
 	}
@@ -604,7 +603,8 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p);
-	pr_info("BEGIN %s at <%lu>\n", p->core->name, pblock->id);
+	if (debug)
+		pr_info("BEGIN %s at <%lu>\n", p->core->name, __fls(pblock->id));
 
 	u32 csr;
 	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
@@ -612,7 +612,7 @@ static void dma_issue(struct work_struct *work)
 	if (!(csr & CORE_CSR_IDLE)) {
 		pr_emerg("core %s/%lu is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%x\n",
-			p->core->name, pblock->id, csr);
+			p->core->name, __fls(pblock->id), csr);
 		goto dma_error;
 	}
 
@@ -679,7 +679,7 @@ static void dma_issue(struct work_struct *work)
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!tx_timeout || !rx_timeout) {
 		pr_crit("*** DMA operation timed out for core %s/%lu, client %d, chan %s.\n",
-			pblock->core->name, pblock->id, p->id,
+			pblock->core->name, __fls(pblock->id), p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
 			//goto dma_error;
@@ -688,7 +688,7 @@ static void dma_issue(struct work_struct *work)
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
 		pr_crit("*** DMA status at %s/%lu, client %d: "
 			"TX: %s [res %u], RX: %s [res %u] ***\n", 
-			pblock->core->name, pblock->id, p->id,
+			pblock->core->name, __fls(pblock->id), p->id,
 			tx_status == DMA_ERROR ? "ERROR" : 
 			tx_status == DMA_IN_PROGRESS ? "IN PROGRESS" : "PAUSED",
 			tx_state.residue,
@@ -702,19 +702,20 @@ static void dma_issue(struct work_struct *work)
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
 	if (ret < 0)
-		pr_warn("core %s/%lu return value %d\n", p->core->name, pblock->id, ret);
+		pr_warn("core %s/%lu return value %d\n", p->core->name, __fls(pblock->id), ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_DONE)) {
 		pr_emerg("core %s/%lu is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
-			p->core->name, pblock->id, csr);
+			p->core->name, __fls(pblock->id), csr);
 		goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
 	pblock_release(pblock);
-	pr_info("END %s at <%lu>\n", p->core->name, pblock->id);
+	if (debug)
+		pr_info("END %s at <%lu>\n", p->core->name, __fls(pblock->id));
 	return;
 
 dma_error:
@@ -866,15 +867,15 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			}
 			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
 			core->priority = sys.config.sched_pri ? core_conf.priority : 1;
-			//core->affinity = 0;
+			core->affinity = 0;
 			spin_lock_init(&core->bitstreams_lock);
 			INIT_LIST_HEAD(&core->bitstreams.node);
 			spin_lock(&sys.cores_lock);
 			list_add_tail_rcu(&core->node, &sys.cores.node);
 			spin_unlock(&sys.cores_lock);
 		} else {
-			//if (core->affinity & (1ul << core_conf.pblock)) {
-			if (bitstream_lookup_by_id(core, core_conf.pblock)) {
+			if (core->affinity & core_conf.pblock) {
+//			if (bitstream_lookup_by_id(core, core_conf.pblock)) {
 				pr_warn("this bitstream is already registered for this core\n");
 				return -EEXIST;
 			}
@@ -959,13 +960,14 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			*(u32 *)(bitstream->data + i) = swab32(*(u32 *)(bitstream->data + i));
 		}
 
+		core->affinity |= bitstream->pblock->id;
 
 		spin_lock(&core->bitstreams_lock);
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
 		spin_unlock(&core->bitstreams_lock);
 
 		pr_info("Registered core [%s] at pblock %lu, priority %d, size %zdKi\n",
-			core->name, bitstream->pblock->id, core->priority, bitstream->size/Ki);
+			core->name, __fls(bitstream->pblock->id), core->priority, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
@@ -992,6 +994,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 						;
 					spin_lock(&core->bitstreams_lock);
 					list_del_rcu(&victim->node);
+					victim->pblock->core->affinity &= ~victim->pblock->id;
 					atomic_set(&victim->pblock->state, PBLOCK_FREE);
 					spin_unlock(&core->bitstreams_lock);
 					break;
@@ -1038,8 +1041,17 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			return -EINVAL;
 		}
 		atomic_set(&p->state, CLIENT_CONFIGURED);
-		break;	
-	case ZDMA_CLIENT_ENQUEUE:
+		break;
+	case ZDMA_CLIENT_ENQUEUE_BLOCK:
+		if (atomic_read(&p->state) == CLIENT_INPROGRESS)
+			flush_work(&p->work);
+		// Delibarate fall-through to _NOBLOCK variant
+	case ZDMA_CLIENT_ENQUEUE_NOBLOCK:
+		if ((p->affinity & p->core->affinity) == 0) {
+			pr_warn("client affinity prohibits scheduling to any available pblock\n");
+			return -EPERM;
+		}
+			
 		if (atomic_cmpxchg(&p->state, CLIENT_READY, CLIENT_INPROGRESS) != CLIENT_READY)
 			return -EAGAIN;
 		queue_work(sys.workqueue, &p->work);

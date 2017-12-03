@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		err = zdma_task_init(&task[i]);
 		assert(!err);
 		if (i % core_num == 0)
-			err  = zdma_task_configure(&task[i], "sobel", 1, img_size, img_size, 2, img.cols, 0);
+			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
 		else if (i % core_num == 1)
 			err  = zdma_task_configure(&task[i], "gauss", -1, img_size, img_size, 1, img.cols);
 		else if (i % core_num == 2)
@@ -100,7 +100,6 @@ int main(int argc, char **argv)
 		}
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
-			err = zdma_task_waitfor(&task[j]);
 			if (verify) {
 				memcpy(out[j].data, task[j].rx_buf, img_size);
 				imwrite("t" + to_string(j) + "r" + to_string(i)	+ 
@@ -108,7 +107,11 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+	for (int j = 0; j < task_num; ++j)
+		zdma_task_waitfor(&task[j]);
+
 	clock_gettime(CLOCK_MONOTONIC, &t1);
+	
 	for (int j = 0; j < task_num; ++j)
 		zdma_task_destroy(&task[j]);
 	int t = tdiff(t1, t0);

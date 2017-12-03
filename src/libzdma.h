@@ -16,6 +16,7 @@ extern int zdma_task_init(struct zdma_task *task);
 extern int zdma_task_configure(struct zdma_task *task, const char *core_name,
 		unsigned long affinity, int tx_size, int rx_size, int argc, ...);
 extern int zdma_task_enqueue(struct zdma_task *task);
+extern int zdma_task_enqueue_nb(struct zdma_task *task);
 extern int zdma_task_waitfor(struct zdma_task *task);
 extern int zdma_task_verify(struct zdma_task *task);
 extern void zdma_task_destroy(struct zdma_task *task);

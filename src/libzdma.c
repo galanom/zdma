@@ -88,7 +88,9 @@ int zdma_core_register(const char *name, signed char priority, unsigned long aff
 		core.size = st.st_size;
 		strcpy(core.name, name);
 		core.pblock = id;
-		core.priority = priority;
+		core.priority = priority > 10 ? 10 : 
+				priority < 1 ? 1 :
+				priority;
 		core.bitstream = malloc(core.size);
 		if (core.bitstream == NULL) {
 			fprintf(stderr, "error allocating %zu bytes of memory "

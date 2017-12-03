@@ -97,11 +97,13 @@ static struct system {
 	struct zdma_config {
 		bool	clear_buffer,
 			block_user_ioctl,
-			sched_pri,
-			sched_dyn;
+			sched_age,
+			sched_access_age,
+			sched_pri;
 	} config;
 	struct zdma_pblock {
 		atomic_t state;
+		atomic_t age;
 		u8 id;
 		spinlock_t lock;
 		struct list_head node;
@@ -307,6 +309,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		return -EIO;
 	}
 
+	atomic_set(&pblock->age, 0);
 	pblock->core = core;
 	return 0;
 }
@@ -315,6 +318,14 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 {
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if (pblock->core)
+			atomic_add(pblock->core->priority, &pblock->age);
+	}
+	rcu_read_unlock();
+
 	do {
 		// at first, try to lock an already running core
 		rcu_read_lock();
@@ -327,28 +338,43 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 			}
 		}
 		rcu_read_unlock();
-		
-		if (pblock_sel) 
-			return pblock_sel;
 
-		// if a running core was not available, program the
-		// first free pblock for which a bitstream is available
-		s8 max_pri = 127;
+		// if a free pblock with the requested core
+		// was found, abort the loop to return
+		if (pblock_sel)
+			break;
+		
+		// if there was no pblock with the requested core,
+		// or if it was not free, try to find a free pblock
+		// to reconfigure it with our new core
+		int	max_found = -1,	// age or priority
+			curr_pri = 1;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 			if (atomic_read(&pblock->state) == PBLOCK_BUSY)
-				continue;
+				continue;	// it's busy, skip
 			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
-				continue;
+				continue;	// no bitstream for this pblock, skip
 
-			pblock_sel = pblock;
-			if (sys.config.sched_pri) {
-				max_pri = pblock->core->priority;
-			} else 	break;
-
+			if (sys.config.sched_age) {
+				if (atomic_read(&pblock->age) > max_found) {
+					pblock_sel = pblock; 
+					max_found = atomic_read(&pblock->age);
+				}
+			} else {
+				if (pblock->core)
+					curr_pri = pblock->core->priority;
+				if (curr_pri > max_found) {
+					pblock_sel = pblock;
+					max_found = curr_pri;
+				}
+			}
 		}
 		rcu_read_unlock();
-		if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
+
+		// If the chosen pblock got locked since initial check
+		// in previous lock, release it. This will never happen.
+		if (pblock_sel && atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
 			pblock_sel = NULL;
 			
 
@@ -356,17 +382,22 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
 			if (debug)
-				pr_info("programming pblock %hhu, core %s->%s\n", 
-					pblock_sel->id, pblock_sel->core->name, core->name);
-			int err = pblock_setup(pblock, core);
-			if (err) 
-				pblock_sel = NULL;	// free pblock but had no bitstream available
+				pr_info("programming pblock %hhu, age %d, core %s->%s\n", 
+					pblock_sel->id, atomic_read(&pblock_sel->age), pblock_sel->core->name, core->name);
+			int err = pblock_setup(pblock_sel, core);
+			BUG_ON(err);
+			atomic_set(&pblock_sel->age, 0);
 		}
 		
 		// either no free pblock or no bitstream for the chosen pblock
 		// concede cpu to other task to wait a bit and then redo from start
-		if (pblock_sel == NULL) schedule();
+		if (pblock_sel == NULL) 
+			schedule();
 	} while (pblock_sel == NULL);
+
+	if (sys.config.sched_access_age)
+		atomic_set(&pblock_sel->age, 0);
+
 	return pblock_sel;
 }
 
@@ -484,7 +515,8 @@ static int pblock_add(struct device_node *np)
 		goto pblock_add_error_late;
 	}
 	pblock->vbase = devm_ioremap(sys.devp, pblock->pbase, pblock->psize);
-	
+	atomic_set(&pblock->age, 0);
+
 	// now add the pblock to the list
 	spin_lock(&sys.pblocks_lock);
 	list_add_tail_rcu(&pblock->node, &sys.pblocks.node);
@@ -727,13 +759,13 @@ static int dev_release(struct inode *inodep, struct file *filep)
 
 static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-	if (sys.state != SYS_UP) return -EAGAIN;
 	struct zdma_core *core;
 	struct zdma_bitstream *bitstream = NULL;
 	struct zdma_core_config core_conf;
 	struct zdma_client_config client_conf;
 	struct zdma_client *p = NULL;
-	if (filep) p = filep->private_data;
+	if (filep) 
+		p = filep->private_data;
 
 	switch (cmd) {
 	case ZDMA_DEBUG:
@@ -749,6 +781,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	case ZDMA_CONFIG:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
 			return -EACCES;
+
 		switch (arg) {
 		case CONFIG_GENALLOC_BITMAP_FIRST_FIT:
 			gen_pool_set_algo(sys.mem, gen_pool_first_fit, NULL);
@@ -760,9 +793,11 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			gen_pool_set_chunk_algo(sys.mem, gen_chunk_first_fit);
 			break;
 		case CONFIG_GENALLOC_CHUNK_MAX_AVAIL:
+			pr_info("chunk max avail\n");
 			gen_pool_set_chunk_algo(sys.mem, gen_chunk_max_avail);
 			break;
 		case CONFIG_GENALLOC_CHUNK_LEAST_USED:
+			pr_info("chunk least used\n");
 			gen_pool_set_chunk_algo(sys.mem, gen_chunk_least_used);
 			break;
 		case CONFIG_SECURITY_IOCTL_ALLOW_USER:
@@ -777,17 +812,34 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_SECURITY_BUFFER_CLEAR:
 			sys.config.clear_buffer = true;
 			break;
-		case CONFIG_SCHEDULER_FIRST_FIT:
+		case CONFIG_SCHEDULER_FIRST_FREE:
+			sys.config.sched_age = false;
 			sys.config.sched_pri = false;
 			break;
-		case CONFIG_SCHEDULER_STATIC_PRI:
+		case CONFIG_SCHEDULER_PRIORITY:
+			sys.config.sched_age = false;
 			sys.config.sched_pri = true;
-			sys.config.sched_dyn = false;
 			break;
-		case CONFIG_SCHEDULER_DYNAMIC_PRI:
+		case CONFIG_SCHEDULER_LRP:
+			sys.config.sched_age = true;
+			sys.config.sched_access_age = false;
+			sys.config.sched_pri = false;
+			break;
+		case CONFIG_SCHEDULER_LRP_PRI:
+			sys.config.sched_age = true;
+			sys.config.sched_access_age = false;
 			sys.config.sched_pri = true;
-			sys.config.sched_dyn = true;
-			break;			
+			break;
+		case CONFIG_SCHEDULER_LRU:
+			sys.config.sched_age = true;
+			sys.config.sched_access_age = true;
+			sys.config.sched_pri = false;
+			break;
+		case CONFIG_SCHEDULER_LRU_PRI:
+			sys.config.sched_age = true;
+			sys.config.sched_access_age = true;
+			sys.config.sched_pri = true;
+			break;
 		default:
 			return -ENOTTY;	
 		};
@@ -809,7 +861,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 				return -ENOMEM;
 			}
 			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
-			core->priority = core_conf.priority;
+			core->priority = sys.config.sched_pri ? core_conf.priority : 1;
 			//core->affinity = 0;
 			spin_lock_init(&core->bitstreams_lock);
 			INIT_LIST_HEAD(&core->bitstreams.node);

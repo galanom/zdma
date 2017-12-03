@@ -67,10 +67,7 @@ case $1 in
 	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.1+gitAUTOINC*/linux-zedboard_zynq7-standard-build/vmlinux
 	;;
 "mgdb")
-	# needs fixing
-	cp ../../src/zdma.c /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
-	arm-linux-gnueabihf-gdb /tmp/petalinux/sysroots/plnx_arm/lib/modules/4.9.0-xilinx/extra/zdma.ko
-	rm /tmp/petalinux/work/plnx_arm-xilinx-linux-gnueabi/zdma/1.0-r0/zdma.c
+	arm-linux-gnueabihf-gdb /tmp/yocto/work/zedboard_zynq7-poky-linux-gnueabi/zdma/1.0-r0/zdma.ko
 	;;
 *)
 	echo -e ""\

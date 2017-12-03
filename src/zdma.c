@@ -104,7 +104,7 @@ static struct system {
 	struct zdma_pblock {
 		atomic_t state;
 		atomic_t age;
-		u8 id;
+		unsigned long id;
 		spinlock_t lock;
 		struct list_head node;
 		struct zdma_core *core;
@@ -140,6 +140,7 @@ static struct system {
 		int id;
 		uid_t uid;
 		atomic_t state;
+		unsigned long affinity;
 		struct list_head node;
 		struct zdma_core *core;
 		u32 core_param[CORE_PARAM_CNT];
@@ -242,14 +243,14 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-		pr_info("PBLOCK %d: core: %s, state: %d\n", 
+		pr_info("PBLOCK %lu: core: %s, state: %d\n", 
 			pblock->id, pblock->core->name, atomic_read(&pblock->state));
 	}
 
 	list_for_each_entry_rcu(core, &sys.cores.node, node) {
 		pr_info("CORE %s: ", core->name);
 		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node)
-				pr_cont("<%d> ", bitstream->pblock->id);
+				pr_cont("<%lu> ", bitstream->pblock->id);
 		pr_cont("\n");
 	}
 	
@@ -315,8 +316,9 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 }
 
 
-static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
+static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 {
+	struct zdma_core *core = client->core;
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 
 	rcu_read_lock();
@@ -330,6 +332,8 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		// at first, try to lock an already running core
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if ((pblock->id & client->affinity) == 0)
+				continue;
 			if (pblock->core == core) {
 				if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
 					pblock_sel = pblock;
@@ -351,6 +355,8 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 			curr_pri = 1;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if ((pblock->id & client->affinity) == 0)
+				continue;
 			if (atomic_read(&pblock->state) == PBLOCK_BUSY)
 				continue;	// it's busy, skip
 			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
@@ -382,7 +388,7 @@ static struct zdma_pblock *pblock_reserve(struct zdma_core *core)
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
 			if (debug)
-				pr_info("programming pblock %hhu, age %d, core %s->%s\n", 
+				pr_info("programming pblock %lu, age %d, core %s->%s\n", 
 					pblock_sel->id, atomic_read(&pblock_sel->age), pblock_sel->core->name, core->name);
 			int err = pblock_setup(pblock_sel, core);
 			BUG_ON(err);
@@ -452,19 +458,20 @@ static int pblock_add(struct device_node *np)
 	
 	atomic_set(&pblock->state, PBLOCK_FREE);
 	char *pblock_name = strrchr(of_node_full_name(np), '/') + 1;
-	err = kstrtou8(strrchr(of_node_full_name(np), '@') + 1, 10, &pblock->id);
+	int id;
+	err = kstrtoint(strrchr(of_node_full_name(np), '@') + 1, 10, &id);
 	if (err) {
 		pr_err("devicetree: error parsing pblock address unit, %s\n", pblock_name);
 		return -EINVAL;
 	}
-	pr_info("adding pblock %d (%s)\n", pblock->id, pblock_name);
+	pblock->id = 1ul << id;
+	pr_info("adding pblock %d (%s)\n", id, pblock_name);
 
 
 	// discover the DMA controller responsible for the core of this pblock
 	struct device_node *dma_client_np = of_parse_phandle(np, "transport", 0);
 	if (!dma_client_np) {
-		pr_err("devicetree: pblock %d does not contain a phandle to a data transporter.\n",
-			pblock->id);
+		pr_err("devicetree: pblock %d does not contain a phandle to a data transporter.\n", id);
 		err = -EINVAL;
 		goto pblock_add_error;
 	}
@@ -473,7 +480,7 @@ static int pblock_add(struct device_node *np)
 	pblock->txchanp = of_dma_request_slave_channel(dma_client_np, "tx");
 	if (IS_ERR_OR_NULL(pblock->txchanp)) {
 		pr_err("pblock %d: failed to reserve TX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", pblock->id);
+			"DMA controller not present or driver not loaded.\n", id);
 		err = -ENODEV;
 		goto pblock_add_error;
 	}
@@ -481,7 +488,7 @@ static int pblock_add(struct device_node *np)
 	pblock->rxchanp = of_dma_request_slave_channel(dma_client_np, "rx");
 	if (IS_ERR_OR_NULL(pblock->rxchanp)) {
 		pr_err("pblock %d: failed to reserve RX DMA channel -- devicetree misconfiguration, "
-			"DMA controller not present or driver not loaded.\n", pblock->id);
+			"DMA controller not present or driver not loaded.\n", id);
 		dma_release_channel(pblock->txchanp);
 		err = -ENODEV;
 		goto pblock_add_error;
@@ -490,8 +497,7 @@ static int pblock_add(struct device_node *np)
 	// discover the core's configuration address space
 	struct device_node *core_np = of_parse_phandle(np, "core", 0);
 	if (!core_np) {
-		pr_err("devicetree: pblock %d does not contain a phandle to a core definition.\n",
-			pblock->id);
+		pr_err("devicetree: pblock %d does not contain a phandle to a core definition.\n", id);
 		goto pblock_add_error_late;
 	}
 
@@ -503,7 +509,7 @@ static int pblock_add(struct device_node *np)
 	if (pblock->pbase == (long)OF_BAD_ADDR || !size) {
 		pr_err("devicetree: pblock %d: range entry is invalid:\n"
 			"base: %p, translated: %#zx, size: %#llx.\n", 
-			pblock->id, addr, pblock->pbase, size);
+			id, addr, pblock->pbase, size);
 		err = -EINVAL;
 		goto pblock_add_error_late;
 	}
@@ -597,14 +603,14 @@ static void dma_issue(struct work_struct *work)
 	struct zdma_client *p = container_of(work, struct zdma_client, work);
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
-	struct zdma_pblock *pblock = pblock_reserve(p->core);
-	//pr_info("BEGIN %s at <%s>\n", p->core->name, pblock->name);
+	struct zdma_pblock *pblock = pblock_reserve(p);
+	pr_info("BEGIN %s at <%lu>\n", p->core->name, pblock->id);
 
 	u32 csr;
 	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_IDLE)) {
-		pr_emerg("core %s/%d is in an unexpected state: "
+		pr_emerg("core %s/%lu is in an unexpected state: "
 			"ap_idle is not asserted. CSR=%x\n",
 			p->core->name, pblock->id, csr);
 		goto dma_error;
@@ -672,7 +678,7 @@ static void dma_issue(struct work_struct *work)
 
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!tx_timeout || !rx_timeout) {
-		pr_crit("*** DMA operation timed out for core %s/%d, client %d, chan %s.\n",
+		pr_crit("*** DMA operation timed out for core %s/%lu, client %d, chan %s.\n",
 			pblock->core->name, pblock->id, p->id,
 			!tx_timeout && !rx_timeout ? "TX and RX" :
 			!tx_timeout ? "TX" : "RX");
@@ -680,7 +686,7 @@ static void dma_issue(struct work_struct *work)
 	}
 
 	if (tx_status != DMA_COMPLETE || rx_status != DMA_COMPLETE) {
-		pr_crit("*** DMA status at %s/%d, client %d: "
+		pr_crit("*** DMA status at %s/%lu, client %d: "
 			"TX: %s [res %u], RX: %s [res %u] ***\n", 
 			pblock->core->name, pblock->id, p->id,
 			tx_status == DMA_ERROR ? "ERROR" : 
@@ -696,11 +702,11 @@ static void dma_issue(struct work_struct *work)
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
 	if (ret < 0)
-		pr_warn("core %s/%d return value %d\n", p->core->name, pblock->id, ret);
+		pr_warn("core %s/%lu return value %d\n", p->core->name, pblock->id, ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_DONE)) {
-		pr_emerg("core %s/%d is in an unexpected state: "
+		pr_emerg("core %s/%lu is in an unexpected state: "
 			"ap_done is not asserted. CSR=%x\n",
 			p->core->name, pblock->id, csr);
 		goto dma_error;
@@ -708,7 +714,7 @@ static void dma_issue(struct work_struct *work)
 	
 	atomic_set(&p->state, CLIENT_READY);
 	pblock_release(pblock);
-	//pr_info("END %s at <%s>\n", p->core->name, pblock->name);
+	pr_info("END %s at <%lu>\n", p->core->name, pblock->id);
 	return;
 
 dma_error:
@@ -868,7 +874,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			spin_unlock(&sys.cores_lock);
 		} else {
 			//if (core->affinity & (1ul << core_conf.pblock)) {
-			if (bitstream_lookup_by_id(core, (u8)core_conf.pblock)) {
+			if (bitstream_lookup_by_id(core, core_conf.pblock)) {
 				pr_warn("this bitstream is already registered for this core\n");
 				return -EEXIST;
 			}
@@ -876,15 +882,15 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		bitstream = devm_kmalloc(sys.devp, sizeof(struct zdma_bitstream), GFP_KERNEL);
 		if (!bitstream) {
-			pr_err("could not allocate %zu bytes for bitstream %s/%hhu structures\n",
-				sizeof(struct zdma_bitstream), core_conf.name, (u8)core_conf.pblock);
+			pr_err("could not allocate %zu bytes for bitstream %s/%lu structures\n",
+				sizeof(struct zdma_bitstream), core_conf.name, core_conf.pblock);
 			return -ENOMEM;
 		}
 		
-		bitstream->pblock = pblock_lookup((u8)core_conf.pblock);
+		bitstream->pblock = pblock_lookup(core_conf.pblock);
 		if (!bitstream->pblock) {
-			pr_warn("core %s contains bitstream for pblock id %hhu that does not exist, ignoring.\n",
-				core_conf.name, (u8)core_conf.pblock);
+			pr_warn("core %s contains bitstream for pblock id %lu that does not exist, ignoring.\n",
+				core_conf.name, core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
 			return -ENODEV;
 		}
@@ -892,8 +898,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		bitstream->size = core_conf.size;
 		void *buffer = devm_kmalloc(sys.devp, core_conf.size, GFP_KERNEL);
 		if (!buffer) {
-			pr_err("could not allocate %zu bytes for compressed bitstream %s/%hhu data\n",
-				core_conf.size, core_conf.name, (u8)core_conf.pblock);
+			pr_err("could not allocate %zu bytes for compressed bitstream %s/%lu data\n",
+				core_conf.size, core_conf.name, core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
 			return -ENOMEM;
 		}
@@ -904,8 +910,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
 		bitstream->data = dmam_alloc_coherent(sys.devp, PARTIAL_SIZE_MAX, &bitstream->dma_handle, GFP_KERNEL);
 		if (!bitstream->data) {
-			pr_err("could not allocate %zu bytes for bitstream %s/%hhu data\n",
-				PARTIAL_SIZE_MAX, core_conf.name, (u8)core_conf.pblock);
+			pr_err("could not allocate %zu bytes for bitstream %s/%lu data\n",
+				PARTIAL_SIZE_MAX, core_conf.name, core_conf.pblock);
 			devm_kfree(sys.devp, bitstream);
 			devm_kfree(sys.devp, buffer);
 			return -ENOMEM;
@@ -958,7 +964,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
 		spin_unlock(&core->bitstreams_lock);
 
-		pr_info("Registered core [%s] at pblock %hhu, priority %d, size %zdKi\n",
+		pr_info("Registered core [%s] at pblock %lu, priority %d, size %zdKi\n",
 			core->name, bitstream->pblock->id, core->priority, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
@@ -980,7 +986,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			rcu_read_lock();
 			struct zdma_bitstream *victim = NULL;
 			list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node) {
-				if (core_conf.pblock & (1ul << bitstream->pblock->id)) {
+				if (core_conf.pblock & bitstream->pblock->id) {
 					victim = bitstream;
 					while (atomic_cmpxchg(&victim->pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
 						;
@@ -1022,6 +1028,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
+		p->affinity = client_conf.affinity;
 		p->tx.size = client_conf.tx_size;
 		p->rx.size = client_conf.rx_size;
 

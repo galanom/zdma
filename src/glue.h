@@ -33,12 +33,13 @@ enum config {
 	CONFIG_GENALLOC_CHUNK_DEFAULT = CONFIG_GENALLOC_CHUNK_WORST_FIT,
 	CONFIG_SECURITY_IOCTL_DEFAULT = CONFIG_SECURITY_IOCTL_ALLOW_USER,
 	CONFIG_SECURITY_BUFFER_DEFAULT = CONFIG_SECURITY_BUFFER_CLEAR,
-	CONFIG_SCHEDULER_DEFAULT = CONFIG_SCHEDULER_LRU_PRI,
+	CONFIG_SCHEDULER_DEFAULT = CONFIG_SCHEDULER_PRIORITY,
 };
 
 struct zdma_client_config {
 	size_t	tx_size, rx_size;		// TX, RX buffer sizes
 //	u32	flags;				// various flags
+	unsigned long affinity;			// client affinity to pblock
 	char	core_name[CORE_NAME_LEN];	// requested core
 	u32	core_param[CORE_PARAM_CNT];	// core parameters
 	int	core_param_count;

@@ -65,7 +65,7 @@ int zdma_core_register(const char *name, signed char priority, unsigned long aff
 		if (i != strlen(token)) // loop was interrupted
 			continue;
 		int id = atoi(token);
-		if (i < 0 || i > 63)
+		if (i < 0 || i > sizeof(long)*8-1)
 			continue;
 
 		if ((token = strtok(NULL, "\0")) == NULL)
@@ -87,7 +87,7 @@ int zdma_core_register(const char *name, signed char priority, unsigned long aff
 		fstat(fd, &st);
 		core.size = st.st_size;
 		strcpy(core.name, name);
-		core.pblock = id;
+		core.pblock = 1ul << id;
 		core.priority = priority > 10 ? 10 : 
 				priority < 1 ? 1 :
 				priority;
@@ -189,7 +189,7 @@ int zdma_task_init(struct zdma_task *task)
 
 
 int zdma_task_configure(struct zdma_task *task, const char *core_name,
-	int tx_size, int rx_size, int argc, ...)
+	unsigned long affinity, int tx_size, int rx_size, int argc, ...)
 {
 	int err;
 	va_list argv;
@@ -205,6 +205,7 @@ int zdma_task_configure(struct zdma_task *task, const char *core_name,
 	va_end(argv);
 
 	strncpy(task->conf.core_name, core_name, CORE_NAME_LEN);
+	task->conf.affinity = affinity;
 	task->conf.tx_size = tx_size;
 	task->conf.rx_size = rx_size;
 	

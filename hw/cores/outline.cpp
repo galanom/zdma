@@ -7,8 +7,8 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x20
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0xC0
+#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
 	int16_t col;
@@ -33,13 +33,13 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 	}
 	col = 0;
 	do {
-#pragma HLS loop_tripcount min=76800 max=288000
+#pragma HLS loop_tripcount min=153600 max=518400
 #pragma HLS pipeline
 		src >> data_in;
-		ret += AXI_TDATA_NBYTES;
-		data_out = data_in;
-		pixel.all = data_out.data;
-		data_out.data = 0;
+		data_out.last = data_in.last;
+		data_out.keep = data_in.keep;
+		data_out.strb = data_in.strb;
+		pixel.all = data_in.data;
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
 
@@ -58,11 +58,13 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 					acc[px] += win.getval(i, j);
 				}
 			}
-			int64_t val = acc[px];
-			if (val > 255) val = 255;
-			if (val < 0) val = 0;
-			data_out.data |= val << (px << 3);
+
+			pixel.at[px] = (uint8_t)acc[px];
+			if (acc[px] > 255) pixel.at[px] = 255;
+			if (acc[px] < 0) pixel.at[px] = 0;
 		}
+
+		data_out.data = pixel.all;
 		col += AXI_TDATA_NBYTES;
 
 		if (col >= line_width)

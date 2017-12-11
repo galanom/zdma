@@ -262,6 +262,8 @@ static int zoled_probe(struct platform_device *pdev)
 	zoled.r = 0;
 	zoled.c = 0;
 	zoled.enabled = true;
+	zoled_print("OLED driver\nloaded\n");
+	pr_info("Zedboard OLED driver loaded\n");
 	return 0;
 }
 

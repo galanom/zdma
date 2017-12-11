@@ -12,6 +12,7 @@ extern int zdma_core_register(const char *name,
 extern int zdma_core_unregister(const char *name, unsigned long affinity);
 extern int zdma_config(enum config arg);
 extern int zdma_debug(void);
+extern int zdma_barrier(void);
 extern int zdma_task_init(struct zdma_task *task);
 extern int zdma_task_configure(struct zdma_task *task, const char *core_name,
 		unsigned long affinity, int tx_size, int rx_size, int argc, ...);

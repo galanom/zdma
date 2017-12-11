@@ -388,7 +388,8 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		if (pblock_sel) {
 			if (debug)
 				pr_info("programming pblock %lu, age %d, core %s->%s\n", 
-					pblock_sel->id, atomic_read(&pblock_sel->age), pblock_sel->core->name, core->name);
+					__fls(pblock_sel->id), atomic_read(&pblock_sel->age), 
+					pblock_sel->core->name, core->name);
 			int err = pblock_setup(pblock_sel, core);
 			BUG_ON(err);
 			atomic_set(&pblock_sel->age, 0);
@@ -516,10 +517,15 @@ static int pblock_add(struct device_node *np)
 	if (!devm_request_mem_region(sys.devp, pblock->pbase, pblock->psize, pblock_name)) {
 		pr_err("%s: failed to reserve I/O space at %#zx, size: %#zx\n", 
 			pblock_name, pblock->pbase, pblock->psize);
-			err = -ENOSPC;
+		err = -ENOSPC;
 		goto pblock_add_error_late;
 	}
 	pblock->vbase = devm_ioremap(sys.devp, pblock->pbase, pblock->psize);
+	if (!pblock->vbase) {
+		pr_err("%s: failed to map I/O space\n", pblock_name);
+		err = -ENOSPC;
+		goto pblock_add_error_late;
+	}
 	atomic_set(&pblock->age, 0);
 
 	// now add the pblock to the list
@@ -603,8 +609,6 @@ static void dma_issue(struct work_struct *work)
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p);
-	if (debug)
-		pr_info("BEGIN %s at <%lu>\n", p->core->name, __fls(pblock->id));
 
 	u32 csr;
 	iowrite32(CORE_CSR_INIT, pblock->vbase + CORE_CSR);
@@ -617,13 +621,16 @@ static void dma_issue(struct work_struct *work)
 	}
 
 	for (int i = 0; i < p->core_param_count; ++i) {
-		/*pr_info("pblock: %s, reg: %zu, val: %zu\n", pblock->name, 
+		/*pr_info("pblock: %lu, reg: %zu, val: %zu\n", __fls(pblock->id),
 			CORE_PARAM_BASE + i*CORE_PARAM_STEP, p->core_param[i]);*/
 		iowrite32(p->core_param[i], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
 	iowrite32(CORE_CSR_START, pblock->vbase + CORE_CSR); // ap_start = 1
+	udelay(100);
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	//msleep(1000);
+	if (debug)
+		pr_info("core sent init CSR, reply val %x\n", csr);
+	
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
 			DMA_MEM_TO_DEV, DMA_CTRL_ACK|DMA_PREP_INTERRUPT)) == NULL) {
@@ -645,6 +652,10 @@ static void dma_issue(struct work_struct *work)
 		p->rx.cookie = -EBUSY;
 		goto dma_error;
 	}
+	if (debug)
+		pr_info("%s/%lu: channels %p->%p, handles %zx->%zx\n", 
+			p->core->name, __fls(pblock->id),
+			pblock->txchanp, pblock->rxchanp, p->tx.handle, p->rx.handle);
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -701,21 +712,18 @@ static void dma_issue(struct work_struct *work)
 	
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
-	if (ret < 0)
+	if (debug || ret < 0)
 		pr_warn("core %s/%lu return value %d\n", p->core->name, __fls(pblock->id), ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
 	if (!(csr & CORE_CSR_DONE)) {
-		pr_emerg("core %s/%lu is in an unexpected state: "
-			"ap_done is not asserted. CSR=%x\n",
-			p->core->name, __fls(pblock->id), csr);
+		pr_emerg("core %s/%lu is in an unexpected state: ap_done is "
+			"not asserted. CSR=%x\n", p->core->name, __fls(pblock->id), csr);
 		goto dma_error;
 	}
 	
 	atomic_set(&p->state, CLIENT_READY);
 	pblock_release(pblock);
-	if (debug)
-		pr_info("END %s at <%lu>\n", p->core->name, __fls(pblock->id));
 	return;
 
 dma_error:
@@ -779,11 +787,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		zdma_debug();
 		break;
 	case ZDMA_BARRIER:
-		rcu_read_lock();
-		struct zdma_client *client;
-		list_for_each_entry_rcu(client, &sys.clients.node, node)
-			flush_work(&client->work);
-		rcu_read_unlock();
+		pr_info("flushing queue\n");
+		flush_workqueue(sys.workqueue);
 		break;
 	case ZDMA_CONFIG:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
@@ -1175,8 +1180,13 @@ static int zdma_probe(struct platform_device *pdev)
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_GENALLOC_CHUNK_DEFAULT);
 
 	// find dma clients in device tree
-	struct device_node *np = NULL, *tnp = NULL;
+	pr_info("Waiting for xilinx_dma to settle...\n");
+	for (int i = 0; i < 100; ++i)
+		schedule();
+	// wait xilinx_dma to settle
 
+	struct device_node *np = NULL, *tnp = NULL;
+	
 	for_each_compatible_node(np, NULL, "tuc,pblock") {
 		res = pblock_add(np);
 		if (res) return res;

@@ -1,14 +1,14 @@
 #include "common.h"
 #include "ap_int.h"
 
-#define KERN_DIM 3
+#define KERN_DIM 5
 
 int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x20
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0xC0
+#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
 	int16_t col;
@@ -22,15 +22,15 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 	} pixel;
 
 	int8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 256
-				{{1, 2, 1},
+				/*{{1, 2, 1},
 				 {2, 4, 2},
-				 {1, 2, 1}};
+				 {1, 2, 1}};*/
 
-				/*{{ 1,  4,  6,  4,  1},
+				{{ 1,  4,  6,  4,  1},
 				 { 4, 16, 24, 16,  4},
 				 { 6, 26, 36, 26,  6},
 				 { 4, 16, 24, 16,  4},
-				 { 1,  4,  6,  4,  1}};*/
+				 { 1,  4,  6,  4,  1}};
 	ret = 0;
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
@@ -39,12 +39,14 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 
 	col = 0;
 	do {
-#pragma HLS loop_tripcount min=76800 max=288000
+#pragma HLS loop_tripcount min=153600 max=518400
 #pragma HLS pipeline
 		src >> data_in;
-		data_out = data_in;
-		pixel.all = data_out.data;
-		data_out.data = 0;
+		data_out.last = data_in.last;
+		data_out.keep = data_in.keep;
+		data_out.strb = data_in.strb;
+
+		pixel.all = data_in.data;
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
 			linebuf.shift_up(col+px);
@@ -55,18 +57,18 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width)
 					win.insert(kern[i][j] * linebuf.getval(i, j+col+px), i, j);
 				}
 			}
-
 			acc[px] = 0;
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					acc[px] += win.getval(i, j);
 				}
 			}
-			int64_t val = acc[px] >> 4;
-			if (val > 255) val = 255;
-			//if (val < 0) val = 0; /// kernel has no negative values
-			data_out.data |= val << (px << 3);
+
+			int32_t val = acc[px] >> 8;
+			pixel.at[px] = val;
+			if (val > 255) pixel.at[px] = 255;
 		}
+		data_out.data = pixel.all;
 		col += AXI_TDATA_NBYTES;
 
 		if (col >= line_width)

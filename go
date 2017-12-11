@@ -43,6 +43,9 @@ case $1 in
 	vim image/uImage-zynq-zed.dts
 	dtc -I dts -O dtb image/uImage-zynq-zed.dts -o image/uImage-zynq-zed.dtb
 	;;
+"hw")
+	scripts/dtsgen
+	;;
 "ez")
 	vim src/zdma/zdma.c
 	;;
@@ -54,7 +57,7 @@ case $1 in
 	;;
 "boot")
 	ls -l image/download.bit
-	scripts/boot
+	scripts/boot || exit 1
 	picocom -b115200 /dev/ttyACM0
 	;;
 "bb")

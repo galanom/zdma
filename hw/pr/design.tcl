@@ -46,30 +46,31 @@ set srcDir	""
 ### Top Definition
 ###############################################################
 
-set top "quad_dma"
-set top_xdc	[list	"../base/base.srcs/constrs_1/new/io.xdc" \
-			"../base/base.srcs/constrs_1/new/pblocks.xdc" ]
+set top "pb8_axis32"
+set top_xdc	[list	"../base/base.srcs/$top/new/io.xdc" \
+			"../base/base.srcs/$top/new/pblocks.xdc" ]
 
-set static "static"
+set static "${top}_static"
 add_module $static
 set_attribute module $static moduleName      $top
 set_attribute module $static top_level       1
-set_attribute module $static synthCheckpoint "$dcpDir/static_4_32b_100mhz.dcp"
+set_attribute module $static synthCheckpoint "$dcpDir/$top.dcp"
 
 ####################################################################
 ### RP Module Definitions
 ####################################################################
 
-foreach core [list "sobel" "gauss" "sharpen" "emboss" "outline" "loopback" "negative" "brightness"] {
-	set part_list [list [list $static $top [expr {$core == "sobel" ? "implement" : "import"}] ] ]
+foreach core [list "gauss" "sobel" "sharpen" "emboss" "outline" "loopback" "negative" "contrast" "threshold"] {
+	set part_list [list [list $static $top [expr {$core == "gauss" ? "implement" : "import"}] ] ]
 	
-	foreach module_instance [list "zdma_core_0" "zdma_core_1" "zdma_core_2" "zdma_core_3"] {
-		set variant "${module_instance}_${core}"
-		lappend part_list [list $variant quad_dma_i/$module_instance "implement"]
+	foreach i [list 0 1 2 3 4 5 6 7] {
+		set instance "zdma_core_${i}"
+		set variant "${instance}_${core}"
+		lappend part_list [list $variant "${top}_i/$instance" "implement"]
 		add_module $variant
-		set_attribute module $variant moduleName "quad_dma_${module_instance}_0"
-		set_attribute module $variant prj	"./prj/${module_instance}/$core.prj"
-		set_attribute module $variant xdc	"../base/base.srcs/sources_1/bd/quad_dma/ip/quad_dma_${module_instance}_0/constraints/zdma_core_ooc.xdc"
+		set_attribute module $variant moduleName "${top}_${instance}_0"
+		set_attribute module $variant prj	"./prj/${instance}/${core}.prj"
+		set_attribute module $variant xdc	"../base/base.srcs/sources_1/bd/${top}/ip/${top}_${instance}_0/constraints/zdma_core_ooc.xdc"
 		set_attribute module $variant synth	${run.rmSynth}
 	}
 	

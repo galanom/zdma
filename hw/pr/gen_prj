@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 
-PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3"
-CORE_LIST="loopback gauss sobel emboss outline sharpen negative brightness"
+PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3 zdma_core_4 zdma_core_5 zdma_core_6 zdma_core_7"
+CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
+
+top="pb8_axis32"
+solution="solution_32"
 
 rm -rf ./prj
 mkdir ./prj
@@ -11,7 +14,7 @@ do
 	mkdir ./prj/$pblock
 	for core in $CORE_LIST
 	do
-		for file in ../cores/$core/solution1/impl/ip/hdl/verilog/* ../base/base.srcs/sources_1/bd/quad_dma/ip/quad_dma_${pblock}_0/synth/quad_dma_${pblock}_0.v
+		for file in ../cores/$core/${solution}/impl/ip/hdl/verilog/* ../base/base.srcs/sources_1/bd/${top}/ip/${top}_${pblock}_0/synth/${top}_${pblock}_0.v
 		do
 			echo "verilog xil_defaultLib $file" >> ./prj/$pblock/$core.prj
 		done

@@ -1,28 +1,19 @@
-From bc2c57bc059a908c69c29987fc47999edeff9b7b Mon Sep 17 00:00:00 2001
+From 7d8a0add40f2527ef9107c74d7e882a06978fb49 Mon Sep 17 00:00:00 2001
 From: Ioannis Galanommatis <galanom@gmail.com>
-Date: Fri, 24 Nov 2017 01:06:24 +0200
-Subject: [PATCH] allow fpga programming from kernel space
+Date: Sat, 9 Dec 2017 21:20:43 +0200
+Subject: [PATCH] allow FPGA programming from kernel space
 
 ---
- drivers/char/xilinx_devcfg.c       | 158 ++++++++++++++++++++++++-------------
- include/linux/soc/xilinx/xdevcfg.h |  12 +++
- 2 files changed, 113 insertions(+), 57 deletions(-)
+ drivers/char/xilinx_devcfg.c       | 146 ++++++++++++++++++++++++-------------
+ include/linux/soc/xilinx/xdevcfg.h |  11 +++
+ 2 files changed, 106 insertions(+), 51 deletions(-)
  create mode 100644 include/linux/soc/xilinx/xdevcfg.h
 
 diff --git a/drivers/char/xilinx_devcfg.c b/drivers/char/xilinx_devcfg.c
-index bc6c13b9e187..f7a61010bb78 100644
+index 81ee11fe7298..37019557a8ff 100644
 --- a/drivers/char/xilinx_devcfg.c
 +++ b/drivers/char/xilinx_devcfg.c
-@@ -121,7 +121,7 @@ static const char * const fclk_name[] = {
-  * @base_address: The virtual device base address of the device registers
-  * @is_partial_bitstream: Status bit to indicate partial/full bitstream
-  */
--struct xdevcfg_drvdata {
-+static struct xdevcfg_drvdata {
- 	struct device *dev;
- 	struct cdev cdev;
- 	dev_t devt;
-@@ -142,7 +142,7 @@ struct xdevcfg_drvdata {
+@@ -150,7 +150,7 @@ struct xdevcfg_drvdata {
  	bool endian_swap;
  	char residue_buf[3];
  	int residue_len;
@@ -31,10 +22,10 @@ index bc6c13b9e187..f7a61010bb78 100644
  
  /**
   * struct fclk_data - FPGA clock data
-@@ -230,6 +230,67 @@ static irqreturn_t xdevcfg_irq(int irq, void *data)
+@@ -230,7 +230,68 @@ static irqreturn_t xdevcfg_irq(int irq, void *data)
+	}
  }
  
- /**
 + * xdevcfg_do_dma() - Do the DMA transfer of the bitstream to the PCAP
 + * @dma_addr:	DMA handle to the bitstream
 + * @count:	DMA transfer size in bytes
@@ -76,13 +67,13 @@ index bc6c13b9e187..f7a61010bb78 100644
 +
 +	timeout = jiffies + msecs_to_jiffies(1000);
 +
-+	while (!READ_ONCE(drvdata->dma_done)) {
++	while (!drvdata->dma_done) {
 +		if (time_after(jiffies, timeout)) {
 +				status = -ETIMEDOUT;
 +		}
 +	}
 +
-+	if (!status && READ_ONCE(drvdata->error_status))
++	if (!status && drvdata->error_status)
 +		status = drvdata->error_status;
 +
 +	/* Disable the DMA and error interrupts */
@@ -96,41 +87,11 @@ index bc6c13b9e187..f7a61010bb78 100644
 +}
 +
 +/**
-  * xdevcfg_write() - The is the driver write function.
++ * xdevcfg_write() - The is the driver write function.
+ /**
+  * xdevcfg_write - The is the driver write function.
   *
-  * @file:	Pointer to the file structure.
-@@ -242,12 +303,12 @@ static ssize_t
- xdevcfg_write(struct file *file, const char __user *buf, size_t count,
- 		loff_t *ppos)
- {
-+	static u64 csum = 0, csum_low = 0;
-+	static u32 total = 0;
- 	char *kbuf;
- 	int status;
--	unsigned long timeout;
--	u32 intr_reg, dma_len;
-+	u32 dma_len;
- 	dma_addr_t dma_addr;
--	u32 transfer_length = 0;
- 	struct xdevcfg_drvdata *drvdata = file->private_data;
- 	size_t user_count = count;
- 	int i;
-@@ -285,12 +346,12 @@ xdevcfg_write(struct file *file, const char __user *buf, size_t count,
- 		/* Look for sync word */
- 		for (i = 0; i < count - 4; i++) {
- 			if (memcmp(kbuf + i, "\x66\x55\x99\xAA", 4) == 0) {
--				pr_debug("Found normal sync word\n");
-+				pr_info("Found normal sync word\n");
- 				drvdata->endian_swap = 0;
- 				break;
- 			}
- 			if (memcmp(kbuf + i, "\xAA\x99\x55\x66", 4) == 0) {
--				pr_debug("Found swapped sync word\n");
-+				pr_info("Found swapped sync word\n");
- 				drvdata->endian_swap = 1;
- 				break;
- 			}
-@@ -315,55 +376,7 @@ xdevcfg_write(struct file *file, const char __user *buf, size_t count,
+@@ -316,55 +377,7 @@ xdevcfg_write(struct file *file, const char __user *buf, size_t count,
  		}
  	}
  
@@ -167,14 +128,14 @@ index bc6c13b9e187..f7a61010bb78 100644
 -
 -	timeout = jiffies + msecs_to_jiffies(1000);
 -
--	while (!READ_ONCE(drvdata->dma_done)) {
+-	while (!drvdata->dma_done) {
 -		if (time_after(jiffies, timeout)) {
--			status = -ETIMEDOUT;
--			goto error;
+-				status = -ETIMEDOUT;
+-				goto error;
 -		}
 -	}
 -
--	if (READ_ONCE(drvdata->error_status))
+-	if (drvdata->error_status)
 -		status = drvdata->error_status;
 -
 -	/* Disable the DMA and error interrupts */
@@ -187,15 +148,7 @@ index bc6c13b9e187..f7a61010bb78 100644
  
  	/* If we didn't write correctly, then bail out. */
  	if (status) {
-@@ -383,7 +396,6 @@ xdevcfg_write(struct file *file, const char __user *buf, size_t count,
- 	return status;
- }
- 
--
- /**
-  * xdevcfg_read() - The is the driver read function.
-  * @file:	Pointer to the file structure.
-@@ -581,6 +593,35 @@ static int xdevcfg_release(struct inode *inode, struct file *file)
+@@ -581,6 +594,35 @@ static int xdevcfg_release(struct inode *inode, struct file *file)
  	return 0;
  }
  
@@ -231,14 +184,6 @@ index bc6c13b9e187..f7a61010bb78 100644
  static const struct file_operations xdevcfg_fops = {
  	.owner = THIS_MODULE,
  	.write = xdevcfg_write,
-@@ -589,6 +630,7 @@ static const struct file_operations xdevcfg_fops = {
- 	.release = xdevcfg_release,
- };
- 
-+
- /*
-  * The following functions are the routines provided to the user to
-  * set/get the status bit value in the control/lock registers.
 @@ -2036,6 +2078,8 @@ static int xdevcfg_drv_probe(struct platform_device *pdev)
  
  	clk_disable(drvdata->clk);
@@ -250,10 +195,10 @@ index bc6c13b9e187..f7a61010bb78 100644
  failed8:
 diff --git a/include/linux/soc/xilinx/xdevcfg.h b/include/linux/soc/xilinx/xdevcfg.h
 new file mode 100644
-index 000000000000..31a275612046
+index 000000000000..2389a3374ae4
 --- /dev/null
 +++ b/include/linux/soc/xilinx/xdevcfg.h
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +#pragma once
 +
 +/**
@@ -265,7 +210,6 @@ index 000000000000..31a275612046
 + *
 + */
 +int xdevcfg_program(dma_addr_t bitstream, size_t size, bool is_partial);
-+// EOF
 -- 
 2.13.0
 

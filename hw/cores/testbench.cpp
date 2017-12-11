@@ -1,6 +1,6 @@
-#include <iostream>
 #include "common.h"
-#include "hls_opencv.h"
+#include <iostream>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
 int main (int argc, char* argv[]) {
@@ -25,8 +25,8 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 
-	cout << "cols=" << img.cols << endl;
 	int32_t ret = zdma_core(src, dst, img.cols);
+	cout << "return " << ret << endl;
 
 	int err = 0;
 
@@ -36,11 +36,6 @@ int main (int argc, char* argv[]) {
 		((axi_data_t *)imgout.data)[c++] = x.data;
 	} while (!x.last);
 
-	cout << "return value is " << ret << endl;
-	cout << int(imgout.data[0]) << ":" << int(imgout.data[1]) << ":" <<
-			int(imgout.data[2]) << ":" << int(imgout.data[3]) << ":" <<
-			int(imgout.data[4]) << ":" << int(imgout.data[5]) << ":" <<
-			int(imgout.data[6]) << ":" << int(imgout.data[7]) << endl;
 
 	imwrite("./out.jpg", imgout);
 	return 0;

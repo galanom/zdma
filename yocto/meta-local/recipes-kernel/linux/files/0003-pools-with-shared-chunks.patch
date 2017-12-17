@@ -1,0 +1,61 @@
+From 2e74b1271543635b661d65e6ab3075ff22f42cdc Mon Sep 17 00:00:00 2001
+From: Ioannis Galanommatis <galanom@gmail.com>
+Date: Sat, 16 Dec 2017 00:30:44 +0200
+Subject: [PATCH] pools with shared chunks
+
+---
+ include/linux/genalloc.h | 2 +-
+ lib/genalloc.c           | 8 +++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+index 75d348a04445..ebbe1d400071 100644
+--- a/include/linux/genalloc.h
++++ b/include/linux/genalloc.h
+@@ -99,7 +99,7 @@ struct genpool_data_fixed {
+ 
+ extern struct gen_pool *gen_pool_create(int, int);
+ extern struct gen_pool_chunk *gen_pool_create_chunk(
+-	unsigned long virt, phys_addr_t phys, size_t size, int nid);
++	unsigned long virt, phys_addr_t phys, size_t size, int min_alloc_order, int nid);
+ extern void gen_pool_add_chunk(struct gen_pool *pool, struct gen_pool_chunk *chunk);
+ extern phys_addr_t gen_pool_virt_to_phys(struct gen_pool *pool, unsigned long);
+ extern int gen_pool_add_virt(struct gen_pool *, unsigned long, phys_addr_t,
+diff --git a/lib/genalloc.c b/lib/genalloc.c
+index 085b9ed1a56a..8dd90f85aa58 100644
+--- a/lib/genalloc.c
++++ b/lib/genalloc.c
+@@ -173,6 +173,7 @@ EXPORT_SYMBOL(gen_pool_create);
+  * @virt: virtual starting address of memory chunk to add to pool
+  * @phys: physical starting address of memory chunk to add to pool
+  * @size: size in bytes of the memory chunk to add to pool
++ * @min_alloc_order: the allocation order of the pool which this chunk will be made member of
+  * @nid: node id of the node the chunk structure and bitmap should be
+  *       allocated on, or -1
+  *
+@@ -181,10 +182,10 @@ EXPORT_SYMBOL(gen_pool_create);
+  * Returns the address of new chunk on success or NULL on failure.
+  */
+ struct gen_pool_chunk *gen_pool_create_chunk(
+-	unsigned long virt, phys_addr_t phys, size_t size, int nid)
++	unsigned long virt, phys_addr_t phys, size_t size, int min_alloc_order, int nid)
+ {
+ 	struct gen_pool_chunk *chunk;
+-	int nbits = size >> pool->min_alloc_order;
++	int nbits = size >> min_alloc_order;
+ 	int nbytes = sizeof(struct gen_pool_chunk) +
+ 				BITS_TO_LONGS(nbits) * sizeof(long);
+ 
+@@ -234,7 +235,8 @@ EXPORT_SYMBOL(gen_pool_add_chunk);
+ int gen_pool_add_virt(struct gen_pool *pool, unsigned long virt, phys_addr_t phys,
+ 		 size_t size, int nid)
+ {
+-	struct gen_pool_chunk *chunk = gen_pool_create_chunk(virt, phys, size, nid);
++	struct gen_pool_chunk *chunk = 
++		gen_pool_create_chunk(virt, phys, size, pool->min_alloc_order, nid);
+ 	if (!chunk)
+ 		return -ENOMEM;
+ 	gen_pool_add_chunk(pool, chunk);
+-- 
+2.13.0
+

@@ -89,18 +89,10 @@ static struct system {
 	spinlock_t	pblocks_lock,
 			cores_lock,
 			zones_lock,
-			mem_lock,
 			clients_lock;
 	
 	struct workqueue_struct *workqueue;
 
-	struct zdma_config {
-		bool	clear_buffer,
-			block_user_ioctl,
-			sched_age,
-			sched_access_age,
-			sched_pri;
-	} config;
 	struct zdma_pblock {
 		atomic_t state;
 		atomic_t age;
@@ -133,9 +125,19 @@ static struct system {
 	struct zdma_zone {
 		struct list_head node;
 		struct device dev;
+		unsigned bandwidth;
+		unsigned long 
+			reader_mask,
+			writer_mask;
+		atomic_long_t avail;
+		phys_addr_t phys;
+		void	*start,
+			*end;
+		unsigned long map[0];
+
 	} zones;
 
-	struct gen_pool *mem;
+//	struct gen_pool *mem;
 	struct zdma_client {
 		int id;
 		uid_t uid;
@@ -157,6 +159,17 @@ static struct system {
 			struct completion cmp;
 		} tx, rx;
 	} clients;
+
+	struct zdma_config {
+		bool	clear_buffer,
+			block_user_ioctl,
+			sched_age,
+			sched_access_age,
+			sched_pri;
+		unsigned alloc_order;
+		unsigned long (*alloc_score_func)(struct zdma_zone *, size_t, unsigned long);
+		genpool_algo_t alloc_bitmap_algo;
+	} config;
 
 	struct device *devp;
 	struct miscdevice miscdev;
@@ -235,8 +248,8 @@ struct zdma_bitstream *bitstream_lookup_by_pointer(struct zdma_core *core, struc
 static void zdma_debug(void)
 {
 	struct zdma_pblock *pblock;
-	struct gen_pool_chunk *chunk;
 	struct zdma_core *core;
+	struct zdma_zone *zone;
 	struct zdma_client *client;
 	struct zdma_bitstream *bitstream;
 	
@@ -254,12 +267,12 @@ static void zdma_debug(void)
 		pr_cont("\n");
 	}
 	
-	list_for_each_entry_rcu(chunk, &sys.mem->chunks, next_chunk) {
-		pr_info("MEM phys %#lx mapped at %#lx, size: %lu avail: %d\n", 
-			(long)chunk->phys_addr,
-			chunk->start_addr, 
-			(chunk->end_addr - chunk->start_addr + 1)/Ki,
-			atomic_read(&chunk->avail)/Ki);
+	list_for_each_entry_rcu(zone, &sys.zones.node, node) {
+		pr_info("MEM phys %#xx mapped at 0x%p, size: %u avail: %ld\n", 
+			zone->phys,
+			zone->start, 
+			(zone->end - zone->start + 1)/Ki,
+			atomic_long_read(&zone->avail)/Ki);
 	}
 	
 	list_for_each_entry_rcu(client, &sys.clients.node, node) {
@@ -297,7 +310,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		return -EEXIST;
 	}
 
-	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
+/*	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
 	if (err) {
 		pr_crit("Error %d during FPGA reconfiguration!\n", err);
 		return -EIO;
@@ -308,7 +321,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
 		return -EIO;
 	}
-
+*/
 	atomic_set(&pblock->age, 0);
 	pblock->core = core;
 	return 0;
@@ -415,31 +428,190 @@ static void pblock_release(struct zdma_pblock *pblock)
 }
 
 
-static int psram_alloc(struct zdma_client *p, size_t tx_size, size_t rx_size)
+static unsigned long allocator_score_worst_fit(
+	struct zdma_zone *zone, size_t req_size, unsigned long affinity)
+{
+	unsigned long avail = atomic_long_read(&zone->avail);
+	unsigned long aff_count = hweight_long(affinity);
+	if (!aff_count || avail < req_size)
+		return 0;
+	return zone->bandwidth * (((avail << 8) / req_size) + (aff_count << 4));
+}
+
+
+void *allocator_reserve(size_t size, enum dma_data_direction dir, 
+	unsigned long core_affinity, dma_addr_t *handle)
+{
+	struct zdma_zone *zone, *zone_sel = NULL, *zone_prev = NULL;
+	unsigned long pblock_affinity, score, score_prev = 0, score_max = 0;
+	bool found_prev = false;
+	int	start_bit, end_bit,
+		nbits = (size + (1ul << sys.config.alloc_order) - 1) >> sys.config.alloc_order;
+
+	while (true) {
+		//rcu_read_lock();
+		list_for_each_entry(zone, &sys.zones.node, node) {
+			if (zone == zone_prev) {
+				found_prev = true;
+				continue;
+			}
+
+			pblock_affinity = dir == DMA_TO_DEVICE ? zone->reader_mask
+				: dir == DMA_FROM_DEVICE ? zone->writer_mask
+				: zone->reader_mask & zone->writer_mask;
+		
+			score = sys.config.alloc_score_func(zone, size, pblock_affinity & core_affinity);
+			pr_info("score is %lu (zone %x, start=%p, paff=%lx. caff=%lx\n",
+				score, zone->phys, zone->start, pblock_affinity, core_affinity);
+
+			if (score == score_prev && found_prev) {
+				zone_sel = zone;
+				break;
+			}
+
+			if (score > score_max) {
+				score_max = score;
+				zone_sel = zone;
+			}
+		}
+		//rcu_read_unlock();
+
+		// if no eligible zone was found, abort
+		if (!zone_sel) {
+			pr_warn("zone list exhausted\n");
+			return NULL;
+		}
+
+		// perform the allocation (modified from Linux genalloc.c)
+		end_bit = (zone_sel->end - zone_sel->start + 1) >> sys.config.alloc_order;
+
+		pr_info("calling alloc for zone at %p, with  end=%d, nbits=%d\n",
+			 zone_sel->start, end_bit, nbits);
+		spin_lock(&sys.zones_lock);
+		start_bit = sys.config.alloc_bitmap_algo(zone_sel->map, 
+			end_bit, 0 /*start_bit*/, nbits, NULL, NULL);
+		if (start_bit >= end_bit) {
+			spin_unlock(&sys.zones_lock);
+			pr_warn("start>end\n");
+			zone_prev = zone_sel;
+			score_prev = score_max;
+			continue;
+		}
+		
+		//int remain = 
+		bitmap_set(zone_sel->map, start_bit, nbits);
+		spin_unlock(&sys.zones_lock);
+		pr_info("SUCCESS start_bit=%d, start=%p, vaddr=%p\n", 
+			start_bit, 
+			zone_sel->start,
+			zone_sel->start + ((unsigned long)start_bit << sys.config.alloc_order));
+		//BUG_ON(remain);
+		break;
+	}
+	atomic_long_sub(nbits << sys.config.alloc_order, &zone_sel->avail);
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+	off_t offset = (unsigned long)start_bit << sys.config.alloc_order;
+	*handle = zone_sel->phys + offset;
+	return zone_sel->start + offset;
+	#pragma GCC diagnostic pop
+}
+
+void allocator_free(void *buf, size_t size)
+{
+	struct zdma_zone *zone;
+	int nbits = (size + (1UL << sys.config.alloc_order) - 1) >> sys.config.alloc_order;
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(zone, &sys.zones.node, node) {
+		if (buf >= zone->start && buf <= zone->end) {
+			int start_bit = 
+				((unsigned long)buf - (unsigned long)zone->start) 
+				>> sys.config.alloc_order;
+			BUG_ON(buf + size - 1 > zone->end);
+			//int remain = 
+			bitmap_clear(zone->map, start_bit, nbits);
+			//BUG_ON(remain);
+			atomic_long_add(nbits << sys.config.alloc_order, &zone->avail);
+			break;
+		}
+	}
+	rcu_read_unlock();
+}
+
+static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP)
 		return -EBUSY;	
-	if (p->tx.vaddr)
-		gen_pool_free(sys.mem, (unsigned long)p->tx.vaddr, p->tx.size);
-	if (p->rx.vaddr)
-		gen_pool_free(sys.mem, (unsigned long)p->rx.vaddr, p->rx.size);
-	if (tx_size == 0 || rx_size == 0)
+	
+	void *tx_vaddr, *rx_vaddr;
+	dma_addr_t tx_handle, rx_handle;
+	
+	if (p->tx.vaddr) {
+		allocator_free(p->tx.vaddr, p->tx.size);
+		p->tx.vaddr = NULL;
+		p->tx.size = 0;
+	}
+	if (p->rx.vaddr) {
+		allocator_free(p->rx.vaddr, p->rx.size);
+		p->rx.vaddr = NULL;
+		p->rx.size = 0;
+	}
+
+	if (tx_size == 0 && rx_size == 0)
 		return -EINVAL;
 
-	if (gen_pool_dma_alloc_pair(sys.mem,
-			tx_size, &p->tx.vaddr, &p->tx.handle, 
-			rx_size, &p->rx.vaddr, &p->rx.handle)) {
-		pr_warn("unable to allocate %zu+%zu KiB for DMA buffers\n", 
-			tx_size/Ki, rx_size/Ki);
-		atomic_set(&p->state, CLIENT_ERROR_MEMORY);
-		return -ENOMEM;
+	// first, allocate reader
+	if (tx_size) {
+		BUG_ON(p->core == NULL);
+		tx_vaddr = allocator_reserve(tx_size, DMA_TO_DEVICE, p->core->affinity, &tx_handle);
+		if (!tx_vaddr) {
+			pr_warn("unable to allocate %zu bytes for TX buffer\n", tx_size);
+			return -ENOMEM;
+		}
 	}
-	if (sys.config.clear_buffer) { 
-		memset(p->tx.vaddr, 0x00, tx_size);
-		memset(p->rx.vaddr, 0x00, rx_size);
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
+	// secondly, allocate writer
+	if (rx_size) {
+		rx_vaddr = allocator_reserve(rx_size, DMA_FROM_DEVICE, p->core->affinity, &rx_handle);
+		if (!rx_vaddr) {
+			// RX allocation failed -- try allocating RX first and then TX
+			allocator_free(tx_vaddr, tx_size);
+			
+			rx_vaddr = allocator_reserve(rx_size, DMA_FROM_DEVICE, p->core->affinity, &rx_handle);
+			if (!rx_vaddr) {
+			pr_warn("unable to allocate %zu bytes for RX buffer\n", rx_size);
+				// RX allocation failed again, giving up
+				return -ENOMEM;
+			}
+
+			tx_vaddr = allocator_reserve(tx_size, DMA_TO_DEVICE, p->core->affinity, &tx_handle);
+			if (!tx_vaddr) {
+				pr_warn("unable to allocate %zu bytes for TX buffer, 2\n", tx_size);
+				// RX succeeded but now TX failed. Abort.
+				allocator_free(rx_vaddr, rx_size);
+				return -ENOMEM;
+			}
+		}
 	}
+
+	// everything ok
+
+	if (sys.config.clear_buffer) {
+		if (tx_size)
+			memset(tx_vaddr, 0x00, tx_size);
+		if (rx_size)
+			memset(rx_vaddr, 0x00, rx_size);
+	}
+	p->tx.vaddr = tx_vaddr;
+	p->rx.vaddr = rx_vaddr;
+	p->tx.handle = tx_handle;
+	p->rx.handle = rx_handle;
 	p->tx.size = tx_size;
 	p->rx.size = rx_size;
+	#pragma GCC diagnostic pop
 	return 0;
 }
 
@@ -543,17 +715,54 @@ pblock_add_error:
 }
 
 
-static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
+static int zone_add(struct device_node *np)
 {
-	if (sys.state != SYS_INIT)
-		return -EBUSY;	// this will never happen
-	struct zdma_zone *zone = devm_kzalloc(sys.devp, sizeof(struct zdma_zone), GFP_KERNEL);
+	struct device_node *tnp;
+
+	// find out the physical address and size of the zone
+	tnp = of_parse_phandle(np, "memory-region", 0);
+	if (!tnp) {
+		pr_err("devicetree: memory region %d does not contain a phandle to a memory bank\n",
+			atomic_read(&sys.zone_count));
+		return -ENODEV;
+	}
+	u64 size;
+	phys_addr_t paddr = of_translate_address(tnp, of_get_address(tnp, 0, &size, NULL));
+	of_node_put(tnp);
+
+	// FIXME leak on error
+	struct zdma_zone *zone = devm_kzalloc(sys.devp, 
+		sizeof(struct zdma_zone) + BITS_TO_LONGS(size >> sys.config.alloc_order), GFP_KERNEL);
 	if (unlikely(zone == NULL)) {
 		pr_err("unable to allocate %zu bytes for zone description\n",
-			sizeof(*zone));
+			sizeof(struct zdma_zone) + (size_t)BITS_TO_LONGS(size >> sys.config.alloc_order));
 		return -ENOMEM;
 	}
-	
+
+	// discover memory zone connectivity
+	int err, id;
+	int readers = 0, writers = 0;
+
+	while ((tnp = of_parse_phandle(np, "readers", readers++))) {
+		err = kstrtoint(strrchr(of_node_full_name(tnp), '@') + 1, 10, &id);
+		BUG_ON(err);
+		zone->reader_mask |= 1ul << id;
+		of_node_put(tnp);
+	}
+
+	while ((tnp = of_parse_phandle(np, "writers", writers++))) {
+		err |= kstrtoint(strrchr(of_node_full_name(tnp), '@') + 1, 10, &id);
+		BUG_ON(err);
+		zone->writer_mask |= 1ul << id;
+		of_node_put(tnp);
+	}
+	if (err)
+		return -EINVAL;
+
+	err = of_property_read_u32(np, "bandwidth", &zone->bandwidth);
+	if (err)
+		return err;
+
 	// create pseudo device structure -- FIXME will be leaked on error!!!
 	device_initialize(&zone->dev);
 	dev_set_name(&zone->dev, "%s@%p", "zone", zone);
@@ -574,9 +783,9 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 	}
 
 	dma_addr_t handle;
-	void *vaddr = dmam_alloc_coherent(&zone->dev, size, &handle, GFP_KERNEL);
-	if (!vaddr) {
-		pr_err("error: cannot claim reserved memory of size %zuKiB\n", size/Ki);
+	zone->start = dmam_alloc_coherent(&zone->dev, size, &handle, GFP_KERNEL);
+	if (!zone->start) {
+		pr_err("error: cannot claim reserved memory of size %lluKiB\n", size/Ki);
 		return -ENOMEM;
 	}
 	if (handle != phys_to_dma(&zone->dev, paddr)) {
@@ -590,14 +799,16 @@ static int dma_zone_add(struct device_node *np, phys_addr_t paddr, size_t size)
 		"*** Current version of this driver is not tested for such  ***\n"
 		"*** a configuration. Use at your own risk!!!               ***\n");
 	}
+	zone->phys = paddr;
+	zone->end = zone->start + size - 1;
+	atomic_long_set(&zone->avail, size);
+	pr_info("created zone @%zx %p-%p\n", zone->phys, zone->start, zone->end);
 
 	spin_lock(&sys.zones_lock);
 	list_add_tail_rcu(&zone->node, &sys.zones.node);
 	spin_unlock(&sys.zones_lock);
 	atomic_inc(&sys.zone_count);
 	
-	BUG_ON(IS_ERR_OR_NULL(sys.mem));
-	gen_pool_add_virt(sys.mem, (unsigned long)vaddr, handle, size, -1);
 	return 0;
 }
 
@@ -628,8 +839,8 @@ static void dma_issue(struct work_struct *work)
 	iowrite32(CORE_CSR_START, pblock->vbase + CORE_CSR); // ap_start = 1
 	udelay(100);
 	csr = ioread32(pblock->vbase + CORE_CSR);
-	if (debug)
-		pr_info("core sent init CSR, reply val %x\n", csr);
+//	if (debug)
+//		pr_info("core sent init CSR, reply val %x\n", csr);
 	
 	if ((p->tx.descp = dmaengine_prep_slave_single(
 			pblock->txchanp, p->tx.handle, p->tx.size, 
@@ -712,7 +923,7 @@ static void dma_issue(struct work_struct *work)
 	
 	// mostly debug, register somewhere a non-zero
 	ret = ioread32(pblock->vbase + CORE_PARAM_RET);
-	if (debug || ret < 0)
+	if (ret < 0)
 		pr_warn("core %s/%lu return value %d\n", p->core->name, __fls(pblock->id), ret);
 
 	csr = ioread32(pblock->vbase + CORE_CSR);
@@ -759,7 +970,7 @@ static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
 	flush_work(&p->work);
-	psram_alloc(p, 0, 0);
+	allocator(p, 0, 0);
 
 	spin_lock(&sys.clients_lock);
 	list_del_rcu(&p->node);
@@ -795,20 +1006,17 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			return -EACCES;
 
 		switch (arg) {
-		case CONFIG_GENALLOC_BITMAP_FIRST_FIT:
-			gen_pool_set_algo(sys.mem, gen_pool_first_fit, NULL);
+		case CONFIG_ALLOC_BITMAP_FIRST_FIT:
+			sys.config.alloc_bitmap_algo = gen_pool_first_fit;
 			break;
-		case CONFIG_GENALLOC_BITMAP_BEST_FIT:
-			gen_pool_set_algo(sys.mem, gen_pool_best_fit, NULL);
+		case CONFIG_ALLOC_BITMAP_BEST_FIT:
+			sys.config.alloc_bitmap_algo = gen_pool_best_fit;
 			break;
-		case CONFIG_GENALLOC_CHUNK_FIRST_FIT:
-			gen_pool_set_chunk_algo(sys.mem, gen_chunk_first_fit);
+		case CONFIG_ALLOC_ZONE_WORST_FIT:
+			sys.config.alloc_score_func = allocator_score_worst_fit;
 			break;
-		case CONFIG_GENALLOC_CHUNK_WORST_FIT:
-			gen_pool_set_chunk_algo(sys.mem, gen_chunk_worst_fit);
-			break;
-		case CONFIG_GENALLOC_CHUNK_BEST_FIT:
-			gen_pool_set_chunk_algo(sys.mem, gen_chunk_best_fit);
+		case CONFIG_ALLOC_ZONE_BEST_FIT:
+//			sys.config.alloc_score_func = allocator_score_best_fit;
 			break;
 		case CONFIG_SECURITY_IOCTL_ALLOW_USER:
 			sys.config.block_user_ioctl = false;
@@ -880,8 +1088,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			spin_unlock(&sys.cores_lock);
 		} else {
 			if (core->affinity & core_conf.pblock) {
-//			if (bitstream_lookup_by_id(core, core_conf.pblock)) {
-				pr_warn("this bitstream is already registered for this core\n");
+				//pr_warn("this bitstream is already registered for this core\n");
 				return -EEXIST;
 			}
 		}
@@ -971,8 +1178,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		list_add_tail_rcu(&bitstream->node, &core->bitstreams.node);
 		spin_unlock(&core->bitstreams_lock);
 
-		pr_info("Registered core [%s] at pblock %lu, priority %d, size %zdKi\n",
-			core->name, __fls(bitstream->pblock->id), core->priority, bitstream->size/Ki);
+		//pr_info("Registered core [%s] at pblock %lu, priority %d, size %zdKi\n",
+		//	core->name, __fls(bitstream->pblock->id), core->priority, bitstream->size/Ki);
 		break;
 	case ZDMA_CORE_UNREGISTER:
 		if (sys.config.block_user_ioctl && !capable(CAP_SYS_ADMIN))
@@ -1032,10 +1239,6 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			p->core_param[i] = client_conf.core_param[i];
 		}
 
-		if (psram_alloc(p, client_conf.tx_size, client_conf.rx_size)) {
-			pr_err("error allocating new buffers\n");
-			return -ENOMEM;
-		}
 		p->affinity = client_conf.affinity;
 		p->tx.size = client_conf.tx_size;
 		p->rx.size = client_conf.rx_size;
@@ -1045,6 +1248,13 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			pr_warn("requested core [%s] is not registered\n", client_conf.core_name);
 			return -EINVAL;
 		}
+
+		// keep this last, it needs p->core->affinity
+		if (allocator(p, client_conf.tx_size, client_conf.rx_size)) {
+			pr_err("error allocating new buffers\n");
+			return -ENOMEM;
+		}
+
 		atomic_set(&p->state, CLIENT_CONFIGURED);
 		break;
 	case ZDMA_CLIENT_ENQUEUE_BLOCK:
@@ -1149,7 +1359,8 @@ static int zdma_remove(struct platform_device *pdev)
 static int zdma_probe(struct platform_device *pdev)
 {
 	int res;
-	if (!debug) zoled_disable();
+	if (!debug)
+		zoled_disable();
 
 	if (sys.state == SYS_UP) {
 		pr_crit("\n"
@@ -1175,17 +1386,19 @@ static int zdma_probe(struct platform_device *pdev)
 	atomic_set(&sys.pblock_count, 0);
 	atomic_set(&sys.zone_count, 0);
 	atomic_set(&sys.client_count, 0);
-	sys.mem = devm_gen_pool_create(sys.devp, PAGE_SHIFT, NUMA_NO_NODE, NULL);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_GENALLOC_BITMAP_DEFAULT);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_GENALLOC_CHUNK_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_ALLOC_BITMAP_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_ALLOC_ZONE_DEFAULT);
 
 	// find dma clients in device tree
 	pr_info("Waiting for xilinx_dma to settle...\n");
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 5000; ++i) {
 		schedule();
+	}
+	msleep(1000);
+
 	// wait xilinx_dma to settle
 
-	struct device_node *np = NULL, *tnp = NULL;
+	struct device_node *np = NULL;
 	
 	for_each_compatible_node(np, NULL, "tuc,pblock") {
 		res = pblock_add(np);
@@ -1199,15 +1412,7 @@ static int zdma_probe(struct platform_device *pdev)
 	// discover memory region info
 	np = NULL;
 	for_each_compatible_node(np, NULL, "tuc,zone") {
-		tnp = of_parse_phandle(np, "memory-region", 0);
-		if (!tnp) {
-			pr_err("devicetree: memory region %d does not contain a phandle to a memory bank\n",
-				atomic_read(&sys.zone_count));
-			return -ENODEV;
-		}
-		u64 size;
-		phys_addr_t paddr = of_translate_address(tnp, of_get_address(tnp, 0, &size, NULL));
-		res = dma_zone_add(np, paddr, (size_t)size);
+		res = zone_add(np);
 		if (res) return res;
 	}
 	
@@ -1243,6 +1448,13 @@ static struct platform_driver zdma_driver = {
 
 static void __exit mod_exit(void)
 {
+	struct zdma_pblock *pblock;
+	list_for_each_entry(pblock, &sys.pblocks.node, node) {
+		if (!IS_ERR_OR_NULL(pblock->txchanp))
+			dma_release_channel(pblock->txchanp);
+		if (!IS_ERR_OR_NULL(pblock->rxchanp))
+			dma_release_channel(pblock->rxchanp);
+	}
 	xz_dec_end(sys.decompressor);
 	platform_driver_unregister(&zdma_driver);
 	misc_deregister(&sys.miscdev);
@@ -1282,6 +1494,7 @@ static int __init mod_init(void)
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_IOCTL_DEFAULT);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_BUFFER_DEFAULT);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHEDULER_DEFAULT);
+	sys.config.alloc_order = ALLOC_ORDER;
 
 	// register the driver to the kernel
 	if (platform_driver_register(&zdma_driver)) {

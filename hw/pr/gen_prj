@@ -4,7 +4,7 @@ PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3 zdma_core_4 zdma_co
 CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
 
 top="pb8_axis32"
-solution="solution_32"
+solution="solution"
 
 rm -rf ./prj
 mkdir ./prj

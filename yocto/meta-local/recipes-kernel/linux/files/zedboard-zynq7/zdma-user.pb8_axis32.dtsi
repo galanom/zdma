@@ -14,23 +14,23 @@
 		#size-cells = <1>;
 		ranges;
 		
-		bank0: bank0@08000000 {
+		hp0: hp0@08000000 {
 			reg = <0x08000000 0x04000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};
 		
-		bank1: bank1@0C000000 {
+		hp1: hp1@0C000000 {
 			reg = <0x0C000000 0x04000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};
-		bank2: bank2@10000000 {
+		hp2: hp2@10000000 {
 			reg = <0x10000000 0x04000000>;
 			compatible = "shared-dma-pool";
 			no-map;
 		};
-		bank3: bank3@14000000 {
+		hp3: hp3@14000000 {
 			reg = <0x14000000 0x04000000>;
 			compatible = "shared-dma-pool";
 			no-map;
@@ -45,42 +45,42 @@
 			#size-cells = <1>;
 			ranges;
 
-			pblock@0 {
+			pb0: pblock@0 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_0>;
 				transport = <&dma0>;
 			};
-			pblock@1 {
+			pb1: pblock@1 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_1>;
 				transport = <&dma1>;
 			};
-			pblock@2 {
+			pb2: pblock@2 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_2>;
 				transport = <&dma2>;
 			};
-			pblock@3 {
+			pb3: pblock@3 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_3>;
 				transport = <&dma3>;
 			};
-			pblock@4 {
+			pb4: pblock@4 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_4>;
 				transport = <&dma4>;
 			};
-			pblock@5 {
+			pb5: pblock@5 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_5>;
 				transport = <&dma5>;
 			};
-			pblock@6 {
+			pb6: pblock@6 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_6>;
 				transport = <&dma6>;
 			};
-			pblock@7 {
+			pb7: pblock@7 {
 				compatible = "tuc,pblock";
 				core = <&zdma_core_7>;
 				transport = <&dma7>;
@@ -88,19 +88,31 @@
 
 			zone@0 {
 				compatible = "tuc,zone";
-				memory-region = <&bank0>;
+				memory-region = <&hp0>;
+				readers = <&pb0 &pb1 &pb2 &pb3>;
+				writers = <>;
+				bandwidth = <100>;
 			};
 			zone@1 {
 				compatible = "tuc,zone";
-				memory-region = <&bank1>;
+				memory-region = <&hp1>;
+				readers = <>;
+				writers = <&pb4 &pb5 &pb6 &pb7>;
+				bandwidth = <100>;
 			};
 			zone@2 {
 				compatible = "tuc,zone";
-				memory-region = <&bank2>;
+				memory-region = <&hp2>;
+				readers = <>;
+				writers = <&pb0 &pb1 &pb2 &pb3>;
+				bandwidth = <100>;
 			};
 			zone@3 {
 				compatible = "tuc,zone";
-				memory-region = <&bank3>;
+				memory-region = <&hp3>;
+				readers = <&pb4 &pb5 &pb6 &pb7>;
+				writers = <>;
+				bandwidth = <100>;
 			};
 			
 			dma0: dma-client@0 {

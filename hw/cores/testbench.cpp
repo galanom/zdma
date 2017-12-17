@@ -25,7 +25,7 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 
-	int32_t ret = zdma_core(src, dst, img.cols);
+	int ret = zdma_core(src, dst, img.cols, 0);
 	cout << "return " << ret << endl;
 
 	int err = 0;

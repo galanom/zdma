@@ -14,6 +14,8 @@
 
 #define CORE_DIRECTORY	"/lib/firmware/zdma/"
 
+#define ALLOC_ORDER	PAGE_SHIFT
+
 #define CORE_PARAM_CNT	((CORE_PARAM_RET - CORE_PARAM_BASE)/CORE_PARAM_STEP)
 #define CORE_NAME_LEN	16
 #define DT_NAME_LEN	32

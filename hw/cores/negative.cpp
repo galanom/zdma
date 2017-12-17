@@ -1,13 +1,13 @@
 #include "common.h"
 #include "ap_int.h"
 
-int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst)
+int zdma_core(axi_stream_t& src, axi_stream_t& dst)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#pragma HLS INTERFACE s_axilite clock=s_axi_lite_clk port=return bundle=control offset=0x1C
 	axi_elem_t data_in, data_out;
-	int32_t ret;
+	int ret;
 	union {
 		axi_data_t all;
 		uint8_t at[AXI_TDATA_NBYTES];
@@ -15,7 +15,7 @@ int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst)
 
 	ret = 0;
 	do {
-#pragma HLS loop_tripcount min=153600 max=518400
+#pragma HLS loop_tripcount min=307200 max=1036800
 #pragma HLS pipeline
 		src >> data_in;
 		data_out.last = data_in.last;

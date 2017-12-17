@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}
 
-	zdma_debug();
+	//zdma_debug();
 	
 	struct timespec t0, t1;
 	clock_gettime(CLOCK_MONOTONIC, &t0);
@@ -100,6 +100,7 @@ int main(int argc, char **argv)
 			err = zdma_task_enqueue(&task[j]);
 			assert(!err);
 		}
+		
 		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
 			err = zdma_task_waitfor(&task[j]);

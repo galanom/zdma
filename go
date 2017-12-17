@@ -18,6 +18,7 @@ case $1 in
 	sudo /opt/Xilinx/Vivado/2017.3/bin/hw_server &
 	;;
 "clean")
+	rm -f $PROJ/{vivado*,octave-workspace,hs*}
 	;;
 "git")
 	./go clean

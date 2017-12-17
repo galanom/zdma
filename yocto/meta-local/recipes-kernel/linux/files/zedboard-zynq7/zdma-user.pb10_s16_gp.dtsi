@@ -35,7 +35,16 @@
 			compatible = "shared-dma-pool";
 			no-map;
 		};
-		
+/*		gp0: gp0@18000000 {
+			reg = <0x18000000 0x01000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		gp1: gp1@19000000 {
+			reg = <0x19000000 0x01000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};*/
 	};
 
 	amba_pl {
@@ -84,7 +93,17 @@
 				compatible = "tuc,pblock";
 				core = <&zdma_core_7>;
 				transport = <&dma7>;
+			};/*
+			pb8: pblock@8 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_8>;
+				transport = <&dma8>;
 			};
+			pb9: pblock@9 {
+				compatible = "tuc,pblock";
+				core = <&zdma_core_9>;
+				transport = <&dma9>;
+			};*/
 
 			zone@0 {
 				compatible = "tuc,zone";
@@ -114,7 +133,21 @@
 				writers = <>;
 				bandwidth = <100>;
 			};
-			
+/*			zone@4 {
+				compatible = "tuc,zone";
+				memory-region = <&gp0>;
+				readers = <&pb8 &pb9>;
+				writers = <>;
+				bandwidth = <50>;
+			};
+			zone@5 {
+				compatible = "tuc,zone";
+				memory-region = <&gp1>;
+				readers = <>;
+				writers = <&pb8 &pb9>;
+				bandwidth = <50>;
+			};
+*/
 			dma0: dma-client@0 {
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_0 0
@@ -163,6 +196,18 @@
 					&axi_dma_7 1>;
 				dma-names = "tx", "rx";
 			};
+/*			dma8: dma-client@8 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_8 0
+					&axi_dma_8 1>;
+				dma-names = "tx", "rx";
+			};
+			dma9: dma-client@9 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_9 0
+					&axi_dma_9 1>;
+				dma-names = "tx", "rx";
+			};*/
 		};
 	};
 };

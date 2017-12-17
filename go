@@ -32,9 +32,6 @@ case $1 in
 "conf")
 	vim yocto/build/conf/local.conf
 	;;
-"reload")
-	scripts/hwgen
-	;;
 "dt")
 	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-pl.dtsi
 	vim yocto/meta-local/recipes-kernel/linux/files/zedboard-zynq7/zdma-user.dtsi

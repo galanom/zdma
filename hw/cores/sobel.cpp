@@ -7,9 +7,9 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite clock=s_axi_lite_clk port=line_width bundle=control offset=0x10
-#pragma HLS INTERFACE s_axilite clock=s_axi_lite_clk port=func bundle=control offset=0x14
-#pragma HLS INTERFACE s_axilite clock=s_axi_lite_clk port=return bundle=control offset=0x1C
+#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
+#pragma HLS INTERFACE s_axilite port=func bundle=control offset=0x14
+#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
 #pragma HLS INTERFACE ap_stable port=line_width
 #pragma HLS INTERFACE ap_stable port=func
 	axi_elem_t data_in, data_out;

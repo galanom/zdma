@@ -46,9 +46,11 @@ int main(int argc, char **argv)
 
 	zdma_core_register("sobel", 1, -1);
 	zdma_core_register("gauss", 1, -1);
+	
 	zdma_core_register("outline", 1, -1);
 	zdma_core_register("sharpen", 1, -1);
 	zdma_core_register("emboss", 1, -1);
+
 	zdma_core_register("negative", 1, -1);
 	zdma_core_register("contrast", 1, -1);
 	zdma_core_register("threshold", 1, -1);
@@ -70,9 +72,9 @@ int main(int argc, char **argv)
 		err = zdma_task_init(&task[i]);
 		assert(!err);
 		if (i % core_num == 0)
-			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
-		else if (i % core_num == 1)
 			err  = zdma_task_configure(&task[i], "gauss", -1, img_size, img_size, 1, img.cols);
+		else if (i % core_num == 1)
+			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
 		else if (i % core_num == 2)
 			err  = zdma_task_configure(&task[i], "outline", -1, img_size, img_size, 1, img.cols);
 		else if (i % core_num == 3)
@@ -89,7 +91,7 @@ int main(int argc, char **argv)
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}
 
-	//zdma_debug();
+	zdma_debug();
 	
 	struct timespec t0, t1;
 	clock_gettime(CLOCK_MONOTONIC, &t0);

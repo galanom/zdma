@@ -19,7 +19,6 @@
 			compatible = "shared-dma-pool";
 			no-map;
 		};
-		
 		hp1: hp1@0C000000 {
 			reg = <0x0C000000 0x04000000>;
 			compatible = "shared-dma-pool";
@@ -56,53 +55,63 @@
 
 			pb0: pblock@0 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_0>;
+				core = <&zcore16_0>;
 				transport = <&dma0>;
 			};
 			pb1: pblock@1 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_1>;
+				core = <&zcore16_1>;
 				transport = <&dma1>;
 			};
 			pb2: pblock@2 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_2>;
+				core = <&zcore16_2>;
 				transport = <&dma2>;
 			};
 			pb3: pblock@3 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_3>;
+				core = <&zcore16_3>;
 				transport = <&dma3>;
 			};
 			pb4: pblock@4 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_4>;
+				core = <&zcore16_4>;
 				transport = <&dma4>;
 			};
 			pb5: pblock@5 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_5>;
+				core = <&zcore16_5>;
 				transport = <&dma5>;
 			};
 			pb6: pblock@6 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_6>;
+				core = <&zcore16_6>;
 				transport = <&dma6>;
 			};
 			pb7: pblock@7 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_7>;
+				core = <&zcore16_7>;
 				transport = <&dma7>;
 			};
 			pb8: pblock@8 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_8>;
+				core = <&zcore16_8>;
 				transport = <&dma8>;
 			};
 			pb9: pblock@9 {
 				compatible = "tuc,pblock";
-				core = <&zdma_core_9>;
+				core = <&zcore16_9>;
 				transport = <&dma9>;
+			};
+			pb10: pblock@10 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_10>;
+				transport = <&dma10>;
+			};
+			pb11: pblock@11 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_11>;
+				transport = <&dma11>;
 			};
 
 			zone@0 {
@@ -136,16 +145,16 @@
 			zone@4 {
 				compatible = "tuc,zone";
 				memory-region = <&gp0>;
-				readers = <&pb8 &pb9>;
+				readers = <&pb8 &pb9 &pb10 &pb11>;
 				writers = <>;
-				bandwidth = <1500>;
+				bandwidth = <100>;
 			};
 			zone@5 {
 				compatible = "tuc,zone";
 				memory-region = <&gp1>;
 				readers = <>;
-				writers = <&pb8 &pb9>;
-				bandwidth = <1500>;
+				writers = <&pb8 &pb9 &pb10 &pb11>;
+				bandwidth = <100>;
 			};
 
 			dma0: dma-client@0 {
@@ -206,6 +215,18 @@
 				compatible = "tuc,dma-client";
 				dmas = <&axi_dma_9 0
 					&axi_dma_9 1>;
+				dma-names = "tx", "rx";
+			};
+			dma10: dma-client@10 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_10 0
+					&axi_dma_10 1>;
+				dma-names = "tx", "rx";
+			};
+			dma11: dma-client@11 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_11 0
+					&axi_dma_11 1>;
 				dma-names = "tx", "rx";
 			};
 		};

@@ -310,7 +310,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		return -EEXIST;
 	}
 
-/*	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
+	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
 	if (err) {
 		pr_crit("Error %d during FPGA reconfiguration!\n", err);
 		return -EIO;
@@ -321,7 +321,7 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		pr_crit("failed to initialize DMA controller -- system may hang after PR!\n");
 		return -EIO;
 	}
-*/
+
 	atomic_set(&pblock->age, 0);
 	pblock->core = core;
 	return 0;
@@ -471,6 +471,7 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 				: zone->reader_mask & zone->writer_mask;
 			score = sys.config.alloc_score_func(zone, size, 
 				pblock_affinity & *client_affinity & core_availability);
+			//pr_info("zone %d (%x) score %lu\n", i, zone->phys, score);
 
 			if (score == score_prev && found_prev) {
 				zone_sel = zone;
@@ -867,10 +868,10 @@ static void dma_issue(struct work_struct *work)
 		p->rx.cookie = -EBUSY;
 		goto dma_error;
 	}
-	if (debug)
+	/*if (debug)
 		pr_info("%s/%lu: channels %p->%p, handles %zx->%zx\n", 
 			p->core->name, __fls(pblock->id),
-			pblock->txchanp, pblock->rxchanp, p->tx.handle, p->rx.handle);
+			pblock->txchanp, pblock->rxchanp, p->tx.handle, p->rx.handle);*/
 
 	p->tx.descp->callback = p->rx.descp->callback = sync_callback;
 	p->tx.descp->callback_param = &p->tx.cmp;
@@ -1108,7 +1109,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		bitstream->pblock = pblock_lookup(core_conf.pblock);
 		if (!bitstream->pblock) {
 			pr_warn("core %s contains bitstream for pblock id %lu that does not exist, ignoring.\n",
-				core_conf.name, core_conf.pblock);
+				core_conf.name, __fls(core_conf.pblock));
 			devm_kfree(sys.devp, bitstream);
 			return -ENODEV;
 		}

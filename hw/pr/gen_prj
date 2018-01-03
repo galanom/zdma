@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 
-PBLOCK_LIST="zdma_core_0 zdma_core_1 zdma_core_2 zdma_core_3 zdma_core_4 zdma_core_5 zdma_core_6 zdma_core_7"
+PBLOCK_LIST="zcore16_0 zcore16_1 zcore16_2 zcore16_3 \
+		 zcore16_4 zcore16_5 zcore16_6 zcore16_7 \
+		 zcore16_8 zcore16_9 zcore16_10 zcore16_11 \
+		 zcore16_12 zcore16_13 zcore16_14 zcore16_15"
 CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
 
-top="pb8_axis32"
-solution="solution"
+top="zed_asym_cc"
+solution="solution_16"
 
 rm -rf ./prj
 mkdir ./prj

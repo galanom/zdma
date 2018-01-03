@@ -3,57 +3,46 @@
 module debugger (
 	input clk,
 	input [15:0] dma_intr,
-	input [1:0] func,
+	input sel,
 	output reg [7:0] LED
 	);
 
 parameter blink_rate=21;
 reg [1:0] ev = 2'b00;
-reg led_state [7:0];
 reg [blink_rate:0] counter [7:0];
 parameter blink_off=1'b0, blink_on=1'b1;
 
 genvar i;
 
 generate for (i = 0; i < 8; i = i + 1)
-always @(*)
-	case (func)
-	2'b00:
-			LED[i] = led_state[7-i];
-	default:
-			LED[i] = i % 2;
-	endcase		
-endgenerate
-		
-generate for (i = 0; i < 8; i = i + 1)
 begin
 	initial begin
-		led_state[i] = 0;
+		LED[i] = 0;
 		counter[i] = 0;
 	end
 	
 	always @(posedge clk) 
 	begin
-		case(led_state[i])
+		case(LED[i])
 		blink_off:
-			if (counter[i] == 0 && (dma_intr[2*i] | dma_intr[2*i+1]) == 1) begin
+			if (counter[i] == 0 && dma_intr[i + (sel << 3)] == 1) begin
 				counter[i] <= counter[i] + 1;
-				led_state[i] <= blink_on;
+				LED[i] <= blink_on;
 			end else if (counter[i] == 0) begin
 				counter[i] <= counter[i];
-				led_state[i] <= blink_off;
+				LED[i] <= blink_off;
 			end else begin
 				counter[i] <= counter[i] + 1;
-				led_state[i] <= blink_off;				
+				LED[i] <= blink_off;				
 			end
 		
 		blink_on:
 		begin
 			counter[i] <= counter[i] + 1;
 			if (counter[i] == 0)
-				led_state[i] <= blink_off;
+				LED[i] <= blink_off;
 			else
-				led_state[i] <= blink_on;
+				LED[i] <= blink_on;
 		end	
 		endcase	
 	end

@@ -1,6 +1,6 @@
 #!/opt/Xilinx/SDK/2017.2/bin/hsi -source
 set base "base"
-set design "p8_s16_smc"
+set design "zed_asym_cc"
 set proj "/home/igalanommatis/work/zdma"
 exec rm -rf $proj/image/dts/$design
 exec mkdir -p $proj/image/dts/$design

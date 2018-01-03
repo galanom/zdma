@@ -3,7 +3,7 @@
 
 #define KERN_DIM 3
 
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
@@ -50,7 +50,7 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
 
 	col = 0;
 	do {
-#pragma HLS loop_tripcount min=307200 max=1036800
+#pragma HLS loop_tripcount min=153600 max=518400
 #pragma HLS pipeline
 		src >> data_in;
 		data_out.last = data_in.last;
@@ -66,8 +66,13 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					pixel_tmp = linebuf.getval(i, j+col+px);
-					win_x.insert(kern_x[func][i][j] * pixel_tmp, i, j);
-					win_y.insert(kern_y[func][i][j] * pixel_tmp, i, j);
+					uint16_t tmp_x, tmp_y;
+//#pragma HLS resource variable=tmp_x core=DSP48
+//#pragma HLS resource variable=tmp_y core=DSP48
+					tmp_x = kern_x[func][i][j] * pixel_tmp;
+					tmp_y = kern_y[func][i][j] * pixel_tmp;
+					win_x.insert(tmp_x, i, j);
+					win_y.insert(tmp_y, i, j);
 				}
 			}
 

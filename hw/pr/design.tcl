@@ -46,38 +46,48 @@ set srcDir	""
 ### Top Definition
 ###############################################################
 
-set top "pb8_axis32"
-set top_xdc	[list	"../base/base.srcs/$top/new/io.xdc" \
-			"../base/base.srcs/$top/new/pblocks.xdc" ]
+set top "zed_asym_cc"
+set top_xdc	[list "../base/base.srcs/$top/new/pblocks.xdc" "../base/base.srcs/$top/new/io.xdc" ]
 
 set static "${top}_static"
 add_module $static
 set_attribute module $static moduleName      $top
 set_attribute module $static top_level       1
-set_attribute module $static synthCheckpoint "$dcpDir/$top.dcp"
+set_attribute module $static synthCheckpoint "$dcpDir/${top}.dcp"
 
 ####################################################################
 ### RP Module Definitions
 ####################################################################
 
-foreach core [list "gauss" "sobel" "sharpen" "emboss" "outline" "loopback" "negative" "contrast" "threshold"] {
-	set part_list [list [list $static $top [expr {$core == "gauss" ? "implement" : "import"}] ] ]
+foreach core [list "contrast" "loopback" "gauss" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"] {
+	set part_list [list [list $static $top [expr {$core == "contrast" ? "implement" : "import"}] ] ]
 	
-	foreach i [list 0 1 2 3 4 5 6 7] {
-		set instance "zdma_core_${i}"
+	foreach i [list 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15] {
+		set instance "zcore16_${i}"
 		set variant "${instance}_${core}"
-		lappend part_list [list $variant "${top}_i/$instance" "implement"]
+		if {(($core in [list "gauss" "sobel" "sharpen" "emboss" "outline"]) && ($i in [list 2 3 6 7 10 11]))} {
+			lappend part_list [list "${instance}_loopback" "${top}_i/$instance" "implement"]
+		} else {
+			lappend part_list [list $variant "${top}_i/$instance" "implement"]
+		}
+
 		add_module $variant
 		set_attribute module $variant moduleName "${top}_${instance}_0"
 		set_attribute module $variant prj	"./prj/${instance}/${core}.prj"
-		set_attribute module $variant xdc	"../base/base.srcs/sources_1/bd/${top}/ip/${top}_${instance}_0/constraints/zdma_core_ooc.xdc"
+		set_attribute module $variant xdc	"../base/base.srcs/sources_1/bd/${top}/ip/${top}_${instance}_0/constraints/zcore16_ooc.xdc"
 		set_attribute module $variant synth	${run.rmSynth}
+		#set_attribute module $variant synth_options "-fanout_limit 400 -fsm_extraction one_hot -keep_equivalent_registers -resource_sharing off -shreg_min_size 5"
+		#set_attribute module $variant synth_options "-directive AreaOptimized_high -control_set_opt_threshold 1"
 	}
 	
 	puts $part_list
 	set config "config_${core}"
 	add_implementation $config
 	set_attribute impl $config top		$top
+	#set_attribute impl $config opt_directive "Default"
+	set_attribute impl $config place_directive "ExtraPostPlacementOpt"
+	set_attribute impl $config phys_directive "Explore"
+	set_attribute impl $config route_directive "Explore"
 	set_attribute impl $config pr.impl	1
 	set_attribute impl $config implXDC	$top_xdc	
 	set_attribute impl $config impl		${run.prImpl}

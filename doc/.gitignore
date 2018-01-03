@@ -1,0 +1,6 @@
+*.aux
+*.log
+*.swp
+*.out
+*.pdf
+tikzlibrarypaths.ortho.tex*

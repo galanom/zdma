@@ -14,10 +14,11 @@ set place_directives [list Explore                \
                            ExtraNetDelay_high     \
                            ExtraNetDelay_medium   \
                            ExtraNetDelay_low      \
-                           SpreadLogic_high       \
-                           SpreadLogic_medium     \
-                           SpreadLogic_low        \
+                           AltSpreadLogic_high       \
+                           AltSpreadLogic_medium     \
+                           AltSpreadLogic_low        \
                            ExtraPostPlacementOpt  \
+			   ExtraTimingOpt         \
                            SSI_ExtraTimingOpt     \
                            SSI_SpreadSLLs         \
                            SSI_BalanceSLLs        \

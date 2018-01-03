@@ -3,7 +3,7 @@
 
 #define KERN_DIM 3
 
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
@@ -16,8 +16,8 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast
 	int ret;
 	int8_t alpha;
 	ap_int<9> beta;
-
-	alpha = 259*(contrast + 256)/(259 - contrast);
+	int16_t tmp;
+	alpha = ((contrast + 256)<<8)/(256 - contrast);
 	beta = brightness + 128;
 
 	union {
@@ -36,7 +36,7 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast
 		pixel.all = data_in.data;
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
-			ap_int<10> val = ((alpha*(pixel.at[px] - 128)) >> 8) + beta;
+			ap_int<10> val = ((alpha*(pixel.at[px] - 128)) >> 8 ) + beta;
 			pixel.at[px] = (uint8_t)val;
 			if (val > 255)
 				pixel.at[px] = 255;

@@ -2,7 +2,7 @@
 #include "ap_int.h"
 
 #define MAX_KERN_DIM 11
-int32_t zdma_core(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t kernel_dim)
+int32_t CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int32_t line_width, int32_t kernel_dim)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM

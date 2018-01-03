@@ -3,7 +3,7 @@
 
 #define KERN_DIM 3
 
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM

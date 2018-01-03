@@ -3,7 +3,7 @@
 
 #define KERN_DIM 5
 
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
@@ -22,10 +22,6 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width)
 	} pixel;
 
 	uint8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 256
-				/*{{1, 2, 1},
-				 {2, 4, 2},
-				 {1, 2, 1}};*/
-
 				{{ 1,  4,  6,  4,  1},
 				 { 4, 16, 24, 16,  4},
 				 { 6, 26, 36, 26,  6},
@@ -39,7 +35,7 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width)
 
 	col = 0;
 	do {
-#pragma HLS loop_tripcount min=307200 max=1036800
+#pragma HLS loop_tripcount min=153600 max=518400
 #pragma HLS pipeline
 		src >> data_in;
 		data_out.last = data_in.last;
@@ -54,12 +50,16 @@ int zdma_core(axi_stream_t& src, axi_stream_t& dst, int line_width)
 
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
-					win.insert(kern[i][j] * linebuf.getval(i, j+col+px), i, j);
+					uint16_t tmp;
+//#pragma HLS resource variable=tmp core=DSP48
+					tmp = kern[i][j] * linebuf.getval(i, j+col+px);
+					win.insert(tmp, i, j);
 				}
 			}
 			acc[px] = 0;
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
+//#pragma HLS resource variable=acc core=DSP48
 					acc[px] += win.getval(i, j);
 				}
 			}

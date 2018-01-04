@@ -94,8 +94,9 @@ static struct system {
 	struct workqueue_struct *workqueue;
 
 	struct zdma_pblock {
-		atomic_t state;
-		atomic_t age;
+		atomic_t state,
+			age,
+			popularity;
 		unsigned long id;
 		spinlock_t lock;
 		struct list_head node;
@@ -165,7 +166,8 @@ static struct system {
 			block_user_ioctl,
 			sched_age,
 			sched_access_age,
-			sched_pri;
+			sched_pri,
+			sched_fit;
 		unsigned alloc_order;
 		unsigned long (*alloc_score_func)(struct zdma_zone *, size_t, unsigned long);
 		genpool_algo_t alloc_bitmap_algo;
@@ -256,14 +258,16 @@ static void zdma_debug(void)
 	pr_info("------------------------------------------------------\n");
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-		pr_info("PBLOCK %lu: core: %s, state: %d\n", 
-			__fls(pblock->id), pblock->core->name, atomic_read(&pblock->state));
+		pr_info("PBLOCK %lu: core: %s, popularity: %d, state: %d\n", 
+			__fls(pblock->id), pblock->core->name, 
+			atomic_read(&pblock->popularity), 
+			atomic_read(&pblock->state));
 	}
 
 	list_for_each_entry_rcu(core, &sys.cores.node, node) {
 		pr_info("CORE %s: mask=0x%lx ", core->name, core->availability);
 		list_for_each_entry_rcu(bitstream, &core->bitstreams.node, node)
-				pr_cont("<%lu> ", __fls(bitstream->pblock->id));
+			pr_cont("<%lu> ", __fls(bitstream->pblock->id));
 		pr_cont("\n");
 	}
 	
@@ -364,7 +368,9 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		// or if it was not free, try to find a free pblock
 		// to reconfigure it with our new core
 		int	max_found = -1,	// age or priority
-			curr_pri = 1;
+			curr_pri = 1,
+			min_popularity = 999999;
+
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 			if ((pblock->id & client->eff_affinity) == 0)
@@ -374,17 +380,21 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
 				continue;	// no bitstream for this pblock, skip
 
-			if (sys.config.sched_age) {
-				if (atomic_read(&pblock->age) > max_found) {
-					pblock_sel = pblock; 
-					max_found = atomic_read(&pblock->age);
-				}
-			} else {
-				if (pblock->core)
-					curr_pri = pblock->core->priority;
-				if (curr_pri > max_found) {
-					pblock_sel = pblock;
-					max_found = curr_pri;
+			if ((!sys.config.sched_fit) || (atomic_read(&pblock->popularity) <= min_popularity)) {
+				min_popularity = atomic_read(&pblock->popularity);
+			
+				if (sys.config.sched_age) {
+					if (atomic_read(&pblock->age) > max_found) {
+						pblock_sel = pblock; 
+						max_found = atomic_read(&pblock->age);
+					}
+				} else {
+					if (pblock->core)
+						curr_pri = pblock->core->priority;
+					if (curr_pri > max_found) {
+						pblock_sel = pblock;
+						max_found = curr_pri;
+					}
 				}
 			}
 		}
@@ -400,9 +410,12 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
 			if (debug)
-				pr_info("programming pblock %lu, age %d, core %s->%s\n", 
-					__fls(pblock_sel->id), atomic_read(&pblock_sel->age), 
-					pblock_sel->core->name, core->name);
+				pr_info("programming pblock %lu, age %d, pop %d, core %s->%s\n", 
+					__fls(pblock_sel->id), 
+					atomic_read(&pblock_sel->age), 
+					atomic_read(&pblock_sel->popularity),
+					pblock_sel->core->name, 
+					core->name);
 			int err = pblock_setup(pblock_sel, core);
 			BUG_ON(err);
 			atomic_set(&pblock_sel->age, 0);
@@ -549,7 +562,17 @@ static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 	
 	void *tx_vaddr, *rx_vaddr;
 	dma_addr_t tx_handle, rx_handle;
+	struct zdma_pblock *pblock;
 	
+	if (p->tx.vaddr || p->rx.vaddr) {
+		rcu_read_lock();
+		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+			if (pblock->id & p->core->availability & p->eff_affinity)
+				atomic_dec(&pblock->popularity);
+		}
+		rcu_read_unlock();
+	}
+
 	if (p->tx.vaddr) {
 		allocator_free(p->tx.vaddr, p->tx.size);
 		p->tx.vaddr = NULL;
@@ -560,9 +583,6 @@ static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 		p->rx.vaddr = NULL;
 		p->rx.size = 0;
 	}
-
-	if (tx_size == 0 && rx_size == 0)
-		return -EINVAL;
 
 	// first, allocate reader
 	if (tx_size) {
@@ -601,7 +621,6 @@ static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 	}
 
 	// everything is ok, register the allocation
-	
 	if (sys.config.clear_buffer) {
 		if (tx_size)
 			memset(tx_vaddr, 0x00, tx_size);
@@ -615,6 +634,14 @@ static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 	p->tx.size = tx_size;
 	p->rx.size = rx_size;
 	#pragma GCC diagnostic pop
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if (pblock->id & p->core->availability & p->eff_affinity)
+			atomic_inc(&pblock->popularity);
+	}
+	rcu_read_unlock();
+
 	return 0;
 }
 
@@ -702,6 +729,7 @@ static int pblock_add(struct device_node *np)
 		goto pblock_add_error_late;
 	}
 	atomic_set(&pblock->age, 0);
+	atomic_set(&pblock->popularity, 0);
 
 	// now add the pblock to the list
 	spin_lock(&sys.pblocks_lock);
@@ -975,8 +1003,22 @@ static int dev_open(struct inode *inodep, struct file *filep)
 static int dev_release(struct inode *inodep, struct file *filep)
 {
 	struct zdma_client *p = filep->private_data;
+	struct zdma_pblock *pblock;
+
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if (p->core == NULL)
+			continue;
+		if (pblock->id & p->core->availability & p->eff_affinity)
+			atomic_dec(&pblock->popularity);
+	}
+	rcu_read_unlock();
+	
 	flush_work(&p->work);
-	allocator(p, 0, 0);
+	if (p->tx.vaddr)
+		allocator_free(p->tx.vaddr, p->tx.size);
+	if (p->rx.vaddr)
+		allocator_free(p->rx.vaddr, p->rx.size);
 
 	spin_lock(&sys.clients_lock);
 	list_del_rcu(&p->node);
@@ -1036,33 +1078,28 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_SECURITY_BUFFER_CLEAR:
 			sys.config.clear_buffer = true;
 			break;
-		case CONFIG_SCHEDULER_FIRST_FREE:
-			sys.config.sched_age = false;
-			sys.config.sched_pri = false;
-			break;
-		case CONFIG_SCHEDULER_PRIORITY:
-			sys.config.sched_age = false;
+		case CONFIG_SCHED_OPT_PRIORITY_ENABLE:
 			sys.config.sched_pri = true;
 			break;
-		case CONFIG_SCHEDULER_LRP:
+		case CONFIG_SCHED_OPT_PRIORITY_DISABLE:
+			sys.config.sched_pri = false;
+			break;
+		case CONFIG_SCHED_OPT_FITNESS_ENABLE:
+			sys.config.sched_fit = true;
+			break;
+		case CONFIG_SCHED_OPT_FITNESS_DISABLE:
+			sys.config.sched_fit = false;
+			break;
+		case CONFIG_SCHED_VICTIM_FIRST_FREE:
+			sys.config.sched_age = false;
+			break;
+		case CONFIG_SCHED_VICTIM_LRP:
 			sys.config.sched_age = true;
 			sys.config.sched_access_age = false;
-			sys.config.sched_pri = false;
 			break;
-		case CONFIG_SCHEDULER_LRP_PRI:
-			sys.config.sched_age = true;
-			sys.config.sched_access_age = false;
-			sys.config.sched_pri = true;
-			break;
-		case CONFIG_SCHEDULER_LRU:
+		case CONFIG_SCHED_VICTIM_LRU:
 			sys.config.sched_age = true;
 			sys.config.sched_access_age = true;
-			sys.config.sched_pri = false;
-			break;
-		case CONFIG_SCHEDULER_LRU_PRI:
-			sys.config.sched_age = true;
-			sys.config.sched_access_age = true;
-			sys.config.sched_pri = true;
 			break;
 		default:
 			return -ENOTTY;	
@@ -1210,11 +1247,13 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 					victim = bitstream;
 					while (atomic_cmpxchg(&victim->pblock->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
 						;
+					victim->pblock->core->availability &= ~victim->pblock->id;
+					
 					spin_lock(&core->bitstreams_lock);
 					list_del_rcu(&victim->node);
-					victim->pblock->core->availability &= ~victim->pblock->id;
-					atomic_set(&victim->pblock->state, PBLOCK_FREE);
 					spin_unlock(&core->bitstreams_lock);
+					
+					atomic_set(&victim->pblock->state, PBLOCK_FREE);
 					break;
 				}
 			}
@@ -1485,7 +1524,9 @@ static int __init mod_init(void)
 
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_IOCTL_DEFAULT);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_BUFFER_DEFAULT);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHEDULER_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_OPT_PRIORITY_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_OPT_FITNESS_DEFAULT);
 	sys.config.alloc_order = ALLOC_ORDER;
 
 	// register the driver to the kernel

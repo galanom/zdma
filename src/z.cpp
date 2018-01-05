@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 
 	zdma_core_register("sobel", 1, -1);
 	zdma_core_register("gauss", 1, -1);
-	
 	zdma_core_register("outline", 1, -1);
 	zdma_core_register("sharpen", 1, -1);
 	zdma_core_register("emboss", 1, -1);
@@ -54,7 +53,8 @@ int main(int argc, char **argv)
 	zdma_core_register("negative", 1, -1);
 	zdma_core_register("contrast", 1, -1);
 	zdma_core_register("threshold", 1, -1);
-	int core_num = 8;
+	zdma_core_register("loopback", 1, -1);
+	int core_num = 9;
 
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
@@ -72,21 +72,23 @@ int main(int argc, char **argv)
 		err = zdma_task_init(&task[i]);
 		assert(!err);
 		if (i % core_num == 0)
-			err  = zdma_task_configure(&task[i], "gauss", -1, img_size, img_size, 1, img.cols);
+			err  = zdma_task_configure(&task[i], "gauss", 0xfff, img_size, img_size, 1, img.cols);
 		else if (i % core_num == 1)
-			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
+			err  = zdma_task_configure(&task[i], "sobel", 0xfff, img_size, img_size, 2, img.cols, 0);
 		else if (i % core_num == 2)
-			err  = zdma_task_configure(&task[i], "outline", -1, img_size, img_size, 1, img.cols);
+			err  = zdma_task_configure(&task[i], "outline", 0xfff, img_size, img_size, 1, img.cols);
 		else if (i % core_num == 3)
-			err  = zdma_task_configure(&task[i], "sharpen", -1, img_size, img_size, 1, img.cols);
-		else if (i < 5*task_num / 8)
-			err  = zdma_task_configure(&task[i], "emboss", -1, img_size, img_size, 1, img.cols);
-		else if (i < 6*task_num / 8)
-			err  = zdma_task_configure(&task[i], "contrast", -1, img_size, img_size, 1, 20, -100);
-		else if (i < 7*task_num / 8)
-			err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);
+			err  = zdma_task_configure(&task[i], "sharpen", 0xfff, img_size, img_size, 1, img.cols);
+		else if (i % core_num == 4)
+			err  = zdma_task_configure(&task[i], "emboss", 0xfff, img_size, img_size, 1, img.cols);
+		else if (i % core_num == 5)
+			err  = zdma_task_configure(&task[i], "contrast", 0xfff, img_size, img_size, 1, 20, -100);
+		else if (i % core_num == 6)
+			err  = zdma_task_configure(&task[i], "threshold", 0xfff, img_size, img_size, 1, 127);
+		else if (i % core_num == 7)
+			err  = zdma_task_configure(&task[i], "negative", 0xfff, img_size, img_size, 0);
 		else
-			err  = zdma_task_configure(&task[i], "negative", -1, img_size, img_size, 0);
+			err  = zdma_task_configure(&task[i], "loopback", 0xfff, img_size, img_size, 0);
 		assert(!err);
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}

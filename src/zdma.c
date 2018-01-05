@@ -41,7 +41,7 @@ MODULE_AUTHOR("Ioannis Galanommatis");
 MODULE_DESCRIPTION("DMA client to xilinx_dma");
 MODULE_VERSION("1.0");
 
-bool debug = true;
+bool debug = false;
 module_param(debug, bool, 0);
 
 enum zdma_system_state {
@@ -132,6 +132,7 @@ static struct system {
 			reader_mask,
 			writer_mask;
 		atomic_long_t avail;
+		atomic_t users;
 		phys_addr_t phys;
 		void	*start,
 			*end;
@@ -167,9 +168,9 @@ static struct system {
 			sched_age,
 			sched_access_age,
 			sched_pri,
-			sched_fit;
+			sched_fitness;
 		unsigned alloc_order;
-		unsigned long (*alloc_score_func)(struct zdma_zone *, size_t, unsigned long);
+		int (*alloc_score_func)(struct zdma_zone *, size_t, unsigned long);
 		genpool_algo_t alloc_bitmap_algo;
 	} config;
 
@@ -272,7 +273,7 @@ static void zdma_debug(void)
 	}
 	
 	list_for_each_entry_rcu(zone, &sys.zones.node, node) {
-		pr_info("MEM phys %#xx mapped at 0x%p, size: %u avail: %ld\n", 
+		pr_info("MEM phys 0x%#x mapped at 0x%p, size: %u avail: %ld\n", 
 			zone->phys,
 			zone->start, 
 			(zone->end - zone->start + 1)/Ki,
@@ -346,30 +347,42 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 
 	do {
 		// at first, try to lock an already running core
+		int curr_popularity, min_popularity = 999999;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 			if ((pblock->id & client->eff_affinity) == 0)
 				continue;
-			if (pblock->core == core) {
-				if (atomic_cmpxchg(&pblock->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
+			if ((pblock->core == core) && (atomic_read(&pblock->state) == PBLOCK_FREE)) {
+				if (sys.config.sched_fitness) {
+					curr_popularity = atomic_read(&pblock->popularity);
+					if (curr_popularity < min_popularity) {
+						pblock_sel = pblock;
+						min_popularity = curr_popularity;
+					}
+				} else {
 					pblock_sel = pblock;
 					break;
 				}
 			}
 		}
 		rcu_read_unlock();
-
-		// if a free pblock with the requested core
-		// was found, abort the loop to return
-		if (pblock_sel)
-			break;
+		
+		// if a free pblock with the requested core was found,
+		// attempt to lock it and exit the loop
+		if (pblock_sel) {
+			if (atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE)
+				break;
+			else	// another client grabbed the pblock since last check
+				pblock_sel = NULL; // TODO check if a redo is worth the effort
+		}
 		
 		// if there was no pblock with the requested core,
 		// or if it was not free, try to find a free pblock
 		// to reconfigure it with our new core
-		int	max_found = -1,	// age or priority
-			curr_pri = 1,
-			min_popularity = 999999;
+		int	max_age = -1,
+			max_pri = -1,
+			curr_pri = 1;
+		min_popularity = 999999;
 
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
@@ -380,20 +393,20 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
 				continue;	// no bitstream for this pblock, skip
 
-			if ((!sys.config.sched_fit) || (atomic_read(&pblock->popularity) <= min_popularity)) {
+			if ((!sys.config.sched_fitness) || (atomic_read(&pblock->popularity) <= min_popularity)) {
 				min_popularity = atomic_read(&pblock->popularity);
 			
 				if (sys.config.sched_age) {
-					if (atomic_read(&pblock->age) > max_found) {
+					if (atomic_read(&pblock->age) > max_age) {
 						pblock_sel = pblock; 
-						max_found = atomic_read(&pblock->age);
+						max_age = atomic_read(&pblock->age);
 					}
 				} else {
 					if (pblock->core)
 						curr_pri = pblock->core->priority;
-					if (curr_pri > max_found) {
+					if (curr_pri > max_pri) {
 						pblock_sel = pblock;
-						max_found = curr_pri;
+						max_pri = curr_pri;
 					}
 				}
 			}
@@ -440,25 +453,23 @@ static void pblock_release(struct zdma_pblock *pblock)
 	return;
 }
 
-static unsigned long allocator_score_best_fit(
+static int allocator_score_default(
 	struct zdma_zone *zone, size_t req_size, unsigned long affinity)
 {
-	unsigned long avail = atomic_long_read(&zone->avail);
-	unsigned long aff_count = hweight_long(affinity);
-	if (!aff_count || avail < req_size)
-		return 0;
-	return zone->bandwidth * (req_size / (avail >> 8) + (aff_count << 4));
-}
-
-
-static unsigned long allocator_score_worst_fit(
-	struct zdma_zone *zone, size_t req_size, unsigned long affinity)
-{
-	unsigned long avail = atomic_long_read(&zone->avail);
-	unsigned long aff_count = hweight_long(affinity);
-	if (!aff_count || avail < req_size)
-		return 0;
-	return zone->bandwidth * (avail / (req_size >> 8) + (aff_count << 4));
+	int	memory_availability = atomic_long_read(&zone->avail) / req_size,
+		schedulability = hweight_long(affinity),
+		zone_occupancy = atomic_read(&zone->users),
+		score;
+	if (schedulability == 0 || !memory_availability)
+		score = 0;
+	else
+		score = (zone->bandwidth/(1+zone_occupancy)) * (memory_availability/8 + schedulability);
+	
+	if (debug)
+		pr_info("bw: %d, occ: %d, mem_av: %d, sch: %d, final score = %d\n",
+			zone->bandwidth, zone_occupancy, memory_availability, schedulability, score);
+	
+	return score;
 }
 
 
@@ -466,7 +477,8 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 	unsigned long *client_affinity, unsigned long core_availability, dma_addr_t *handle)
 {
 	struct zdma_zone *zone, *zone_sel = NULL, *zone_prev = NULL;
-	unsigned long pblock_affinity, pblock_affinity_sel, score, score_prev = 0, score_max = 0;
+	unsigned long pblock_affinity, pblock_affinity_sel;
+	int score, score_prev = 0, score_max = 0;
 	bool found_prev = false;
 	int	start_bit, end_bit,
 		nbits = (size + (1ul << sys.config.alloc_order) - 1) >> sys.config.alloc_order;
@@ -482,9 +494,13 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 			pblock_affinity = dir == DMA_TO_DEVICE ? zone->reader_mask
 				: dir == DMA_FROM_DEVICE ? zone->writer_mask
 				: zone->reader_mask & zone->writer_mask;
+			if (debug)
+				pr_info("passing affinity pblockaffz=%lx (dir=%d, reader=%lx, writer=%lx), client=%lx, coreavail=%lx\n",
+				pblock_affinity, 
+				dir, zone->reader_mask, zone->writer_mask,
+				*client_affinity, core_availability);
 			score = sys.config.alloc_score_func(zone, size, 
 				pblock_affinity & *client_affinity & core_availability);
-			//pr_info("zone %d (%x) score %lu\n", i, zone->phys, score);
 
 			if (score == score_prev && found_prev) {
 				zone_sel = zone;
@@ -503,10 +519,13 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 		if (!zone_sel)
 			break;
 
+		if (debug)
+			pr_info(">>>>>>>>>>> SELECTED ZONE %x, score %u\n", zone_sel->phys, score);
+
 		// perform the allocation (modified from Linux genalloc.c)
 		end_bit = (zone_sel->end - zone_sel->start + 1) >> sys.config.alloc_order;
 
-		spin_lock(&zone_sel->lock); //FIXME per zone lock
+		spin_lock(&zone_sel->lock);
 		start_bit = sys.config.alloc_bitmap_algo(zone_sel->map, 
 			end_bit, 0 /*start_bit*/, nbits, NULL, NULL);
 		if (start_bit >= end_bit) {
@@ -526,6 +545,7 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 		return NULL;
 
 	atomic_long_sub(nbits << sys.config.alloc_order, &zone_sel->avail);
+	atomic_inc(&zone_sel->users);
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 	*client_affinity &= pblock_affinity_sel;
@@ -549,6 +569,7 @@ void allocator_free(void *buf, size_t size)
 			BUG_ON(buf + size - 1 > zone->end);
 			bitmap_clear(zone->map, start_bit, nbits);
 			atomic_long_add(nbits << sys.config.alloc_order, &zone->avail);
+			atomic_dec(&zone->users);
 			break;
 		}
 	}
@@ -834,6 +855,7 @@ static int zone_add(struct device_node *np)
 	zone->phys = paddr;
 	zone->end = zone->start + size - 1;
 	atomic_long_set(&zone->avail, size);
+	atomic_set(&zone->users, 0);
 	spin_lock_init(&zone->lock);
 	pr_info("created zone @%zx %p-%p\n", zone->phys, zone->start, zone->end);
 
@@ -1060,11 +1082,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_ALLOC_BITMAP_BEST_FIT:
 			sys.config.alloc_bitmap_algo = gen_pool_best_fit;
 			break;
-		case CONFIG_ALLOC_ZONE_WORST_FIT:
-			sys.config.alloc_score_func = allocator_score_worst_fit;
-			break;
-		case CONFIG_ALLOC_ZONE_BEST_FIT:
-			sys.config.alloc_score_func = allocator_score_best_fit;
+		case CONFIG_ALLOC_ZONE_DEFAULT:
+			sys.config.alloc_score_func = allocator_score_default;
 			break;
 		case CONFIG_SECURITY_IOCTL_ALLOW_USER:
 			sys.config.block_user_ioctl = false;
@@ -1085,10 +1104,10 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			sys.config.sched_pri = false;
 			break;
 		case CONFIG_SCHED_OPT_FITNESS_ENABLE:
-			sys.config.sched_fit = true;
+			sys.config.sched_fitness = true;
 			break;
 		case CONFIG_SCHED_OPT_FITNESS_DISABLE:
-			sys.config.sched_fit = false;
+			sys.config.sched_fitness = false;
 			break;
 		case CONFIG_SCHED_VICTIM_FIRST_FREE:
 			sys.config.sched_age = false;
@@ -1494,7 +1513,6 @@ static void __exit mod_exit(void)
 
 static int __init mod_init(void)
 {
-	msleep(2500);
 	sys.state = SYS_INIT;
 
 	spin_lock_init(&sys.pblocks_lock);

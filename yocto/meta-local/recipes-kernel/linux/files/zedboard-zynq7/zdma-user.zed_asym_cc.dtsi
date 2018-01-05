@@ -147,14 +147,14 @@
 				memory-region = <&gp0>;
 				readers = <&pb8 &pb9 &pb10 &pb11>;
 				writers = <>;
-				bandwidth = <100>;
+				bandwidth = <120>;
 			};
 			zone@5 {
 				compatible = "tuc,zone";
 				memory-region = <&gp1>;
 				readers = <>;
 				writers = <&pb8 &pb9 &pb10 &pb11>;
-				bandwidth = <100>;
+				bandwidth = <120>;
 			};
 
 			dma0: dma-client@0 {

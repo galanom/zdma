@@ -2,5 +2,10 @@
 *.log
 *.swp
 *.out
+*.bbl
+*.blg
+*.fls
+main.fdb_latexmk
 *.pdf
 tikzlibrarypaths.ortho.tex*
+fonts

@@ -3,14 +3,14 @@ TARGET="../../yocto/meta-local/recipes-bsp/zdma-firmware/files"
 
 rm -f $TARGET/*
 
-for f in bitstream/*pcap*bin
+for f in bit/*pcap*bin
 do
 	core=`echo $f | awk -F_ {'print $2'}`
 	pblock=`echo $f | awk -F_ {'print $4'}`
-	if ls bitstream/write_cfgmem_config_${core}_*_${pblock}_${core}_pcap.log 1> /dev/null 2>&1; then
+	if ls bit/write_cfgmem_config_${core}_*_${pblock}_${core}_pcap.log 1> /dev/null 2>&1; then
 		xz --check=crc32 --lzma2=dict=512KiB --stdout $f > $TARGET/${core}.${pblock}.bin.xz
 	fi
 done
 
-install -m 644 bitstream/config_loopback.bit ../../image/download.bit
+install -m 644 bit/config_loopback.bit ../../image/download.bit
 

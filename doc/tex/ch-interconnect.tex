@@ -1,0 +1,105 @@
+\chapter{Interconnect and Memory Management}
+
+This chapter discusses how the data is transported from the main memory to an accelerator and vice versa. 
+Essentially, this covers the communication protocol and its underlying physical interconnect, as well as their impact on system performance and software complexity.
+
+The choices made in hardware architecture is a trade-off between silicon area, clock speed and flexibility. 
+The latter takes the form of restrictions on memory view from the FPGA side, which necessitates proper software support for the memory allocator and acclerator scheduler.
+
+The software framework, more precisely the kernel module,
+is flexible enough to support a wide diversity of system configurations. 
+To demonstrate this, there have been implemented two hardware designs: 
+The first is geared to accelerator performance featuring wider interconnect that allows greater data processing parallellization,
+homogeniety of reconfigurable partitions that allows freedom of accelerator placement, 
+and full memory view on the accelerator side, maximizing the scheduler's decision options.
+The second once is geared to high accelerator core count that sacrifices per-core performance and flexibility. 
+It uses narrower and simpler interconnect that lacks intermediate buffering. 
+More importantly, it segments the memory view, imposing restrictions on accelerator placement. Finally, it features two types of reconfigurable partitions, further complicating scheduler.
+
+Provided that a proper hardware description in the form of a Device Tree\cite{devicetree}, the kernel module will detect the hardware configuration and execute the requested task list without the need of source code modification or even a recompilation.
+
+\section{The Communication Protocol}
+In order for two (or more) entities to exchange data, there must be a well-defined protocol.
+With the growth of FPGA ecosystem, a need for a common and widespread communication protocol arose,
+in order to replace custom solutions that deemed too inflexible for bigger designs comprising IP 
+from different projects teams and different companies.
+The ARM's proposal is the AMBA\cite{amba} (Advanced Microcontroller Bus Architecture), 
+which as the name suggests was initially deployed for microcontroller use but later expanded to SoCs,
+has gained momentum due to ARM's dominance in smartphone market. Since all modern FPGA-SoCs from Xilinx,
+use ARM cores, it became a natural choice for the company. Earlier products of Xilinx, like Virtex-II Pro which
+featured a PowerPC core, used IBM's CoreConnect bus architecture. 
+The other big contender is the free and open source ``Wishbone Protocol'', 
+which, not unexpectedly, is the favorite of ``OpenCores'' open-source hardware community.
+
+The Zynq7000 platform, as well as the newer Zynq UltraScale+, the two platforms that are targeted by this work,
+both feature ARM cores and are designed around the AXI (Advanced eXtensible Interface) protocol, 
+which is part of the AMBA suite. 
+Furthermore, Xilinx, in order to promote IP reuse with its IP Integrator tool, has expanded its use
+in its FPGAs that contain no ARM IP. Therefore, AXI was chosen for the development of this system.
+
+\subsection{The AMBA AXI Family}
+
+The AXI itself is essentially a group of protocols that support different topologies,
+as well as feature levels that position themselves differently at the trade-off 
+between performance and functionality versus silicon area.
+
+Tha AXI family has several members, but for this system the following three were used:
+\begin{itemize}
+\item	\bf{AXI}, was the initial and only member in AMBA 3.0. With the advent of AMBA 4.0 which introduced
+	the protocols mentioned below, it is now usually referred as ``Full AXI'' or ``AXI Memory Mapped''.
+	It connects one or more memory capable slave to the address spaces of 
+	one or more masters. It typically needs glue logic between the two endpoints, called ``AXI Interconnect''. 
+	The address must be communicated before transfer takes place, which consists a performance barrier.
+	To amend this, it supports burst mode, where sequential packets of data may be transferred without
+	re-transmitting any addressing information. It is a high performance protocol, suited for exchange
+	of large amount of data. Its typical use in the FPGA world is transferring data between memory resources,
+	like Block RAMs, processing system RAM, external memory controllers connected to the FPGA, etc.
+\item	\bf{AXI-Lite}. Introduced with AMBA 4.0, the AXI-Lite as the name implies is a reduced capability
+	version of AXI. The most notable omission is the support for burst transfers. In exchange, it offers
+	a much lower silicon footprint. It is best suited for low intensity traffic, typically in configuration
+	registers.
+\item	\bf{AXI-Stream}. Also introduced with AMBA 4.0, AXI-Stream is a data streaming protocol, which means
+	that it has no notion of memory addressing. This greatly simplifies implementation and reduces wire
+	count. Data flows from the one endpoint to the other, in one direction, subject to flow control.
+	It may serve any streaming application and it allows the addition of user defined out-of-band data,
+	typically for synchronization, and it supports sender and receiver IDs, 
+	which enables stream switching and virtual circuits.
+\end{itemize}
+
+None of these protocols supports cache coherency. 
+In AMBA 3.0, ARM proposed the ACP, Acclerator Coherency Port, 
+an AXI slave port that connects an AXI master directly to the processor.
+The coherency logic inside the processor will monitor the transactions and update its caches accordingly.
+However, since the AXI master is not aware of the cache coherency logic, ACP is an IO-Coherent mechanism;
+the processor caches may be coherent but the accelerator's may not.
+
+In AMBA 4.0, ARM extended the AXI protocol with ACE, AXI Coherent Extensions, which allows full coherency between
+the processor and the accelerator, and ACE-Lite, an IO-Coherent version. 
+Finally, in latest AMBA version, 5.0, ARM added CHI, Coherent Hub Interconnect, which targets the multiprocessor's
+local interconnect hub.
+
+In the data streaming model, there exists no spatial or temporal locality. 
+Cached transfers are not only useless but harmful, since they will cause cache thrashing. 
+Indeed, the kernel driver uses the Linux DMA Streaming API which bypasses all processor caches 
+by marking the allocated DMA'able pages as non-cacheable.
+Therefore, cache coherency will not matter our discussion furthermore.
+
+\subsection{Implementation of AXI}
+
+As already mentioned, Xilinx actively promotes the use of AXI through its IP Integrator tool that is avaible
+with Vivado. This tool enables quick integration of third-party IP, usually offered for no additional cost.
+
+
+%The AXI has some characteristics that make its use in FPGAs attractive:
+%\begin{itemize}
+%\item	The two endpoints of a link may reside in different clock domains.
+%\item	Several channel widths are supported and there can be conversion between them.
+%\item	Traffic may be buffered to form larger bursts in order to increase throughput 
+%	and the channels can be registered to achieve timing closure.
+%\item	In streaming applications, user-defined side-channel can be created,
+%	typically for out-of-band synchonization.
+%\end{itemize}
+
+%The AXI is well-supported by Xilinx and all the aforementioned functionallity is implemented and provided by Xilinx with no additional cost. Still, implementing the protocol in a user design may require considerable effort.
+
+

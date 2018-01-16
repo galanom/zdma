@@ -2,17 +2,23 @@
 
 module debugger (
 	input clk,
-	input [15:0] dma_intr,
-	input sel,
+	input [intr_width-1:0] intr,
+	input [2:0] sel,
 	output reg [7:0] LED
 	);
 
-parameter blink_rate=21;
+parameter blink_rate = 18;
+parameter intr_width = 16;
+
 reg [1:0] ev = 2'b00;
 reg [blink_rate:0] counter [7:0];
+reg [63:0] intr_reg = 64'h0000_0000_0000_0000;
 parameter blink_off=1'b0, blink_on=1'b1;
 
 genvar i;
+
+always @(posedge clk)
+	intr_reg[intr_width-1:0] <= intr;
 
 generate for (i = 0; i < 8; i = i + 1)
 begin
@@ -25,7 +31,7 @@ begin
 	begin
 		case(LED[i])
 		blink_off:
-			if (counter[i] == 0 && dma_intr[i + (sel << 3)] == 1) begin
+			if (counter[i] == 0 && intr_reg[i + (sel << 3)] == 1) begin
 				counter[i] <= counter[i] + 1;
 				LED[i] <= blink_on;
 			end else if (counter[i] == 0) begin

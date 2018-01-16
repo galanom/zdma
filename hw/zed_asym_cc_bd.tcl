@@ -630,52 +630,52 @@ CONFIG.NUM_PORTS {5} \
  ] $xlconcat_1
 
   # Create instance: zcore16_0, and set properties
-  set zcore16_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_0 ]
+  set zcore16_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_0 ]
 
   # Create instance: zcore16_1, and set properties
-  set zcore16_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_1 ]
+  set zcore16_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_1 ]
 
   # Create instance: zcore16_2, and set properties
-  set zcore16_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_2 ]
+  set zcore16_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_2 ]
 
   # Create instance: zcore16_3, and set properties
-  set zcore16_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_3 ]
+  set zcore16_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_3 ]
 
   # Create instance: zcore16_4, and set properties
-  set zcore16_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_4 ]
+  set zcore16_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_4 ]
 
   # Create instance: zcore16_5, and set properties
-  set zcore16_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_5 ]
+  set zcore16_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_5 ]
 
   # Create instance: zcore16_6, and set properties
-  set zcore16_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_6 ]
+  set zcore16_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_6 ]
 
   # Create instance: zcore16_7, and set properties
-  set zcore16_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_7 ]
+  set zcore16_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_7 ]
 
   # Create instance: zcore16_8, and set properties
-  set zcore16_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_8 ]
+  set zcore16_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_8 ]
 
   # Create instance: zcore16_9, and set properties
-  set zcore16_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_9 ]
+  set zcore16_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_9 ]
 
   # Create instance: zcore16_10, and set properties
-  set zcore16_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_10 ]
+  set zcore16_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_10 ]
 
   # Create instance: zcore16_11, and set properties
-  set zcore16_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_11 ]
+  set zcore16_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_11 ]
 
   # Create instance: zcore16_12, and set properties
-  set zcore16_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_12 ]
+  set zcore16_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_12 ]
 
   # Create instance: zcore16_13, and set properties
-  set zcore16_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_13 ]
+  set zcore16_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_13 ]
 
   # Create instance: zcore16_14, and set properties
-  set zcore16_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_14 ]
+  set zcore16_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_14 ]
 
   # Create instance: zcore16_15, and set properties
-  set zcore16_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.3 zcore16_15 ]
+  set zcore16_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.4 zcore16_15 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins zcore16_0/src]

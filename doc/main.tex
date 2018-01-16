@@ -1,6 +1,16 @@
 \documentclass[a4paper,12pt]{book}
+\usepackage{blindtext}
 \usepackage{mystyle}
 
 \begin{document}
+\frontmatter
 \include{tex/front}
+\include{tex/abstract}
+\include{tex/toc}
+\mainmatter
+\part{The Reconfigurable System Architecture}
+\include{tex/ch-interconnect}
+% \appendix
+\backmatter
+\include{tex/bibliography}
 \end{document}

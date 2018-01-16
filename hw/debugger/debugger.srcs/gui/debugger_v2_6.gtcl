@@ -1,0 +1,2 @@
+# This file is automatically written.  Do not modify.
+proc gen_USERPARAMETER_sel_width_VALUE {intr_width } {expr ($intr_width - 1)/8}

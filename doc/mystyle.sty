@@ -9,19 +9,40 @@
 \usepackage{amssymb}
 %\usepackage{tocstyle}\usetocstyle{nopagecolumn}
 %\input{ext/smart-thesis/style}
-
+%\usepackage{ebgaramond-maths}
 
 \ifluatex
   \usepackage{fontspec}
   \usepackage[british]{babel}
-  \setmonofont{Linux Libertine Mono O}
-  \setmainfont{Linux Libertine O}
+%  \setmonofont{Linux Libertine Mono O}
+%  \setmainfont{Linux Libertine O}
   \usepackage[libertine,cmintegrals,cmbraces,vvarbb]{newtxmath}
 \else
   \usepackage{tgpagella}
   \usepackage{pstricks}
 \fi
 %  \usepackage{auto-pst-pdf}
+
+%\setmathsfont(Digits,Latin,Greek)[Numbers={Proportional}]{EB Garamond}
+\setmathrm{EB Garamond}
+%\AtBeginEnvironment{tabular}{\addfontfeature{RawFeature=+tnum}}
+\widowpenalty=300
+\clubpenalty=300
+\setromanfont[Numbers={Lining,Proportional}, Ligatures={Common, TeX}, Scale=1.0]{EB Garamond}
+\newfontfamily{\smallcaps}[RawFeature={+c2sc,+scmp}]{EB Garamond}
+\setsansfont[Scale=MatchLowercase, BoldFont={Lato Bold}]{Lato Regular}
+\setmonofont[Scale=MatchLowercase]{Source Code Pro}
+\RequirePackage[labelfont={bf,sf,footnotesize,singlespacing},
+                textfont={sf,footnotesize,singlespacing},
+                justification={justified,RaggedRight},
+                singlelinecheck=false,
+                margin=0pt,
+                figurewithin=chapter,
+                tablewithin=chapter]{caption}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\renewcommand*{\UrlFont}{\ttfamily\small\relax}
+\addfontfeature{Numbers=Lining}
 
 %\usepackage{gnuplottex}
 \usepackage[european]{circuitikz}

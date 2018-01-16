@@ -1,0 +1,6 @@
+\select@language {british}
+\contentsline {part}{I\hspace {1em}The Reconfigurable System Architecture}{1}{part.1}
+\contentsline {chapter}{\numberline {1}Interconnect and Memory Management}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}The Communication Protocol}{3}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}The AMBA AXI Family}{4}{subsection.1.1.1}
+\contentsline {chapter}{Bibliography}{7}{chapter.2}

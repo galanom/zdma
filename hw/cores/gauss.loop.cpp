@@ -12,9 +12,9 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
 	int16_t col;
-	int ret;
+	//int ret;
 	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
-	ap_uint<17> acc;//[AXI_TDATA_NBYTES];
+	ap_uint<17> acc[AXI_TDATA_NBYTES];
 	union {
 		axi_data_t all;
 		uint8_t at[AXI_TDATA_NBYTES];
@@ -22,15 +22,15 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 
 	uint8_t kern[KERN_DIM][KERN_DIM] =	// kernel sum is 256
 				{{ 1,  4,  6,  4,  1},
-				 { 4, 16, 25, 16,  4},
-				 { 6, 25, 32, 25,  6},
-				 { 4, 16, 25, 16,  4},
+				 { 4, 16, 24, 16,  4},
+				 { 6, 25, 34, 25,  6},
+				 { 4, 16, 24, 16,  4},
 				 { 1,  4,  6,  4,  1}};
-	ret = 0;
+	/*ret = 0;
 	if (line_width < 0 || line_width > MAX_LINE_WIDTH) {
 		line_width = MAX_LINE_WIDTH;
 		ret = -1;
-	}
+	}*/
 
 	col = 0;
 	do {
@@ -47,17 +47,19 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 			linebuf.shift_up(col+px);
 			linebuf.insert_top(pixel.at[px], col+px);
 
-			acc = 0;
+			acc[px] = 0;
+
+
 
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					uint16_t tmp;
-//#pragma HLS resource variable=tmp core=DSP48
+#pragma HLS resource variable=tmp core=DSP48
 					tmp = kern[i][j] * linebuf.getval(i, j+col+px);
-					acc += tmp;
+					acc[px] += tmp;
 				}
 			}
-			pixel.at[px] = acc >> 8;
+			pixel.at[px] = acc[px] >> 8;;
 		}
 		data_out.data = pixel.all;
 		col += AXI_TDATA_NBYTES;
@@ -67,5 +69,5 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 
 		dst << data_out;
 	} while (!data_out.last);
-	return ret;
+	return 0;
 }

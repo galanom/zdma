@@ -6,9 +6,9 @@
 set top [string trim [get_cells *_i] "*_i"]
 #source ../base/base.srcs/$top/new/pblocks.xdc
 
-set modules [list [get_cells -hierarchical  zcore16_?] [get_cells -hierarchical  zcore16_??]]
+set modules [list [get_cells -hierarchical  zcore64_?] [get_cells -hierarchical  zcore64_??]]
 
 foreach module $modules { update_design -cell $module -black_box }
 
-write_checkpoint dcp/$top
+write_checkpoint -force dcp/base/$top
 

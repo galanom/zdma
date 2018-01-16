@@ -1,10 +1,11 @@
 #!/opt/Xilinx/SDK/2017.2/bin/hsi -source
-set base "base"
-set design "zed_asym_cc"
+set base_dir "base_sym_zedboard_2"
+set base_name "base_sym_zedboard"
+set design "sym_pb4"
 set proj "/home/igalanommatis/work/zdma"
 exec rm -rf $proj/image/dts/$design
 exec mkdir -p $proj/image/dts/$design
-exec cp -p $proj/hw/$base/$base.sdk/${design}_wrapper.hdf $proj/image/dts/$design/system.hdf
+exec cp -p $proj/hw/${base_dir}/${base_name}.sdk/${design}_wrapper.hdf $proj/image/dts/$design/system.hdf
 set_param general.maxBackupLogs 0
 open_hw_design $proj/image/dts/$design/system.hdf
 set_repo_path ext/device-tree-xlnx

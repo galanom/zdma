@@ -1,0 +1,2 @@
+\cleardoublepage
+\tableofcontents

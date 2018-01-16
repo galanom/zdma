@@ -12,18 +12,6 @@
 typedef ap_axiu<sizeof(axi_data_t)*8, 1, 1, 1>	axi_elem_t;
 typedef hls::stream<axi_elem_t>	axi_stream_t;
 
-int zdma_core(axi_stream_t& src, axi_stream_t& dst);
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int arg1);
-int zdma_core(axi_stream_t& src, axi_stream_t& dst, int arg1, int arg2);
-
-int zdma_core_32(axi_stream_t& src, axi_stream_t& dst);
-int zdma_core_32(axi_stream_t& src, axi_stream_t& dst, int arg1);
-int zdma_core_32(axi_stream_t& src, axi_stream_t& dst, int arg1, int arg2);
-
-int zdma_core_64(axi_stream_t& src, axi_stream_t& dst);
-int zdma_core_64(axi_stream_t& src, axi_stream_t& dst, int arg1);
-int zdma_core_64(axi_stream_t& src, axi_stream_t& dst, int arg1, int arg2);
-
-int zdma_core_tiny(axi_stream_t& src, axi_stream_t& dst);
-int zdma_core_tiny(axi_stream_t& src, axi_stream_t& dst, int arg1);
-int zdma_core_tiny(axi_stream_t& src, axi_stream_t& dst, int arg1, int arg2);
+int zcore16(axi_stream_t& src, axi_stream_t& dst);
+int zcore16(axi_stream_t& src, axi_stream_t& dst, int arg1);
+int zcore16(axi_stream_t& src, axi_stream_t& dst, int arg1, int arg2);

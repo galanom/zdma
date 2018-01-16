@@ -25,7 +25,7 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 
-	int ret = zdma_core_tiny(src, dst, 000, -100);
+	int ret = zcore16(src, dst, 1920);
 	cout << "return " << ret << endl;
 
 	int err = 0;

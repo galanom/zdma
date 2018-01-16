@@ -3,10 +3,10 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "Component_Name"
   #Adding Page
   set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
+  set intr_width [ipgui::add_param $IPINST -name "intr_width" -parent ${Page_0}]
+  set_property tooltip {The number of interrupts driven to the LEDs} ${intr_width}
   ipgui::add_param $IPINST -name "blink_rate" -parent ${Page_0} -widget comboBox
 
-  set intr_width [ipgui::add_param $IPINST -name "intr_width"]
-  set_property tooltip {Enter the number of the interrupts that will be driven to the LEDs} ${intr_width}
 
 }
 
@@ -60,5 +60,10 @@ proc update_MODELPARAM_VALUE.blink_off { MODELPARAM_VALUE.blink_off PARAM_VALUE.
 proc update_MODELPARAM_VALUE.blink_on { MODELPARAM_VALUE.blink_on PARAM_VALUE.blink_on } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.blink_on}] ${MODELPARAM_VALUE.blink_on}
+}
+
+proc update_MODELPARAM_VALUE.intr_width { MODELPARAM_VALUE.intr_width PARAM_VALUE.intr_width } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.intr_width}] ${MODELPARAM_VALUE.intr_width}
 }
 

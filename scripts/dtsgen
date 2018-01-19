@@ -1,7 +1,12 @@
 #!/opt/Xilinx/SDK/2017.2/bin/hsi -source
-set base_dir "base_sym_zedboard_2"
-set base_name "base_sym_zedboard"
-set design "sym_pb4"
+set base_dir "base"
+set base_name "base"
+set design "zed_asym_cc_alt"
+
+#set base_dir "base_sym_zedboard_2"
+#set base_name "base_sym_zedboard"
+#set design "sym_pb4"
+
 set proj "/home/igalanommatis/work/zdma"
 exec rm -rf $proj/image/dts/$design
 exec mkdir -p $proj/image/dts/$design

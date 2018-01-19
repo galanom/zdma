@@ -3,7 +3,7 @@
 module debugger (
 	input clk,
 	input [intr_width-1:0] intr,
-	input [2:0] sel,
+	input sel,
 	output reg [7:0] LED
 	);
 
@@ -12,7 +12,7 @@ parameter intr_width = 16;
 
 reg [1:0] ev = 2'b00;
 reg [blink_rate:0] counter [7:0];
-reg [63:0] intr_reg = 64'h0000_0000_0000_0000;
+reg [16:0] intr_reg = 16'h0000;
 parameter blink_off=1'b0, blink_on=1'b1;
 
 genvar i;

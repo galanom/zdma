@@ -31,11 +31,13 @@ featured a PowerPC core, used IBM's CoreConnect bus architecture.
 The other big contender is the free and open source ``Wishbone Protocol'', 
 which, not unexpectedly, is the favorite of ``OpenCores'' open-source hardware community.
 
-The Zynq7000 platform, as well as the newer Zynq UltraScale+, the two platforms that are targeted by this work,
+The Zynq 7000 platform, as well as the newer Zynq UltraScale+, the two platforms that are targeted by this work,
 both feature ARM cores and are designed around the AXI (Advanced eXtensible Interface) protocol, 
 which is part of the AMBA suite. 
-Furthermore, Xilinx, in order to promote IP reuse with its IP Integrator tool, has expanded its use
-in its FPGAs that contain no ARM IP. Therefore, AXI was chosen for the development of this system.
+Furthermore, Xilinx, in order to promote IP reuse with its IP Integrator tool has expanded its use
+in its FPGAs that contain no ARM IP. The AXI infrastructure and several basic AXI peripherals
+are offered by Xilinx in Vivado at no additional cost.
+Therefore, AXI was chosen for the development of this system.
 
 \subsection{The AMBA AXI Family}
 
@@ -45,7 +47,7 @@ between performance and functionality versus silicon area.
 
 Tha AXI family has several members, but for this system the following three were used:
 \begin{itemize}
-\item	\bf{AXI}, was the initial and only member in AMBA 3.0. With the advent of AMBA 4.0 which introduced
+\item	\textit{AXI}, was the initial and only member in AMBA 3.0. With the advent of AMBA 4.0 which introduced
 	the protocols mentioned below, it is now usually referred as ``Full AXI'' or ``AXI Memory Mapped''.
 	It connects one or more memory capable slave to the address spaces of 
 	one or more masters. It typically needs glue logic between the two endpoints, called ``AXI Interconnect''. 
@@ -53,14 +55,15 @@ Tha AXI family has several members, but for this system the following three were
 	To amend this, it supports burst mode, where sequential packets of data may be transferred without
 	re-transmitting any addressing information. It is a high performance protocol, suited for exchange
 	of large amount of data. Its typical use in the FPGA world is transferring data between memory resources,
-	like Block RAMs, processing system RAM, external memory controllers connected to the FPGA, etc.
-\item	\bf{AXI-Lite}. Introduced with AMBA 4.0, the AXI-Lite as the name implies is a reduced capability
+ 	like Block RAMs, processing system RAM, external memory controllers connected to the FPGA, etc.
+\item	\textit{AXI-Lite}. Introduced with AMBA 4.0, the AXI-Lite as the  name implies is a reduced capability
 	version of AXI. The most notable omission is the support for burst transfers. In exchange, it offers
 	a much lower silicon footprint. It is best suited for low intensity traffic, typically in configuration
 	registers.
-\item	\bf{AXI-Stream}. Also introduced with AMBA 4.0, AXI-Stream is a data streaming protocol, which means
+\item	\textit{AXI-Stream}. Also introduced with AMBA 4.0, AXI-Stream is a data streaming protocol, which means
 	that it has no notion of memory addressing. This greatly simplifies implementation and reduces wire
-	count. Data flows from the one endpoint to the other, in one direction, subject to flow control.
+	count. Data flows from the one endpoint to the other, in one direction, 
+	without the need of any intermediary interconnect.
 	It may serve any streaming application and it allows the addition of user defined out-of-band data,
 	typically for synchronization, and it supports sender and receiver IDs, 
 	which enables stream switching and virtual circuits.
@@ -82,24 +85,109 @@ In the data streaming model, there exists no spatial or temporal locality.
 Cached transfers are not only useless but harmful, since they will cause cache thrashing. 
 Indeed, the kernel driver uses the Linux DMA Streaming API which bypasses all processor caches 
 by marking the allocated DMA'able pages as non-cacheable.
-Therefore, cache coherency will not matter our discussion furthermore.
+Therefore, cache coherency will not matter our discussion any further.
 
-\subsection{Implementation of AXI}
+\subsection{The AXI Implementation}
 
-As already mentioned, Xilinx actively promotes the use of AXI through its IP Integrator tool that is avaible
-with Vivado. This tool enables quick integration of third-party IP, usually offered for no additional cost.
+The AXI implementation in Xilinx products consists of the hardware 
+implementation in Zynq 7000 and Zynq UltraScale+ devices,
+the soft-IP protocol infrastructure offered in IP Integrator, 
+and the AXI compatible IP building blocks. 
+Additionally, Xilinx offers automation for creating 
+custom cores with AXI interfaces.
+It is worth to cover this functionality as 
+part of understanding the connectivity of the system.
+
+\subsubsection{The Zynq Hard IP}
+
+The Zynq 7000 is built around AMBA 3.0. 
+The interconnect will be presented at the next section,
+but it is important to mention here that the use of AXI of this AMBA version
+carries two important restrictions: The original specification of AXI,
+as is present in AMBA 3.0 has a maximum burst size of 16. Any AXI master
+residing in programmable logic (PL) that connects to the processing system (PS) through a slave port,
+will have to obey this limit or use a protocol converter. Secondly, AMBA 3.0 does not
+support AXI-Lite or AXI-Stream, therefore all ports that connect the PL to PS are Full AXI.
+
+\subsubsection{The Xilinx Soft IP}
+
+At the PL front, Xilinx offers a suite of IP cores that manipulate the AXI traffic.
+It offers cores for conversion (stream combining, width conversion), buffering (clock conversion,
+stream pipelining, FIFO buffer) and routing (stream broadcasting, stream switching, AXI crossbar).
+Additionally there are some higher level AXI building blocks that automate the interconnect of
+AXI endpoints. Due to their importance, it is worth to be mentioned separately:
+
+\begin{itemize}
+\item	\textit{AXI Stream Interconnect}. This core can interface $M$ AXI-Stream masters to $N$ slaves.
+	It's built around an AXI-Stream switch with appropriate couplers in each of its interfaces.
+	The role of couplers are to perform the necessary protocol conversions and/or buffering.
+	The routing may either be defined externally through a configuration register or by
+	the sender / receiver IDs. It should be stressed that in contrast to its Full AXI
+	counterparts, it is not an essential core if only a single master is connected to a single slave.
+	Its use arises on shared physical links and/or where virtual circuit switching is needed.
+\item	\textit{AXI Interconnect}. The equivalent interconnect for Full AXI, that can connect $M$ masters
+	to $N$ slaves communicating with either Full AXI, both version 3.0 and 4.0, or AXI-Lite protocol.
+	The interconnect can be configured in full crossbar mode for high performance,
+	or in shared access mode for low area use, issueing only one transaction at a time.
+	The signals can be -- and typically are -- registered and buffering can be added at either ends.
+\item	\textit{AXI SmartConnect}. This core is a newer design with functionality analogous to AXI Interconnect.
+	It is advertised to be highly optimized to mitigate wire delays in UltraScale+.
+	The value of this core was assessed in this work along with the standard AXI Interconnect IP.
+	It was found that it does improve clock even on Zynq 7000 series, but at a very significant cost
+	in FPGA resources. In a crowded design it may complicate routing, resulting in a lower clock.
+	If the design uses a slow clock for the targeted FPGA or 
+	if the slaves are AXI-Lite configuration registers,
+	the older AXI Interconnect should be preferred.
+\end{itemize}
+
+As it might have become obvious, the common use of AXI-Stream is exchange of data between the
+functional units implemented in the programmable logic. Since no large memories are possible,
+data flows from one unit to the other in a conitguous fashion. However, when the transfer of data
+to/from the processor memory or other PL-based addressable memory is needed, the use of a DMA
+controller would be typically needed. The DMA controller could be at either side, 
+the fabric or the processor, and the trade-offs will be discussed at section \ref{sect:interconnect}.
+For now, let us discuss the key data transfer cores that can be implemented in the fabric.
+\begin{itemize}
+
+\item	\emph{AXI DataMover}: This is the central component of all DMA controllers.
+	Its role is to move data between the memory mapped and stream domain.
+	Apart its Full AXI master and AXI Stream slave ports, 
+	it has one AXI-S master and one slave port, 
+	for status and control messages respectively.
+	It can be configured as unidirectional or bidirectional.
+\item	\emph{AXI DMA}: The AXI DMA is essential the controller unit of DataMover. 
+	An AXI DMA consists of two unidirectional or a single bidirectional
+	\footnote{This configuration is not supported by Xilinx HSI for DeviceTree generation,
+	which is the standard method describing hardware to the Linux kernel}
+	DataMover and a controller unit that generates the command/status stream.
+	That unit is configured with an AXI-Lite interface, where is presents its configuration registers.
+	The core has an optional scatter-gather engine that can continuously fetch and execute
+	transfer descriptors without any pause for programming.
+\item	\emph{AXI Video DMA}: This core is a variation of AXI DMA specialized in video streams.
+	Among other optimizations, it takes advantage of the user-defined out-of-band channel
+	of AXI-Stream for frame synchronization.
+\item	\emph{Central DMA}: A misnomer, whose role is actually to move data between two Full AXI interfaces.
+	It is implemented by a bidirectional DataMover and the control logic, with an optional
+	scatter-gather engine. CDMA is apropriate when both communication endpoints are addressable
+	memory spaces, eg the processor memory and an AXI BRAM controller.
+\end{itemize}
+
+For completeness, it should be noted that communication in a Full AXI channel could be prossible
+with programmed I/O from the processor. However, no processor is able to generate data bursts
+with load/store instruction. This would degenerate Full AXI to an AXI-Lite link. 
+Even if we could afford to spare the processor cycles, the throughput would still suffer.
+Naturally, programmed I/O is actually the de facto access method for AXI-Lite slaves,
+and it is typically used to program the DMA configuration registers.
+
+\subsubsection{The User IP}
 
 
-%The AXI has some characteristics that make its use in FPGAs attractive:
-%\begin{itemize}
-%\item	The two endpoints of a link may reside in different clock domains.
-%\item	Several channel widths are supported and there can be conversion between them.
-%\item	Traffic may be buffered to form larger bursts in order to increase throughput 
-%	and the channels can be registered to achieve timing closure.
-%\item	In streaming applications, user-defined side-channel can be created,
-%	typically for out-of-band synchonization.
-%\end{itemize}
+\section{The Interconnect}
 
-%The AXI is well-supported by Xilinx and all the aforementioned functionallity is implemented and provided by Xilinx with no additional cost. Still, implementing the protocol in a user design may require considerable effort.
+So far, we discussed the communication protocol and its implementation in our environment.
+
+
+
+\label{sect:interconnect}
 
 

@@ -24,7 +24,7 @@ set tclParams [list hd.visual 1 \
               ]
 
 ####flow control
-set run.rmSynth        1
+set run.rmSynth        0
 set run.prImpl         1
 set run.prVerify       1
 set run.writeBitstream 1
@@ -45,12 +45,17 @@ set srcDir	""
 ### Top Definition
 ###############################################################
 
-set proj_dir	"../base_sym_zedboard_2"
-set proj_name	"base_sym_zedboard"
-set top		"sym_pb4"
+#set proj_dir	"../base_sym_zedboard_2"
+#set proj_name	"base_sym_zedboard"
+#set top		"sym_pb4"
+
+set proj_dir	"../base"
+set proj_name	"base"
+set top		"zed_asym_cc_alt"
+
 set top_dcp	"${dcpDir}/base/${top}.dcp"
 set top_xdc	[list	"${proj_dir}/${proj_name}.srcs/$top/new/pblocks.xdc" \
-			"${proj_dir}/${proj_name}.srcs/$top/new/io.xdc" ]
+		"${proj_dir}/${proj_name}.srcs/$top/new/io.xdc" ]
 
 
 set static "${top}_static"
@@ -63,16 +68,16 @@ set_attribute module $static synthCheckpoint $top_dcp
 ### RP Module Definitions
 ####################################################################
 
-set core_basename "zcore64"
+set core_basename "zcore16"
 set core_easiest "loopback"
 set core_hardest "contrast"
 set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
-set core_big_list $core_list
-#set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
-set pblock_list [list 0 1 2 3 4 5]
-#6 7 8 9 10 11 12 13 14 15]
-#set pblock_small_list [list 2 3 6 7 10 11]
-set pblock_small_list [list]
+### 6core ### set core_big_list $core_list
+set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
+### 6core ### set pblock_list [list 0 1 2 3 4 5]
+set pblock_list [list 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]
+set pblock_small_list [list 4 5 10 11 14 15]
+### 6core ### set pblock_small_list [list]
 #   ^leave empty if all pblocks are identical
 
 ####################################################################

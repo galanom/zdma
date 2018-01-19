@@ -9,7 +9,7 @@ cd $PROJ
 
 # Create vivado project backup for git
 for f in hw/*/*.srcs/sources_1/bd/*/hw_handoff/*.tcl ; do
-	cp $f hw/
+	cp $f hw/designs
 	#sed -e "s/myproj/hardware/g; s/project_1/`echo $f | cut -f2 -d/`/g" $f > hw/`echo $f | cut -f2 -d/`/${f##*/}
 done
 

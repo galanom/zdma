@@ -1,0 +1,19 @@
+% !TeX spellcheck = el_GR
+\RequirePackage{ifluatex}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[justification=centering,font=small,font=it]{caption}
+\usepackage{lscape,rotating,wrapfig,float}
+\usepackage{subcaption}
+\usepackage{hyperref}
+
+\usepackage[acronym,toc,section=chapter,style=altlist]{glossaries}
+\newcommand{\acr}[1]{\acrshort*{#1}}
+\newcommand{\acrl}[1]{\acrlong*{#1}}
+\newcommand{\acrf}[1]{\acrfull*{#1}}
+
+%\usepackage{tocstyle}\usetocstyle{nopagecolumn}
+\usepackage[export]{adjustbox}
+
+\input{src/fonts.sty}
+\input{src/diagrams.sty}

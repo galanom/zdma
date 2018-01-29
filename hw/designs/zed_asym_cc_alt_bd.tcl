@@ -503,7 +503,7 @@ CONFIG.XBAR_DATA_WIDTH {32} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
-CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {ARM PLL} \
+CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_QSPI_GRP_SINGLE_SS_ENABLE {1} \

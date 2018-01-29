@@ -43,7 +43,6 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast
 			if (val < 0)
 				pixel.at[px] = 0;
 		}
-
 		data_out.data = pixel.all;
 		dst << data_out;
 	} while (!data_out.last);

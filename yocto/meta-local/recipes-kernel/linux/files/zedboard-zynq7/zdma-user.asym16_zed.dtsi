@@ -34,7 +34,7 @@
 			compatible = "shared-dma-pool";
 			no-map;
 		};
-		gp0: gp0@18000000 {
+/*		gp0: gp0@18000000 {
 			reg = <0x18000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
@@ -43,7 +43,7 @@
 			reg = <0x1A000000 0x02000000>;
 			compatible = "shared-dma-pool";
 			no-map;
-		};	
+		};	*/
 	};
 
 	amba_pl {
@@ -137,7 +137,7 @@
 			zone@0 {
 				compatible = "tuc,zone";
 				memory-region = <&hp0>;
-				readers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				readers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5 &pb6 &pb7>;
 				writers = <>;
 				bandwidth = <100>;
 			};
@@ -145,23 +145,23 @@
 				compatible = "tuc,zone";
 				memory-region = <&hp1>;
 				readers = <>;
-				writers = <&pb6 &pb7 &pb8 &pb9 &pb10 &pb11>;
+				writers = <&pb8 &pb9 &pb10 &pb11 &pb12 &pb13 &pb14 &pb15>;
 				bandwidth = <100>;
 			};
 			zone@2 {
 				compatible = "tuc,zone";
 				memory-region = <&hp2>;
 				readers = <>;
-				writers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				writers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5 &pb6 &pb7>;
 				bandwidth = <100>;
 			};
 			zone@3 {
 				compatible = "tuc,zone";
 				memory-region = <&hp3>;
-				readers = <&pb6 &pb7 &pb8 &pb9 &pb10 &pb11>;
+				readers = <&pb8 &pb9 &pb10 &pb11 &pb12 &pb13 &pb14 &pb15>;
 				writers = <>;
 				bandwidth = <100>;
-			};
+			};/*
 			zone@4 {
 				compatible = "tuc,zone";
 				memory-region = <&gp0>;
@@ -175,7 +175,7 @@
 				readers = <>;
 				writers = <&pb12 &pb13 &pb14 &pb15>;
 				bandwidth = <75>;
-			};
+			};*/
 
 			dma0: dma-client@0 {
 				compatible = "tuc,dma-client";

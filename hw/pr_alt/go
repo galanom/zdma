@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+./prepare
+/opt/Xilinx/Vivado/2017.2/bin/vivado -mode batch -source ./design.tcl -notrace
+./install
+

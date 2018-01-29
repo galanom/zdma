@@ -14,10 +14,10 @@ foreach core $cores {
 		add_files -tb sample.jpg
 		add_files -tb csim/build/out.jpg
 		
-		open_solution -reset "solution_${size}"
-		set_part {xc7z020clg484-1}
-		#set_part {xczu9eg-ffvb1156-2-i}
-		create_clock -period 6.67 -name default
+		open_solution -reset "solution_${size}u_300"
+		#set_part {xc7z020clg484-1}
+		set_part {xczu9eg-ffvb1156-2-i}
+		create_clock -period 3.33 -name default
 
 		csynth_design
 		export_design -rtl verilog -format ip_catalog	\

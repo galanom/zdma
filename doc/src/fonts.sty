@@ -1,0 +1,49 @@
+% !TeX spellcheck = el_GR
+\RequirePackage{ifluatex}
+
+\usepackage{amssymb}
+
+\ifluatex
+  \usepackage{fontspec}
+  \usepackage[british]{babel}
+  %\usepackage[libertine,cmintegrals,cmbraces,vvarbb]{newtxmath}
+\else
+  \usepackage{tgpagella}
+  \usepackage{pstricks}
+\fi
+
+\setmathrm{EBGaramond}
+%\setmathsfont(Digits,Latin,Greek)[Numbers={Proportional}]{EB Garamond}
+%\AtBeginEnvironment{tabular}{\addfontfeature{RawFeature=+tnum}}
+\widowpenalty=300
+\clubpenalty=300
+
+\setromanfont[
+	Path=./fonts/EB Garamond/,
+	Extension=.otf,
+	UprightFont = *-Regular,
+	BoldFont = *-Bold,
+	ItalicFont = *-Italic,
+%	SmallCapsFont = *-AllSC,
+	Numbers={Lining,Proportional}, Ligatures={Common, TeX}, Scale=1.0
+	]{EB Garamond 12}
+\newfontfamily{\smallcaps}[RawFeature={+c2sc,+scmp}]{EB Garamond}
+\setsansfont[Scale=MatchLowercase, BoldFont={Lato Bold}]{Lato Regular}
+\setmonofont[Scale=MatchLowercase]{Source Code Pro}
+\RequirePackage[labelfont={bf,sf,footnotesize,singlespacing},
+                textfont={sf,footnotesize,singlespacing},
+                justification={justified,RaggedRight},
+                singlelinecheck=false,
+                margin=0pt,
+                figurewithin=chapter,
+                tablewithin=chapter]{caption}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand*{\UrlFont}{\ttfamily\small\relax}
+\addfontfeature{Numbers=Lining}
+
+% ********* Hyphenation *************
+%\hyphenation{pro-gram-mable}
+\sloppy
+
+% ***********************************
+

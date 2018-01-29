@@ -1,4 +1,4 @@
-# +74ps
+# Retiming
 
 create_pblock pblock_0
 add_cells_to_pblock [get_pblocks pblock_0] [get_cells -quiet [list zed_asym_cc_alt_i/zcore16_0]]
@@ -79,7 +79,7 @@ set_property SNAPPING_MODE ROUTING [get_pblocks pblock_9]
 
 create_pblock pblock_10
 add_cells_to_pblock [get_pblocks pblock_10] [get_cells -quiet [list zed_asym_cc_alt_i/zcore16_10]]
-resize_pblock [get_pblocks pblock_10] -add {SLICE_X94Y100:SLICE_X97Y149}
+resize_pblock [get_pblocks pblock_10] -add {SLICE_X60Y50:SLICE_X63Y99}
 set_property RESET_AFTER_RECONFIG true [get_pblocks pblock_10]
 set_property SNAPPING_MODE ROUTING [get_pblocks pblock_10]
 
@@ -90,7 +90,7 @@ set_property SNAPPING_MODE ROUTING [get_pblocks pblock_10]
 
 create_pblock pblock_11
 add_cells_to_pblock [get_pblocks pblock_11] [get_cells -quiet [list zed_asym_cc_alt_i/zcore16_11]]
-resize_pblock [get_pblocks pblock_11] -add {SLICE_X94Y50:SLICE_X97Y99}
+resize_pblock [get_pblocks pblock_11] -add {SLICE_X56Y100:SLICE_X59Y149}
 set_property RESET_AFTER_RECONFIG true [get_pblocks pblock_11]
 set_property SNAPPING_MODE ROUTING [get_pblocks pblock_11]
 create_pblock pblock_12
@@ -111,12 +111,12 @@ set_property RESET_AFTER_RECONFIG true [get_pblocks pblock_13]
 set_property SNAPPING_MODE ROUTING [get_pblocks pblock_13]
 create_pblock pblock_14
 add_cells_to_pblock [get_pblocks pblock_14] [get_cells -quiet [list zed_asym_cc_alt_i/zcore16_14]]
-resize_pblock [get_pblocks pblock_14] -add {SLICE_X94Y0:SLICE_X97Y49}
+resize_pblock [get_pblocks pblock_14] -add {SLICE_X56Y0:SLICE_X59Y49}
 set_property RESET_AFTER_RECONFIG true [get_pblocks pblock_14]
 set_property SNAPPING_MODE ROUTING [get_pblocks pblock_14]
 create_pblock pblock_15
 add_cells_to_pblock [get_pblocks pblock_15] [get_cells -quiet [list zed_asym_cc_alt_i/zcore16_15]]
-resize_pblock [get_pblocks pblock_15] -add {SLICE_X60Y0:SLICE_X63Y49}
+resize_pblock [get_pblocks pblock_15] -add {SLICE_X44Y0:SLICE_X47Y49}
 set_property RESET_AFTER_RECONFIG true [get_pblocks pblock_15]
 set_property SNAPPING_MODE ROUTING [get_pblocks pblock_15]
 

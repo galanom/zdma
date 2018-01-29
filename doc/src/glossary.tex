@@ -1,0 +1,117 @@
+\newacronym{amba}{AMBA}{Advanced Microcontroller Bus Architecture}
+\newacronym{axi}{AXI}{Advanced eXtensible Interface}
+\newacronym{dma}{DMA}{Direct Memory Access}
+\newacronym{dmac}{DMAC}{\acrshort{dma}Controller}
+\newacronym{soc}{SoC}{System-on-Chip}
+\newacronym{fpga}{FPGA}{Field-Programmable Gate Array}
+\newacronym{dt}{DT}{Device Tree}
+\newacronym{ip}{IP}{Intellectual Property (a hardware design)}
+\newacronym{mmu}{MMU}{Memory Management Unit}
+\newacronym{devc}{devc}{Device Configuration controller}
+\newacronym{dap}{DAP}{Device Access Port}
+\newacronym{gp}{GP}{General Purpose}
+\newacronym{gpm}{M\_GP}{\acrshort{gp} Master Port}
+\newacronym{gps}{S\_GP}{\acrshort{gp} Slave Port}
+\newacronym{ocm}{OCM}{On-Chip Memory}
+\newacronym{chi}{CHI}{Coherent Hub Interface}
+\newacronym{ace}{ACE}{\acrshort{axi} Coherency Extensions}
+\newacronym{cci}{CCI}{Cache Coherent Interconnect}
+%\newacronym{api}{API}{Application Programming Interface}
+
+\newglossaryentry{api}
+{
+    name={API},
+    description={\glsentryfirst{api}: A well defined set of rules and specifications
+    	that a client program must follow in order to access a library implementation},
+    first={Application Programming Interface (API)},
+    long={Application Programming Interface}
+}
+
+
+\newglossaryentry{g:acp}
+{
+	name = {ACP},
+	description = {A port that offers IO-Coherency to a non cache-aware AXI Master.},
+}
+\newglossaryentry{acp}
+{
+	type = \acronymtype,
+	name = {ACP},
+	description = {Accelerator Coherency Port},
+	first = {Accelerator Coherency Port (ACP)}\glsadd{g:acp},
+	%see = [Glossary:]{g:acp},
+}
+
+\newglossaryentry{hp}
+{
+	name = {HP},
+	description = {High Performance port lol omg fuck},
+	first = {\glsentrylong{hp} (\glsentryname{hp})},
+	long = {High Performance port},
+	firstplural={\glsentrylong{hp}\glspluralsuffix\ (\glsentryname{hp}\glspluralsuffix)},
+}
+
+\newglossaryentry{beat}
+{
+	name = {beat},
+	description = {A transfer of an elementary datum through the Full AXI or AXI-Lite channel.}
+}
+
+\newglossaryentry{burst}
+{
+	name = {burst},
+	description = {A sequence of AXI \Glspl{beat} that transmits the \gls{transaction} payload.
+	Does not include handshaking and address information.}.
+}
+
+\newglossaryentry{transaction}
+{
+	name = {transaction},
+	description = {A complete set of handshaking, addressing, data transfer and acknowledge on
+	an AXI channel.},
+}
+
+\newglossaryentry{socfpga}
+{
+	name = {\acrshort{soc}-\acrshort{fpga}},
+	description = {A programmable device that consists of a \acrlong{soc} augmented by an \acrlong{fpga}.
+		Xilinx also uses the term ``All Programmable SoC''.}
+}
+
+\newglossaryentry{hard-ip}
+{
+	name = {hard-\acrshort{ip}},
+	description = {A non-programmable hardware component implemented in silicon.
+		Contrasts with \gls{soft-ip}.},
+}
+
+\newglossaryentry{soft-ip}
+{
+	name = {soft-\acrshort{ip}},
+	description = {A programmable hardware component implemented in \gls{fabric}.
+		Contrasts with \gls{hard-ip}.},
+}
+
+\newglossaryentry{fabric}
+{
+	name = {FPGA fabric},
+	description = {The programmable structural units of an \acrshort{fpga}.},
+}
+
+\newglossaryentry{ps}
+{
+	name = {Processor System},
+	description = {The \acrshort{hard-ip} processor in a \gls{socfpga}.}
+}
+
+\newglossaryentry{pl}
+{
+	name = {Programmable Logic},
+	description = {The FPGA \gls{fabric} in a \gls{socfpga}.}
+}
+
+\newglossaryentry{ipcore}
+{
+	name = {\acrshort{ip} Core},
+	description = {A third-party hardware design as a component of an hierarchical design},
+}

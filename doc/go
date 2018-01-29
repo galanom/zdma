@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+cd ~/work/zdma/doc
+latexmk --shell-escape -interaction=nonstopmode -lualatex -outdir=build main.tex
+cd -
+

@@ -4,8 +4,8 @@
 #proj_name="base_sym_zedboard"
 #top="sym_pb4"
 
-proj_dir="../base/"
-proj_name="base"
+proj_dir="../base_alt_2/"
+proj_name="base_alt_2"
 top="zed_asym_cc_alt"
 
 instance_name="zcore16"

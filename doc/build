@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-cd ~/work/zdma/doc
-#bibtex ./main.tex
-#ualatex --shell-escape -interaction=nonstopmode ./main.tex
-latexmk -lualatex main.tex
-cd -
-

@@ -49,8 +49,8 @@ set srcDir	""
 #set proj_name	"base_sym_zedboard"
 #set top		"sym_pb4"
 
-set proj_dir	"../base"
-set proj_name	"base"
+set proj_dir	"../base_alt_2"
+set proj_name	"base_alt_2"
 set top		"zed_asym_cc_alt"
 
 set top_dcp	"${dcpDir}/base/${top}.dcp"
@@ -71,6 +71,7 @@ set_attribute module $static synthCheckpoint $top_dcp
 set core_basename "zcore16"
 set core_easiest "loopback"
 set core_hardest "contrast"
+set cores_with_alt_settings [list "gauss" "sobel"]
 set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
 ### 6core ### set core_big_list $core_list
 set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
@@ -128,9 +129,15 @@ foreach core $core_list {
 	# Implementation parameters. Xilinx scripts were created for Vivado 2014.2
 	# and therefore some newer options are recognized or some older may no longer be valid.
 	# Please modify tcl/implementation.tcl if that problem arises.
+	
 	set_attribute impl $config opt_directive   "Explore"
-	set_attribute impl $config place_directive "ExtraTimingOpt"
-	set_attribute impl $config phys_directive  "Explore"
+	if {$core in $cores_with_alt_settings} {
+		set_attribute impl $config place_directive "ExtraTimingOpt"
+		set_attribute impl $config phys_directive  "Explore"
+	} else {
+		set_attribute impl $config place_directive "ExtraPostPlacementOpt"
+		set_attribute impl $config phys_directive  "AlternateFlowWithRetiming"
+	}
 	set_attribute impl $config route_directive "Explore"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above

@@ -1,16 +1,29 @@
 \documentclass[a4paper,12pt]{book}
-\usepackage{blindtext}
-\usepackage{mystyle}
+\usepackage{src/mystyle}
+%
+%\makenoidxglossaries
+\loadglsentries{src/glossary}
+\makeglossaries
 
 \begin{document}
 \frontmatter
-\include{tex/front}
-\include{tex/abstract}
-\include{tex/toc}
+\include{src/front}
+\include{src/abstract}
+\include{src/toc}
 \mainmatter
-\part{The Reconfigurable System Architecture}
-\include{tex/ch-interconnect}
-% \appendix
+
+\include{src/ch-interconnect}
+% \appendix 
+
 \backmatter
-\include{tex/bibliography}
+\clearpage
+\printglossaries
+
+% The Bibliography
+\cleardoublepage
+\bibliographystyle{unsrt}
+\refstepcounter{chapter}
+\addcontentsline{toc}{chapter}{\bibname}
+\bibliography{src/biblio}
+
 \end{document}

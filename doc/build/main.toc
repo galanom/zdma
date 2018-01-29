@@ -1,0 +1,19 @@
+\select@language {british}
+\contentsline {chapter}{\numberline {1}Interconnect and Memory Management}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}The Communication Protocol}{1}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}The AMBA AXI Family}{2}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}The \acrshort *{axi} Implementation}{3}{subsection.1.1.2}
+\contentsline {subsubsection}{The Zynq Hard IP}{3}{section*.2}
+\contentsline {subsubsection}{The Xilinx Soft IP}{3}{section*.3}
+\contentsline {subsubsection}{The User IP}{5}{section*.4}
+\contentsline {section}{\numberline {1.2}The Physical Interconnect}{6}{section.1.2}
+\contentsline {subsection}{\numberline {1.2.1}The Zynq 7000 Architecture}{6}{subsection.1.2.1}
+\contentsline {subsubsection}{The High Performance Ports}{6}{section*.6}
+\contentsline {subsubsection}{The Accelerator Coherent Port}{8}{section*.7}
+\contentsline {subsubsection}{The General Purpose Slave Ports}{8}{section*.8}
+\contentsline {subsubsection}{The General Purpose Master Ports}{8}{section*.9}
+\contentsline {subsection}{\numberline {1.2.2}The Zynq UltraScale+ Architecture}{8}{subsection.1.2.2}
+\contentsline {subsection}{\numberline {1.2.3}High Performance FPD Ports}{10}{subsection.1.2.3}
+\contentsline {chapter}{Glossary}{11}{section*.11}
+\contentsline {chapter}{Acronyms}{13}{section*.13}
+\contentsline {chapter}{Bibliography}{15}{chapter.2}

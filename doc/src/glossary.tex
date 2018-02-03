@@ -1,54 +1,414 @@
-\newacronym{amba}{AMBA}{Advanced Microcontroller Bus Architecture}
-\newacronym{axi}{AXI}{Advanced eXtensible Interface}
-\newacronym{dma}{DMA}{Direct Memory Access}
-\newacronym{dmac}{DMAC}{\acrshort{dma}Controller}
-\newacronym{soc}{SoC}{System-on-Chip}
-\newacronym{fpga}{FPGA}{Field-Programmable Gate Array}
-\newacronym{dt}{DT}{Device Tree}
-\newacronym{ip}{IP}{Intellectual Property (a hardware design)}
-\newacronym{mmu}{MMU}{Memory Management Unit}
-\newacronym{devc}{devc}{Device Configuration controller}
-\newacronym{dap}{DAP}{Device Access Port}
-\newacronym{gp}{GP}{General Purpose}
-\newacronym{gpm}{M\_GP}{\acrshort{gp} Master Port}
-\newacronym{gps}{S\_GP}{\acrshort{gp} Slave Port}
-\newacronym{ocm}{OCM}{On-Chip Memory}
-\newacronym{chi}{CHI}{Coherent Hub Interface}
-\newacronym{ace}{ACE}{\acrshort{axi} Coherency Extensions}
-\newacronym{cci}{CCI}{Cache Coherent Interconnect}
-%\newacronym{api}{API}{Application Programming Interface}
+%\newacronym{dmac}{DMAC}{\acrshort{dma}Controller}
 
-\newglossaryentry{api}
+\newglossaryentry{dt}
 {
-    name={API},
-    description={\glsentryfirst{api}: A well defined set of rules and specifications
-    	that a client program must follow in order to access a library implementation},
-    first={Application Programming Interface (API)},
-    long={Application Programming Interface}
+	name = {DT},
+	long = {Device Tree},
+	description = {
+		A device structure that describes the hardware.
+		It is used in systems that offer no BIOS-like functionality,
+		as it is the norm in the embedded world. It presents 
+		at the operating system the peripherals that cannot be auto-detected.
+	},
+}
+
+%\newglossaryentry{mmu}
+%{
+%	name = {MMU},
+%	long = {Memory Management Unit},
+%	description = {
+%		The system component responsible for providing the virtual memory
+%		functionality.
+%	},
+%}
+
+\newglossaryentry{devc}
+{
+	name = {devc},
+	long = {Device Configuration controller},
+	description = {
+		A configuration controller for the Zynq-7000.
+		It contains an \gls{axi} to \gls{pcap} bridge
+		and therefore is the intermediary
+		for programming the FPGA during partial reconfiguration.
+	},
+}
+
+\newglossaryentry{pcap}
+{
+	name = {PCAP},
+	long = {Processor Configuration Access Port},
+	description = {\emph{\glsentrylong{pcap}}:
+		The port to the FPGA configuration interface from the PS side.
+		In Xilinx FPGA-SoCs it is the default port from boot-up.
+		In any time, the processor may relinquish the control to \gls{icap},
+		as well as reclaim it back. It is not available on the non-SoC FPGAs.
+	},
+	see={icap},
+}
+
+\newglossaryentry{icap}
+{
+	name = {ICAP},
+	long = {Internal Configuration Access Port},
+	description = {\emph{\glsentrylong{icap}}:
+		The port to the FPGA configuration interface from the PL side.
+	},
+	see={pcap},
 }
 
 
-\newglossaryentry{g:acp}
+\newglossaryentry{amba}
 {
-	name = {ACP},
-	description = {A port that offers IO-Coherency to a non cache-aware AXI Master.},
+	name = {AMBA},
+	long = {Advanced Microcontroller Bus Architecture},
+	description = {\emph{\glsentrylong{amba}}:
+		A family of interconnect protocols that originates 
+		from the ARM microcontrollers but now it is used widely
+		in modern ARM SoCs, including the FPGA-SoCs from Xilinx.
+	},
 }
+
+
+\newglossaryentry{dap}
+{
+	name = {DAP},
+	long = {Device Access Port},
+	description = {\emph{\glsentrylong{dap}}:
+		An external debug interface to an ARM core. It can debug a running system
+		without the intervention of the CPU. It is available in Xilinx FPGA-SoCs.
+	},
+}
+
+\newglossaryentry{gp}
+{
+	name = {GP},
+	long = {General Purpose port},
+%	first = {\glsentrylong{gp} (\glsentryname{gp})},
+	description = {\emph{\glsentrylong{gp}}:
+		An AXI compatible port, found in Zynq-7000 but not in UltraScale+.
+		It is present both as a slave to PS and as a master. 
+		It is 32 bit wide and runs at up to 150MHz.
+	},
+	see={mgp,sgp},
+}
+
+\newglossaryentry{sgp}
+{
+	name = {S\_GP},
+	long = {General Purpose Slave port},
+	description = {\emph{\glsentrylong{sgp}}:
+		A \glsentrylong{gp} that is a slave to the PS. 
+		In Zynq-7000 there are available two of such ports.
+	},
+	see={gp},
+}
+
+\newglossaryentry{mgp}
+{
+	name = {M\_GP},
+	long = {General Purpose Master port},
+	description = {\emph{\glsentrylong{mgp}}:
+		A \glsentrylong{gp} that is a master from the PS. 
+		In Zynq-7000 there are available two of such ports.
+	},
+	see={gp},
+}
+
+\newglossaryentry{ocm}
+{
+	name = {OCM},
+	long = {On-Chip Memory},
+	first = {\glsentrylong{ocm} (\glsentryname{ocm})},
+	description = {\emph{\glsentrylong{ocm}}:
+		A small on-chip SRAM in the PS of both Zynq-7000 and UltraScale+.
+		Its primary role is a low-latency synchonization point between the ARM cores.
+	},
+}
+
+\newglossaryentry{gpio}
+{
+	name = {GPIO},
+	description = {
+		General Purpose I/O, ie unstrctured data port. 
+		The handshaking, synchronization and error correction
+		is left as a responsibility of the communicating endpoints.
+	}
+}
+
+\newglossaryentry{fifo}
+{
+	name = {FIFO},
+	description = {
+		First-In First-Out, a method of queueing access,
+		however almost universally refers to the buffering hardware
+		that implements this policy.
+	}
+}
+
+
+\newglossaryentry{chi}
+{
+	name = {CHI},
+	long = {Coherent Hub Interface},
+	first = {\glsentrylong{chi} (\glsentryname{chi})},
+	description = {
+		An evolutionary step from \gls{ace}, this protocol the newer multi-core SoCs.
+		It is not present in UltraScale+.
+	},
+	see={ace},
+}
+
+\newglossaryentry{ace}
+{
+	name = {ACE},
+	long = {\gls{axi} Coherency Extensions},
+	first = {\glsentrylong{ace} (\glsentryname{ace})},
+	description = {\emph{\glsentrylong{ace}}:
+		A cache coherent port in \gls{amba} \gls{axi} version 4. It offers full (two-way)
+		coherency between a processor and a peripheral with caches.
+	},
+	see={acelite},
+}
+
+\newglossaryentry{bram}
+{
+	name = {BRAM},
+	long = {Block RAM},
+	first = {\glsentrylong{bram} (\glsentryname{bram})},
+	description = {\emph{\glsentrylong{bram}}:
+		A type of on-chip FPGA memory resource with one cycle access latency.
+	}
+}
+
+\newglossaryentry{acelite}
+{
+	name = {ACE-Lite},
+	long = {\glsentrylong{ace}, Light},
+	description = {\emph{\glsentrylong{acelite}}:
+		A lightweight version of the \gls{ace} protocol. It offers only IO (one-way) coherency
+		between a processor and a peripheral without caches.
+	},
+	see={ace},
+}
+
+
+\newglossaryentry{ahb}
+{
+	name = {AHB},
+	long = {Advanced High-performance Bus},
+	description = {\emph{\glsentrylong{ahb}}:
+		A high-performance, single-channel multiple-master shared bus, 
+		introduced with \gls{amba} version 2.
+	},
+}
+
+
+\newglossaryentry{ahblite}
+{
+	name = {AHB-Lite},
+	long = {\glsentrylong{ahb}, Light},
+	description = {\emph{\glsentrylong{ahblite}}:
+		A lightweight version of \gls{ahb}, introduced with \gls{amba} version 2.
+		It simplifies the protocol by allowing only one master in the bus.
+	},
+}
+
+
+\newglossaryentry{apb}
+{
+	name = {APB},
+	long = {Advanced Peripheral Bus},
+	description = {\emph{\glsentrylong{apb}}:
+		A low-complexity, low-performance shared-bus, defined in the original
+		specification of \gls{amba}.
+	},
+}
+
+
+\newglossaryentry{axi}
+{
+	name = {AXI},
+	long = {Advanced eXtensible Interface},
+	first = {\glsentrylong{axi} (\glsentryname{axi})},
+	description = {\emph{\glsentrylong{axi}}:
+		A high-performance \gls{burst} capable protocol introduced in \gls{amba} version 3.
+		In \gls{amba} version 4 it was extended to support a \gls{burst} size of up to 256,
+		up from 16 in version 3. It does not support cache coherency.
+	},
+	see={axilite},
+}
+
+
+\newglossaryentry{axilite}
+{
+	name = {AXI-Lite},
+	long = {\glsentrylong{axi}, Light},
+	description = {\emph{\glsentrylong{axilite}}:
+		A lightweight version of the \gls{axi} protocol. 
+		It does not support \gls{burst} transactions.
+	},
+	see={axi},
+}
+
+\newglossaryentry{axistream}
+{
+	name = {AXI-Stream},
+	long = {AXI-Stream},
+	description = {\emph{\glsentrylong{axistream}}:
+		A streaming version of \gls{axi}. It has no notion of address spaces
+		and therefore it exchanges no addressing information. 
+		This results in both higher performance and (much) lower complexity.
+	},
+	see={axi},
+}
+
+
+
+\newglossaryentry{cci}
+{
+	name = {CCI}
+	long = {Cache Coherent Interconnect},
+	description = {\emph{\glsentrylong{cci}}:
+		A cache-coherent interconnect by ARM. 
+		It can provide both full (two-way) cache coherency between the processor and
+		a peripheral with caches or IO (one-way) coherency to cache-less
+		peripherals. Used in UltraScale+ devices.
+	},
+	see = {IO Coherency},
+}
+
+%\newglossaryentry{api}
+%{
+%	name={API},
+%	long={Application Programming Interface},
+%	description={\glsentrylong{api}: 
+%		A well defined set of rules and specifications
+%		that a client program must follow in order to 
+%		access a library implementation.
+%	},
+%}
+
+
+\newglossaryentry{scu}
+{
+	name = {SCU},
+	long = {Snoop Control Unit},
+	description = {\emph{\glsentrylong{scu}}:
+		The logic that implements cache coherency at the processor side.
+	}
+}
+
 \newglossaryentry{acp}
 {
-	type = \acronymtype,
 	name = {ACP},
-	description = {Accelerator Coherency Port},
-	first = {Accelerator Coherency Port (ACP)}\glsadd{g:acp},
-	%see = [Glossary:]{g:acp},
+	long = {Accelerator Coherency Port},
+	description = {\emph{\glsentrylong{acp}}:
+		An \gls{axi} port that offers IO-Coherency to a non cache-aware AXI Master.
+	},
 }
+
 
 \newglossaryentry{hp}
 {
 	name = {HP},
-	description = {High Performance port lol omg fuck},
-	first = {\glsentrylong{hp} (\glsentryname{hp})},
 	long = {High Performance port},
-	firstplural={\glsentrylong{hp}\glspluralsuffix\ (\glsentryname{hp}\glspluralsuffix)},
+%	first = {\glsentrylong{hp} (\glsentryname{hp})},
+%	firstplural={\glsentrylong{hp}\glspluralsuffix\ (\glsentryname{hp}\glspluralsuffix)},
+	description = {\emph{\glsentrylong{hp}}:
+		A high-performance non-coherent port that interfaces 
+		the PS with the PL in Xilinx Zynq FPGA-SoCs.
+		In Zynq-7000 it can be configured as a 32 or 64 bit port, running at up to 150MHz.
+		In Zynq UltraScale+ it can also be configured as a 128 bit port and the maximum
+		frequency is raised to 333MHz.
+	},
+}
+
+\newglossaryentry{hpm}
+{
+	name = {HPM},
+	long = {High Performance Master port},
+	longplural = {skata},
+	description = {\emph{\glsentrylong{hpm}}:
+		A high-performance non-coherent port of UltraScale+. 
+		It offers equivalent performance to \gls{hp} ports but it a master port to the PL.
+		In Zynq-7000 this funcionality was offered by the \gls{mgp} ports.
+	},
+	see = {mgp},
+}
+
+\newglossaryentry{hpc}
+{
+	name = {HPC},
+	long = {High Performance Coherent port},
+	description = {
+		A coherent version of \gls{hp}, present in UltraScale+.
+		The coherency is provided by the \gls{cci}.
+		It is destined to replace the \gls{acp} in many usage scenarios.
+	},
+	see = {hp,acp},
+}
+
+
+\newglossaryentry{fpd}
+{
+	name = {FPD},
+	long = {Full Power Domain},
+	description = {\emph{\glsentrylong{fpd}}:
+		The UltraScale+'s \glsentrylong{pd} where the A53 cores reside,
+		along with the high-speed peripherals (PCIe, SATA, GPU, etc).
+	},
+	see = {pd},
+}
+
+\newglossaryentry{lpd}
+{
+	name = {LPD},
+	long = {Low Power Domain},
+	description = {\emph{\glsentrylong{fpd}}:
+		The UltraScale+'s \glsentrylong{pd} where the R5 cores reside,
+		along with the I/O peripherals and the \gls{ocm} memory.
+	},
+	see = {pd},
+}
+
+\newglossaryentry{bpd}
+{
+	name = {BPD},
+	long = {Battery Power Domain},
+	description = {\emph{\glsentrylong{fpd}}:
+		A small \glsentrylong{pd} in UltraScale+ 
+		that contains the most basic components,
+		like the oscillator, the RTC, etc.
+	},
+	see = {pd},
+}
+
+\newglossaryentry{plpd}
+{
+	name = {PLPD},
+	long = {Programmable Logic Power Domain},
+	description = {\emph{\glsentrylong{fpd}}:
+		The UltraScale+'s \glsentrylong{pd} that contains the
+		programmable logic and other \gls{fabric}, including
+		the high-speed tranceivers.
+	},
+	see = {pd},
+}
+
+
+\newglossaryentry{pd}
+{
+	name = {power domain},
+	description = {
+		A part of the UltraScale+ system that 
+		can be individually isolated and powered.
+		A power cut-off, even accidental,
+		will not affect the correct functional behavior
+		of the others.
+		There are four power domains in total.
+	},
+	see = {plpd,fpd,lpd,bpd},
 }
 
 \newglossaryentry{beat}
@@ -71,47 +431,79 @@
 	an AXI channel.},
 }
 
-\newglossaryentry{socfpga}
-{
-	name = {\acrshort{soc}-\acrshort{fpga}},
-	description = {A programmable device that consists of a \acrlong{soc} augmented by an \acrlong{fpga}.
-		Xilinx also uses the term ``All Programmable SoC''.}
-}
+%\newglossaryentry{soc}
+%{
+%	name = {SoC},
+%	long = {System on a Chip},
+%	description = {\emph{\glsentrylong{soc}:
+%		An integrated circuit that contains all the components of a computer system,
+%		ie there is no dependence on any external chipset for basic operation.
+%	},
+%}
+
+%\newglossaryentry{fpgasoc}
+%{
+%	name = {\gls{fpga}-\gls{soc}},
+%	description = {
+%		A programmable device that consists of a \gls{soc} augmented by \gls{fabric}.
+%		Xilinx also uses the term ``All Programmable SoC''.
+%	}
+%}
 
 \newglossaryentry{hard-ip}
 {
-	name = {hard-\acrshort{ip}},
-	description = {A non-programmable hardware component implemented in silicon.
-		Contrasts with \gls{soft-ip}.},
+	name = {hard-IP},
+	description = {
+		A non-programmable hardware component implemented in silicon.
+	},
+	see={soft-ip},
 }
 
 \newglossaryentry{soft-ip}
 {
-	name = {soft-\acrshort{ip}},
-	description = {A programmable hardware component implemented in \gls{fabric}.
-		Contrasts with \gls{hard-ip}.},
+	name = {soft-IP},
+	description = {
+		A programmable hardware component implemented in \gls{fabric}.
+	},
+	see={hard-ip},
 }
 
 \newglossaryentry{fabric}
 {
 	name = {FPGA fabric},
-	description = {The programmable structural units of an \acrshort{fpga}.},
+	description = {The programmable structural units of an FPGA.},
 }
 
-\newglossaryentry{ps}
+\newglossaryentry{apu}
 {
-	name = {Processor System},
-	description = {The \acrshort{hard-ip} processor in a \gls{socfpga}.}
+	name = {APU},
+	long = {Application Processing Unit},
+	description = {\emph{\glsentrylong{apu}}:
+		The hardware unit that encompasses the application processors (ie the Cortex-A cores),
+		the \gls{scu} and the cache.
+	},
 }
 
-\newglossaryentry{pl}
+\newglossaryentry{rpu}
 {
-	name = {Programmable Logic},
-	description = {The FPGA \gls{fabric} in a \gls{socfpga}.}
+	name = {RPU},
+	long = {Real-time Processing Unit},
+	description = {\emph{\glsentrylong{rpu}}:
+		The hardware unit that encompasses the real-time processors (ie the Cortex-R cores).
+	},
 }
 
-\newglossaryentry{ipcore}
+
+\newglossaryentry{IO Coherency}
 {
-	name = {\acrshort{ip} Core},
-	description = {A third-party hardware design as a component of an hierarchical design},
+	name = {IO Coherency},
+	description = {
+		IO Coherency, or one-way coherency, is weaker form of coherency where
+		the peripheral can snoop the processor but the processor cannot snoop the peripheral.
+		That is, the peripheral can read directly from the processor caches while
+		writing to memory will automatically invalidate them. The processor cannot,
+		therefore the peripheral may either do not posess any caches at all, or they
+		are non-coherent and manually managed.
+	}
 }
+

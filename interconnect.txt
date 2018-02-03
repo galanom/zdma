@@ -43,3 +43,50 @@ quad SC
 128:  3696 / 3011 / 626, 4372 / 3611 / 636
       3627 / 2949 / 594, 4372 / 3611 / 636
       mmu 201/ 311 per slave si converter 30/10
+
+ZED 
+SC 4x
+64  3437 2687 510	x 2
+	4101 3246 544 *2
+	mmu 212 311 / si 40 10
+
+32	3076 2484 478 x2
+	3798 2751 508 x2
+
+xiinter
+32	1167 2279 586 x2
+	1290 2296 610 x2
+
+64	2281 4159 654 x2
+	2520 3916 678
+	autous 219 322, 255 265
+
+quad mixed
+64	2550 4200 666x4 autous?
+32	1353 2418 598x4
+
+
+Converting MM to S
+32b
+axi_fifo_mm_s: LUT 692, FF 699, boundary-crossing nets 257
+
+64b
+axififomms same, 
+axis_dwidth_converter 37 132 132
+axis_subset_c... 0 0 104
+
+DMA 64 stream 1811 2394 544 ++ bram32 2, bram18 2
+
+DMA 32 1571 1996 404 ++ bram36 2
++sg 2076 3235 593 ++ 2
++mc 2696 3807 637 ++ 2
+8ch 3245 4188 637
+16 	3877 4626 
+
+64
+16ch	4159 5027 544
+8	3527 4589 777
+1?	2978 4208 777
+sg	2362 3636 733
+simple 1811 1619 544
+

@@ -477,70 +477,6 @@ CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_39
 
-  # Create instance: axi_dma_40, and set properties
-  set axi_dma_40 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_40 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_40
-
-  # Create instance: axi_dma_41, and set properties
-  set axi_dma_41 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_41 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_41
-
-  # Create instance: axi_dma_42, and set properties
-  set axi_dma_42 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_42 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_42
-
-  # Create instance: axi_dma_43, and set properties
-  set axi_dma_43 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_43 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_43
-
-  # Create instance: axi_dma_44, and set properties
-  set axi_dma_44 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_44 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_44
-
-  # Create instance: axi_dma_45, and set properties
-  set axi_dma_45 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_45 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_45
-
-  # Create instance: axi_dma_46, and set properties
-  set axi_dma_46 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_46 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_46
-
-  # Create instance: axi_dma_47, and set properties
-  set axi_dma_47 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_47 ]
-  set_property -dict [ list \
-CONFIG.c_include_sg {0} \
-CONFIG.c_sg_include_stscntrl_strm {0} \
-CONFIG.c_sg_length_width {23} \
- ] $axi_dma_47
-
   # Create instance: axi_intc_0, and set properties
   set axi_intc_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc:4.1 axi_intc_0 ]
   set_property -dict [ list \
@@ -644,6 +580,7 @@ CONFIG.S01_HAS_REGSLICE {1} \
   # Create instance: sc_hp0_mm2s, and set properties
   set sc_hp0_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hp0_mm2s ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_SI {16} \
  ] $sc_hp0_mm2s
@@ -651,6 +588,7 @@ CONFIG.NUM_SI {16} \
   # Create instance: sc_hp1_s2mm, and set properties
   set sc_hp1_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hp1_s2mm ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_SI {16} \
  ] $sc_hp1_s2mm
@@ -658,6 +596,7 @@ CONFIG.NUM_SI {16} \
   # Create instance: sc_hp2_mm2s, and set properties
   set sc_hp2_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hp2_mm2s ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_SI {16} \
  ] $sc_hp2_mm2s
@@ -665,6 +604,7 @@ CONFIG.NUM_SI {16} \
   # Create instance: sc_hp3_s2mm, and set properties
   set sc_hp3_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hp3_s2mm ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_SI {16} \
  ] $sc_hp3_s2mm
@@ -672,15 +612,17 @@ CONFIG.NUM_SI {16} \
   # Create instance: sc_hpc0_mm2s, and set properties
   set sc_hpc0_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hpc0_mm2s ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
-CONFIG.NUM_SI {16} \
+CONFIG.NUM_SI {8} \
  ] $sc_hpc0_mm2s
 
   # Create instance: sc_hpc1_s2mm, and set properties
   set sc_hpc1_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_hpc1_s2mm ]
   set_property -dict [ list \
+CONFIG.ADVANCED_PROPERTIES { __view__ { functional { SW0 { DATA_WIDTH 32 } } }} \
 CONFIG.HAS_ARESETN {0} \
-CONFIG.NUM_SI {16} \
+CONFIG.NUM_SI {8} \
  ] $sc_hpc1_s2mm
 
   # Create instance: xlconcat_0, and set properties
@@ -698,7 +640,7 @@ CONFIG.NUM_PORTS {2} \
   # Create instance: xlconcat_2, and set properties
   set xlconcat_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_2 ]
   set_property -dict [ list \
-CONFIG.NUM_PORTS {16} \
+CONFIG.NUM_PORTS {8} \
  ] $xlconcat_2
 
   # Create instance: zcore32_0, and set properties
@@ -821,30 +763,6 @@ CONFIG.NUM_PORTS {16} \
   # Create instance: zcore32_39, and set properties
   set zcore32_39 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_39 ]
 
-  # Create instance: zcore32_40, and set properties
-  set zcore32_40 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_40 ]
-
-  # Create instance: zcore32_41, and set properties
-  set zcore32_41 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_41 ]
-
-  # Create instance: zcore32_42, and set properties
-  set zcore32_42 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_42 ]
-
-  # Create instance: zcore32_43, and set properties
-  set zcore32_43 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_43 ]
-
-  # Create instance: zcore32_44, and set properties
-  set zcore32_44 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_44 ]
-
-  # Create instance: zcore32_45, and set properties
-  set zcore32_45 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_45 ]
-
-  # Create instance: zcore32_46, and set properties
-  set zcore32_46 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_46 ]
-
-  # Create instance: zcore32_47, and set properties
-  set zcore32_47 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_47 ]
-
   # Create instance: zynq_ultra_ps_e_0, and set properties
   set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.0 zynq_ultra_ps_e_0 ]
   set_property -dict [ list \
@@ -909,7 +827,7 @@ CONFIG.PSU__CRL_APB__PCAP_CTRL__SRCSEL {IOPLL} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__DIVISOR0 {15} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {IOPLL} \
-CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {265} \
+CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {250} \
 CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {RPLL} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__FREQMHZ {125} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__SRCSEL {IOPLL} \
@@ -1023,6 +941,12 @@ CONFIG.PSU__SATA__LANE1__IO {GT Lane3} \
 CONFIG.PSU__SATA__PERIPHERAL__ENABLE {1} \
 CONFIG.PSU__SATA__REF_CLK_FREQ {125} \
 CONFIG.PSU__SATA__REF_CLK_SEL {Ref Clk1} \
+CONFIG.PSU__SAXIGP0__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP1__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP2__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP3__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP4__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP5__DATA_WIDTH {32} \
 CONFIG.PSU__SD1__DATA_TRANSFER_MODE {8Bit} \
 CONFIG.PSU__SD1__GRP_CD__ENABLE {1} \
 CONFIG.PSU__SD1__GRP_CD__IO {MIO 45} \
@@ -1166,30 +1090,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_intf_net -intf_net axi_dma_3_M_AXIS_MM2S [get_bd_intf_pins axi_dma_3/M_AXIS_MM2S] [get_bd_intf_pins zcore32_3/src]
   connect_bd_intf_net -intf_net axi_dma_3_M_AXI_MM2S [get_bd_intf_pins axi_dma_3/M_AXI_MM2S] [get_bd_intf_pins sc_hp0_mm2s/S03_AXI]
   connect_bd_intf_net -intf_net axi_dma_3_M_AXI_S2MM [get_bd_intf_pins axi_dma_3/M_AXI_S2MM] [get_bd_intf_pins sc_hp1_s2mm/S03_AXI]
-  connect_bd_intf_net -intf_net axi_dma_40_M_AXIS_MM2S [get_bd_intf_pins axi_dma_40/M_AXIS_MM2S] [get_bd_intf_pins zcore32_40/src]
-  connect_bd_intf_net -intf_net axi_dma_40_M_AXI_MM2S [get_bd_intf_pins axi_dma_40/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S08_AXI]
-  connect_bd_intf_net -intf_net axi_dma_40_M_AXI_S2MM [get_bd_intf_pins axi_dma_40/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S08_AXI]
-  connect_bd_intf_net -intf_net axi_dma_41_M_AXIS_MM2S [get_bd_intf_pins axi_dma_41/M_AXIS_MM2S] [get_bd_intf_pins zcore32_41/src]
-  connect_bd_intf_net -intf_net axi_dma_41_M_AXI_MM2S [get_bd_intf_pins axi_dma_41/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S09_AXI]
-  connect_bd_intf_net -intf_net axi_dma_41_M_AXI_S2MM [get_bd_intf_pins axi_dma_41/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S09_AXI]
-  connect_bd_intf_net -intf_net axi_dma_42_M_AXIS_MM2S [get_bd_intf_pins axi_dma_42/M_AXIS_MM2S] [get_bd_intf_pins zcore32_42/src]
-  connect_bd_intf_net -intf_net axi_dma_42_M_AXI_MM2S [get_bd_intf_pins axi_dma_42/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S10_AXI]
-  connect_bd_intf_net -intf_net axi_dma_42_M_AXI_S2MM [get_bd_intf_pins axi_dma_42/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S10_AXI]
-  connect_bd_intf_net -intf_net axi_dma_43_M_AXIS_MM2S [get_bd_intf_pins axi_dma_43/M_AXIS_MM2S] [get_bd_intf_pins zcore32_43/src]
-  connect_bd_intf_net -intf_net axi_dma_43_M_AXI_MM2S [get_bd_intf_pins axi_dma_43/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S11_AXI]
-  connect_bd_intf_net -intf_net axi_dma_43_M_AXI_S2MM [get_bd_intf_pins axi_dma_43/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S11_AXI]
-  connect_bd_intf_net -intf_net axi_dma_44_M_AXIS_MM2S [get_bd_intf_pins axi_dma_44/M_AXIS_MM2S] [get_bd_intf_pins zcore32_44/src]
-  connect_bd_intf_net -intf_net axi_dma_44_M_AXI_MM2S [get_bd_intf_pins axi_dma_44/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S12_AXI]
-  connect_bd_intf_net -intf_net axi_dma_44_M_AXI_S2MM [get_bd_intf_pins axi_dma_44/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S12_AXI]
-  connect_bd_intf_net -intf_net axi_dma_45_M_AXIS_MM2S [get_bd_intf_pins axi_dma_45/M_AXIS_MM2S] [get_bd_intf_pins zcore32_45/src]
-  connect_bd_intf_net -intf_net axi_dma_45_M_AXI_MM2S [get_bd_intf_pins axi_dma_45/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S13_AXI]
-  connect_bd_intf_net -intf_net axi_dma_45_M_AXI_S2MM [get_bd_intf_pins axi_dma_45/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S13_AXI]
-  connect_bd_intf_net -intf_net axi_dma_46_M_AXIS_MM2S [get_bd_intf_pins axi_dma_46/M_AXIS_MM2S] [get_bd_intf_pins zcore32_46/src]
-  connect_bd_intf_net -intf_net axi_dma_46_M_AXI_MM2S [get_bd_intf_pins axi_dma_46/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S14_AXI]
-  connect_bd_intf_net -intf_net axi_dma_46_M_AXI_S2MM [get_bd_intf_pins axi_dma_46/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S14_AXI]
-  connect_bd_intf_net -intf_net axi_dma_47_M_AXIS_MM2S [get_bd_intf_pins axi_dma_47/M_AXIS_MM2S] [get_bd_intf_pins zcore32_47/src]
-  connect_bd_intf_net -intf_net axi_dma_47_M_AXI_MM2S [get_bd_intf_pins axi_dma_47/M_AXI_MM2S] [get_bd_intf_pins sc_hpc0_mm2s/S15_AXI]
-  connect_bd_intf_net -intf_net axi_dma_47_M_AXI_S2MM [get_bd_intf_pins axi_dma_47/M_AXI_S2MM] [get_bd_intf_pins sc_hpc1_s2mm/S15_AXI]
   connect_bd_intf_net -intf_net axi_dma_4_M_AXIS_MM2S [get_bd_intf_pins axi_dma_4/M_AXIS_MM2S] [get_bd_intf_pins zcore32_4/src]
   connect_bd_intf_net -intf_net axi_dma_4_M_AXI_MM2S [get_bd_intf_pins axi_dma_4/M_AXI_MM2S] [get_bd_intf_pins sc_hp0_mm2s/S04_AXI]
   connect_bd_intf_net -intf_net axi_dma_4_M_AXI_S2MM [get_bd_intf_pins axi_dma_4/M_AXI_S2MM] [get_bd_intf_pins sc_hp1_s2mm/S04_AXI]
@@ -1232,14 +1132,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M37_AXI [get_bd_intf_pins axi_dma_37/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M37_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M38_AXI [get_bd_intf_pins axi_dma_38/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M38_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M39_AXI [get_bd_intf_pins axi_dma_39/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M39_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M40_AXI [get_bd_intf_pins axi_dma_40/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M40_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M41_AXI [get_bd_intf_pins axi_dma_41/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M41_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M42_AXI [get_bd_intf_pins axi_dma_42/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M42_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M43_AXI [get_bd_intf_pins axi_dma_43/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M43_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M44_AXI [get_bd_intf_pins axi_dma_44/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M44_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M45_AXI [get_bd_intf_pins axi_dma_45/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M45_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M46_AXI [get_bd_intf_pins axi_dma_46/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M46_AXI]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M47_AXI [get_bd_intf_pins axi_dma_47/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M47_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M48_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins ps8_0_axi_periph_0/M48_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_0_M49_AXI [get_bd_intf_pins axi_intc_1/s_axi] [get_bd_intf_pins ps8_0_axi_periph_0/M49_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M00_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M00_AXI] [get_bd_intf_pins zcore32_0/s_axi_control]
@@ -1282,14 +1174,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M37_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M37_AXI] [get_bd_intf_pins zcore32_37/s_axi_control]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M38_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M38_AXI] [get_bd_intf_pins zcore32_38/s_axi_control]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M39_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M39_AXI] [get_bd_intf_pins zcore32_39/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M40_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M40_AXI] [get_bd_intf_pins zcore32_40/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M41_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M41_AXI] [get_bd_intf_pins zcore32_41/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M42_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M42_AXI] [get_bd_intf_pins zcore32_42/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M43_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M43_AXI] [get_bd_intf_pins zcore32_43/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M44_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M44_AXI] [get_bd_intf_pins zcore32_44/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M45_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M45_AXI] [get_bd_intf_pins zcore32_45/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M46_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M46_AXI] [get_bd_intf_pins zcore32_46/s_axi_control]
-  connect_bd_intf_net -intf_net ps8_0_axi_periph_1_M47_AXI [get_bd_intf_pins ps8_0_axi_periph_1/M47_AXI] [get_bd_intf_pins zcore32_47/s_axi_control]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M00_AXI [get_bd_intf_pins axi_dma_0/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M00_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M01_AXI [get_bd_intf_pins axi_dma_1/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M01_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M02_AXI [get_bd_intf_pins axi_dma_2/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph_0/M02_AXI]
@@ -1346,14 +1230,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_intf_net -intf_net zcore32_38_dst [get_bd_intf_pins axi_dma_38/S_AXIS_S2MM] [get_bd_intf_pins zcore32_38/dst]
   connect_bd_intf_net -intf_net zcore32_39_dst [get_bd_intf_pins axi_dma_39/S_AXIS_S2MM] [get_bd_intf_pins zcore32_39/dst]
   connect_bd_intf_net -intf_net zcore32_3_dst [get_bd_intf_pins axi_dma_3/S_AXIS_S2MM] [get_bd_intf_pins zcore32_3/dst]
-  connect_bd_intf_net -intf_net zcore32_40_dst [get_bd_intf_pins axi_dma_40/S_AXIS_S2MM] [get_bd_intf_pins zcore32_40/dst]
-  connect_bd_intf_net -intf_net zcore32_41_dst [get_bd_intf_pins axi_dma_41/S_AXIS_S2MM] [get_bd_intf_pins zcore32_41/dst]
-  connect_bd_intf_net -intf_net zcore32_42_dst [get_bd_intf_pins axi_dma_42/S_AXIS_S2MM] [get_bd_intf_pins zcore32_42/dst]
-  connect_bd_intf_net -intf_net zcore32_43_dst [get_bd_intf_pins axi_dma_43/S_AXIS_S2MM] [get_bd_intf_pins zcore32_43/dst]
-  connect_bd_intf_net -intf_net zcore32_44_dst [get_bd_intf_pins axi_dma_44/S_AXIS_S2MM] [get_bd_intf_pins zcore32_44/dst]
-  connect_bd_intf_net -intf_net zcore32_45_dst [get_bd_intf_pins axi_dma_45/S_AXIS_S2MM] [get_bd_intf_pins zcore32_45/dst]
-  connect_bd_intf_net -intf_net zcore32_46_dst [get_bd_intf_pins axi_dma_46/S_AXIS_S2MM] [get_bd_intf_pins zcore32_46/dst]
-  connect_bd_intf_net -intf_net zcore32_47_dst [get_bd_intf_pins axi_dma_47/S_AXIS_S2MM] [get_bd_intf_pins zcore32_47/dst]
   connect_bd_intf_net -intf_net zcore32_4_dst [get_bd_intf_pins axi_dma_4/S_AXIS_S2MM] [get_bd_intf_pins zcore32_4/dst]
   connect_bd_intf_net -intf_net zcore32_5_dst [get_bd_intf_pins axi_dma_5/S_AXIS_S2MM] [get_bd_intf_pins zcore32_5/dst]
   connect_bd_intf_net -intf_net zcore32_6_dst [get_bd_intf_pins axi_dma_6/S_AXIS_S2MM] [get_bd_intf_pins zcore32_6/dst]
@@ -1398,14 +1274,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_net -net axi_dma_38_s2mm_introut [get_bd_pins axi_dma_38/s2mm_introut] [get_bd_pins xlconcat_2/In6]
   connect_bd_net -net axi_dma_39_s2mm_introut [get_bd_pins axi_dma_39/s2mm_introut] [get_bd_pins xlconcat_2/In7]
   connect_bd_net -net axi_dma_3_s2mm_introut [get_bd_pins axi_dma_3/s2mm_introut] [get_bd_pins xlconcat_0/In3]
-  connect_bd_net -net axi_dma_40_s2mm_introut [get_bd_pins axi_dma_40/s2mm_introut] [get_bd_pins xlconcat_2/In8]
-  connect_bd_net -net axi_dma_41_s2mm_introut [get_bd_pins axi_dma_41/s2mm_introut] [get_bd_pins xlconcat_2/In9]
-  connect_bd_net -net axi_dma_42_s2mm_introut [get_bd_pins axi_dma_42/s2mm_introut] [get_bd_pins xlconcat_2/In10]
-  connect_bd_net -net axi_dma_43_s2mm_introut [get_bd_pins axi_dma_43/s2mm_introut] [get_bd_pins xlconcat_2/In11]
-  connect_bd_net -net axi_dma_44_s2mm_introut [get_bd_pins axi_dma_44/s2mm_introut] [get_bd_pins xlconcat_2/In12]
-  connect_bd_net -net axi_dma_45_s2mm_introut [get_bd_pins axi_dma_45/s2mm_introut] [get_bd_pins xlconcat_2/In13]
-  connect_bd_net -net axi_dma_46_s2mm_introut [get_bd_pins axi_dma_46/s2mm_introut] [get_bd_pins xlconcat_2/In14]
-  connect_bd_net -net axi_dma_47_s2mm_introut [get_bd_pins axi_dma_47/s2mm_introut] [get_bd_pins xlconcat_2/In15]
   connect_bd_net -net axi_dma_4_s2mm_introut [get_bd_pins axi_dma_4/s2mm_introut] [get_bd_pins xlconcat_0/In4]
   connect_bd_net -net axi_dma_5_s2mm_introut [get_bd_pins axi_dma_5/s2mm_introut] [get_bd_pins xlconcat_0/In5]
   connect_bd_net -net axi_dma_6_s2mm_introut [get_bd_pins axi_dma_6/s2mm_introut] [get_bd_pins xlconcat_0/In6]
@@ -1415,11 +1283,11 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins xlconcat_1/In0]
   connect_bd_net -net axi_intc_1_irq [get_bd_pins axi_intc_1/irq] [get_bd_pins xlconcat_1/In1]
   connect_bd_net -net rst_ps8_0_99M_interconnect_aresetn [get_bd_pins ps8_0_axi_periph_0/ARESETN] [get_bd_pins ps8_0_axi_periph_1/ARESETN] [get_bd_pins rst_ps8_0_99M/interconnect_aresetn]
-  connect_bd_net -net rst_ps8_0_99M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_dma_1/axi_resetn] [get_bd_pins axi_dma_10/axi_resetn] [get_bd_pins axi_dma_11/axi_resetn] [get_bd_pins axi_dma_12/axi_resetn] [get_bd_pins axi_dma_13/axi_resetn] [get_bd_pins axi_dma_14/axi_resetn] [get_bd_pins axi_dma_15/axi_resetn] [get_bd_pins axi_dma_16/axi_resetn] [get_bd_pins axi_dma_17/axi_resetn] [get_bd_pins axi_dma_18/axi_resetn] [get_bd_pins axi_dma_19/axi_resetn] [get_bd_pins axi_dma_2/axi_resetn] [get_bd_pins axi_dma_20/axi_resetn] [get_bd_pins axi_dma_21/axi_resetn] [get_bd_pins axi_dma_22/axi_resetn] [get_bd_pins axi_dma_23/axi_resetn] [get_bd_pins axi_dma_24/axi_resetn] [get_bd_pins axi_dma_25/axi_resetn] [get_bd_pins axi_dma_26/axi_resetn] [get_bd_pins axi_dma_27/axi_resetn] [get_bd_pins axi_dma_28/axi_resetn] [get_bd_pins axi_dma_29/axi_resetn] [get_bd_pins axi_dma_3/axi_resetn] [get_bd_pins axi_dma_30/axi_resetn] [get_bd_pins axi_dma_31/axi_resetn] [get_bd_pins axi_dma_32/axi_resetn] [get_bd_pins axi_dma_33/axi_resetn] [get_bd_pins axi_dma_34/axi_resetn] [get_bd_pins axi_dma_35/axi_resetn] [get_bd_pins axi_dma_36/axi_resetn] [get_bd_pins axi_dma_37/axi_resetn] [get_bd_pins axi_dma_38/axi_resetn] [get_bd_pins axi_dma_39/axi_resetn] [get_bd_pins axi_dma_4/axi_resetn] [get_bd_pins axi_dma_40/axi_resetn] [get_bd_pins axi_dma_41/axi_resetn] [get_bd_pins axi_dma_42/axi_resetn] [get_bd_pins axi_dma_43/axi_resetn] [get_bd_pins axi_dma_44/axi_resetn] [get_bd_pins axi_dma_45/axi_resetn] [get_bd_pins axi_dma_46/axi_resetn] [get_bd_pins axi_dma_47/axi_resetn] [get_bd_pins axi_dma_5/axi_resetn] [get_bd_pins axi_dma_6/axi_resetn] [get_bd_pins axi_dma_7/axi_resetn] [get_bd_pins axi_dma_8/axi_resetn] [get_bd_pins axi_dma_9/axi_resetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_intc_1/s_axi_aresetn] [get_bd_pins ps8_0_axi_periph_0/M00_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M01_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M02_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M03_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M04_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M05_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M06_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M07_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M08_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M09_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M10_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M11_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M12_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M13_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M14_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M15_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M16_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M17_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M18_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M19_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M20_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M21_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M22_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M23_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M24_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M25_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M26_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M27_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M28_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M29_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M30_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M31_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M32_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M33_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M34_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M35_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M36_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M37_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M38_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M39_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M40_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M41_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M42_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M43_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M44_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M45_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M46_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M47_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M48_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M49_ARESETN] [get_bd_pins ps8_0_axi_periph_0/S00_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M00_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M01_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M02_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M03_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M04_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M05_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M06_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M07_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M08_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M09_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M10_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M11_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M12_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M13_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M14_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M15_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M16_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M17_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M18_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M19_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M20_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M21_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M22_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M23_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M24_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M25_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M26_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M27_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M28_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M29_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M30_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M31_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M32_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M33_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M34_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M35_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M36_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M37_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M38_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M39_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M40_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M41_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M42_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M43_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M44_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M45_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M46_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M47_ARESETN] [get_bd_pins ps8_0_axi_periph_1/S00_ARESETN] [get_bd_pins rst_ps8_0_99M/peripheral_aresetn] [get_bd_pins zcore32_0/ap_rst_n] [get_bd_pins zcore32_1/ap_rst_n] [get_bd_pins zcore32_10/ap_rst_n] [get_bd_pins zcore32_11/ap_rst_n] [get_bd_pins zcore32_12/ap_rst_n] [get_bd_pins zcore32_13/ap_rst_n] [get_bd_pins zcore32_14/ap_rst_n] [get_bd_pins zcore32_15/ap_rst_n] [get_bd_pins zcore32_16/ap_rst_n] [get_bd_pins zcore32_17/ap_rst_n] [get_bd_pins zcore32_18/ap_rst_n] [get_bd_pins zcore32_19/ap_rst_n] [get_bd_pins zcore32_2/ap_rst_n] [get_bd_pins zcore32_20/ap_rst_n] [get_bd_pins zcore32_21/ap_rst_n] [get_bd_pins zcore32_22/ap_rst_n] [get_bd_pins zcore32_23/ap_rst_n] [get_bd_pins zcore32_24/ap_rst_n] [get_bd_pins zcore32_25/ap_rst_n] [get_bd_pins zcore32_26/ap_rst_n] [get_bd_pins zcore32_27/ap_rst_n] [get_bd_pins zcore32_28/ap_rst_n] [get_bd_pins zcore32_29/ap_rst_n] [get_bd_pins zcore32_3/ap_rst_n] [get_bd_pins zcore32_30/ap_rst_n] [get_bd_pins zcore32_31/ap_rst_n] [get_bd_pins zcore32_32/ap_rst_n] [get_bd_pins zcore32_33/ap_rst_n] [get_bd_pins zcore32_34/ap_rst_n] [get_bd_pins zcore32_35/ap_rst_n] [get_bd_pins zcore32_36/ap_rst_n] [get_bd_pins zcore32_37/ap_rst_n] [get_bd_pins zcore32_38/ap_rst_n] [get_bd_pins zcore32_39/ap_rst_n] [get_bd_pins zcore32_4/ap_rst_n] [get_bd_pins zcore32_40/ap_rst_n] [get_bd_pins zcore32_41/ap_rst_n] [get_bd_pins zcore32_42/ap_rst_n] [get_bd_pins zcore32_43/ap_rst_n] [get_bd_pins zcore32_44/ap_rst_n] [get_bd_pins zcore32_45/ap_rst_n] [get_bd_pins zcore32_46/ap_rst_n] [get_bd_pins zcore32_47/ap_rst_n] [get_bd_pins zcore32_5/ap_rst_n] [get_bd_pins zcore32_6/ap_rst_n] [get_bd_pins zcore32_7/ap_rst_n] [get_bd_pins zcore32_8/ap_rst_n] [get_bd_pins zcore32_9/ap_rst_n]
+  connect_bd_net -net rst_ps8_0_99M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_dma_1/axi_resetn] [get_bd_pins axi_dma_10/axi_resetn] [get_bd_pins axi_dma_11/axi_resetn] [get_bd_pins axi_dma_12/axi_resetn] [get_bd_pins axi_dma_13/axi_resetn] [get_bd_pins axi_dma_14/axi_resetn] [get_bd_pins axi_dma_15/axi_resetn] [get_bd_pins axi_dma_16/axi_resetn] [get_bd_pins axi_dma_17/axi_resetn] [get_bd_pins axi_dma_18/axi_resetn] [get_bd_pins axi_dma_19/axi_resetn] [get_bd_pins axi_dma_2/axi_resetn] [get_bd_pins axi_dma_20/axi_resetn] [get_bd_pins axi_dma_21/axi_resetn] [get_bd_pins axi_dma_22/axi_resetn] [get_bd_pins axi_dma_23/axi_resetn] [get_bd_pins axi_dma_24/axi_resetn] [get_bd_pins axi_dma_25/axi_resetn] [get_bd_pins axi_dma_26/axi_resetn] [get_bd_pins axi_dma_27/axi_resetn] [get_bd_pins axi_dma_28/axi_resetn] [get_bd_pins axi_dma_29/axi_resetn] [get_bd_pins axi_dma_3/axi_resetn] [get_bd_pins axi_dma_30/axi_resetn] [get_bd_pins axi_dma_31/axi_resetn] [get_bd_pins axi_dma_32/axi_resetn] [get_bd_pins axi_dma_33/axi_resetn] [get_bd_pins axi_dma_34/axi_resetn] [get_bd_pins axi_dma_35/axi_resetn] [get_bd_pins axi_dma_36/axi_resetn] [get_bd_pins axi_dma_37/axi_resetn] [get_bd_pins axi_dma_38/axi_resetn] [get_bd_pins axi_dma_39/axi_resetn] [get_bd_pins axi_dma_4/axi_resetn] [get_bd_pins axi_dma_5/axi_resetn] [get_bd_pins axi_dma_6/axi_resetn] [get_bd_pins axi_dma_7/axi_resetn] [get_bd_pins axi_dma_8/axi_resetn] [get_bd_pins axi_dma_9/axi_resetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_intc_1/s_axi_aresetn] [get_bd_pins ps8_0_axi_periph_0/M00_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M01_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M02_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M03_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M04_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M05_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M06_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M07_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M08_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M09_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M10_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M11_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M12_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M13_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M14_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M15_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M16_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M17_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M18_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M19_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M20_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M21_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M22_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M23_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M24_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M25_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M26_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M27_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M28_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M29_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M30_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M31_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M32_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M33_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M34_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M35_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M36_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M37_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M38_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M39_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M40_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M41_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M42_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M43_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M44_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M45_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M46_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M47_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M48_ARESETN] [get_bd_pins ps8_0_axi_periph_0/M49_ARESETN] [get_bd_pins ps8_0_axi_periph_0/S00_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M00_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M01_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M02_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M03_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M04_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M05_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M06_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M07_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M08_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M09_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M10_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M11_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M12_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M13_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M14_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M15_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M16_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M17_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M18_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M19_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M20_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M21_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M22_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M23_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M24_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M25_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M26_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M27_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M28_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M29_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M30_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M31_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M32_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M33_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M34_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M35_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M36_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M37_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M38_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M39_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M40_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M41_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M42_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M43_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M44_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M45_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M46_ARESETN] [get_bd_pins ps8_0_axi_periph_1/M47_ARESETN] [get_bd_pins ps8_0_axi_periph_1/S00_ARESETN] [get_bd_pins rst_ps8_0_99M/peripheral_aresetn] [get_bd_pins zcore32_0/ap_rst_n] [get_bd_pins zcore32_1/ap_rst_n] [get_bd_pins zcore32_10/ap_rst_n] [get_bd_pins zcore32_11/ap_rst_n] [get_bd_pins zcore32_12/ap_rst_n] [get_bd_pins zcore32_13/ap_rst_n] [get_bd_pins zcore32_14/ap_rst_n] [get_bd_pins zcore32_15/ap_rst_n] [get_bd_pins zcore32_16/ap_rst_n] [get_bd_pins zcore32_17/ap_rst_n] [get_bd_pins zcore32_18/ap_rst_n] [get_bd_pins zcore32_19/ap_rst_n] [get_bd_pins zcore32_2/ap_rst_n] [get_bd_pins zcore32_20/ap_rst_n] [get_bd_pins zcore32_21/ap_rst_n] [get_bd_pins zcore32_22/ap_rst_n] [get_bd_pins zcore32_23/ap_rst_n] [get_bd_pins zcore32_24/ap_rst_n] [get_bd_pins zcore32_25/ap_rst_n] [get_bd_pins zcore32_26/ap_rst_n] [get_bd_pins zcore32_27/ap_rst_n] [get_bd_pins zcore32_28/ap_rst_n] [get_bd_pins zcore32_29/ap_rst_n] [get_bd_pins zcore32_3/ap_rst_n] [get_bd_pins zcore32_30/ap_rst_n] [get_bd_pins zcore32_31/ap_rst_n] [get_bd_pins zcore32_32/ap_rst_n] [get_bd_pins zcore32_33/ap_rst_n] [get_bd_pins zcore32_34/ap_rst_n] [get_bd_pins zcore32_35/ap_rst_n] [get_bd_pins zcore32_36/ap_rst_n] [get_bd_pins zcore32_37/ap_rst_n] [get_bd_pins zcore32_38/ap_rst_n] [get_bd_pins zcore32_39/ap_rst_n] [get_bd_pins zcore32_4/ap_rst_n] [get_bd_pins zcore32_5/ap_rst_n] [get_bd_pins zcore32_6/ap_rst_n] [get_bd_pins zcore32_7/ap_rst_n] [get_bd_pins zcore32_8/ap_rst_n] [get_bd_pins zcore32_9/ap_rst_n]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins axi_intc_0/intr] [get_bd_pins xlconcat_0/dout]
   connect_bd_net -net xlconcat_1_dout [get_bd_pins xlconcat_1/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net xlconcat_2_dout [get_bd_pins axi_intc_1/intr] [get_bd_pins xlconcat_2/dout]
-  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_dma_1/m_axi_mm2s_aclk] [get_bd_pins axi_dma_1/m_axi_s2mm_aclk] [get_bd_pins axi_dma_1/s_axi_lite_aclk] [get_bd_pins axi_dma_10/m_axi_mm2s_aclk] [get_bd_pins axi_dma_10/m_axi_s2mm_aclk] [get_bd_pins axi_dma_10/s_axi_lite_aclk] [get_bd_pins axi_dma_11/m_axi_mm2s_aclk] [get_bd_pins axi_dma_11/m_axi_s2mm_aclk] [get_bd_pins axi_dma_11/s_axi_lite_aclk] [get_bd_pins axi_dma_12/m_axi_mm2s_aclk] [get_bd_pins axi_dma_12/m_axi_s2mm_aclk] [get_bd_pins axi_dma_12/s_axi_lite_aclk] [get_bd_pins axi_dma_13/m_axi_mm2s_aclk] [get_bd_pins axi_dma_13/m_axi_s2mm_aclk] [get_bd_pins axi_dma_13/s_axi_lite_aclk] [get_bd_pins axi_dma_14/m_axi_mm2s_aclk] [get_bd_pins axi_dma_14/m_axi_s2mm_aclk] [get_bd_pins axi_dma_14/s_axi_lite_aclk] [get_bd_pins axi_dma_15/m_axi_mm2s_aclk] [get_bd_pins axi_dma_15/m_axi_s2mm_aclk] [get_bd_pins axi_dma_15/s_axi_lite_aclk] [get_bd_pins axi_dma_16/m_axi_mm2s_aclk] [get_bd_pins axi_dma_16/m_axi_s2mm_aclk] [get_bd_pins axi_dma_16/s_axi_lite_aclk] [get_bd_pins axi_dma_17/m_axi_mm2s_aclk] [get_bd_pins axi_dma_17/m_axi_s2mm_aclk] [get_bd_pins axi_dma_17/s_axi_lite_aclk] [get_bd_pins axi_dma_18/m_axi_mm2s_aclk] [get_bd_pins axi_dma_18/m_axi_s2mm_aclk] [get_bd_pins axi_dma_18/s_axi_lite_aclk] [get_bd_pins axi_dma_19/m_axi_mm2s_aclk] [get_bd_pins axi_dma_19/m_axi_s2mm_aclk] [get_bd_pins axi_dma_19/s_axi_lite_aclk] [get_bd_pins axi_dma_2/m_axi_mm2s_aclk] [get_bd_pins axi_dma_2/m_axi_s2mm_aclk] [get_bd_pins axi_dma_2/s_axi_lite_aclk] [get_bd_pins axi_dma_20/m_axi_mm2s_aclk] [get_bd_pins axi_dma_20/m_axi_s2mm_aclk] [get_bd_pins axi_dma_20/s_axi_lite_aclk] [get_bd_pins axi_dma_21/m_axi_mm2s_aclk] [get_bd_pins axi_dma_21/m_axi_s2mm_aclk] [get_bd_pins axi_dma_21/s_axi_lite_aclk] [get_bd_pins axi_dma_22/m_axi_mm2s_aclk] [get_bd_pins axi_dma_22/m_axi_s2mm_aclk] [get_bd_pins axi_dma_22/s_axi_lite_aclk] [get_bd_pins axi_dma_23/m_axi_mm2s_aclk] [get_bd_pins axi_dma_23/m_axi_s2mm_aclk] [get_bd_pins axi_dma_23/s_axi_lite_aclk] [get_bd_pins axi_dma_24/m_axi_mm2s_aclk] [get_bd_pins axi_dma_24/m_axi_s2mm_aclk] [get_bd_pins axi_dma_24/s_axi_lite_aclk] [get_bd_pins axi_dma_25/m_axi_mm2s_aclk] [get_bd_pins axi_dma_25/m_axi_s2mm_aclk] [get_bd_pins axi_dma_25/s_axi_lite_aclk] [get_bd_pins axi_dma_26/m_axi_mm2s_aclk] [get_bd_pins axi_dma_26/m_axi_s2mm_aclk] [get_bd_pins axi_dma_26/s_axi_lite_aclk] [get_bd_pins axi_dma_27/m_axi_mm2s_aclk] [get_bd_pins axi_dma_27/m_axi_s2mm_aclk] [get_bd_pins axi_dma_27/s_axi_lite_aclk] [get_bd_pins axi_dma_28/m_axi_mm2s_aclk] [get_bd_pins axi_dma_28/m_axi_s2mm_aclk] [get_bd_pins axi_dma_28/s_axi_lite_aclk] [get_bd_pins axi_dma_29/m_axi_mm2s_aclk] [get_bd_pins axi_dma_29/m_axi_s2mm_aclk] [get_bd_pins axi_dma_29/s_axi_lite_aclk] [get_bd_pins axi_dma_3/m_axi_mm2s_aclk] [get_bd_pins axi_dma_3/m_axi_s2mm_aclk] [get_bd_pins axi_dma_3/s_axi_lite_aclk] [get_bd_pins axi_dma_30/m_axi_mm2s_aclk] [get_bd_pins axi_dma_30/m_axi_s2mm_aclk] [get_bd_pins axi_dma_30/s_axi_lite_aclk] [get_bd_pins axi_dma_31/m_axi_mm2s_aclk] [get_bd_pins axi_dma_31/m_axi_s2mm_aclk] [get_bd_pins axi_dma_31/s_axi_lite_aclk] [get_bd_pins axi_dma_32/m_axi_mm2s_aclk] [get_bd_pins axi_dma_32/m_axi_s2mm_aclk] [get_bd_pins axi_dma_32/s_axi_lite_aclk] [get_bd_pins axi_dma_33/m_axi_mm2s_aclk] [get_bd_pins axi_dma_33/m_axi_s2mm_aclk] [get_bd_pins axi_dma_33/s_axi_lite_aclk] [get_bd_pins axi_dma_34/m_axi_mm2s_aclk] [get_bd_pins axi_dma_34/m_axi_s2mm_aclk] [get_bd_pins axi_dma_34/s_axi_lite_aclk] [get_bd_pins axi_dma_35/m_axi_mm2s_aclk] [get_bd_pins axi_dma_35/m_axi_s2mm_aclk] [get_bd_pins axi_dma_35/s_axi_lite_aclk] [get_bd_pins axi_dma_36/m_axi_mm2s_aclk] [get_bd_pins axi_dma_36/m_axi_s2mm_aclk] [get_bd_pins axi_dma_36/s_axi_lite_aclk] [get_bd_pins axi_dma_37/m_axi_mm2s_aclk] [get_bd_pins axi_dma_37/m_axi_s2mm_aclk] [get_bd_pins axi_dma_37/s_axi_lite_aclk] [get_bd_pins axi_dma_38/m_axi_mm2s_aclk] [get_bd_pins axi_dma_38/m_axi_s2mm_aclk] [get_bd_pins axi_dma_38/s_axi_lite_aclk] [get_bd_pins axi_dma_39/m_axi_mm2s_aclk] [get_bd_pins axi_dma_39/m_axi_s2mm_aclk] [get_bd_pins axi_dma_39/s_axi_lite_aclk] [get_bd_pins axi_dma_4/m_axi_mm2s_aclk] [get_bd_pins axi_dma_4/m_axi_s2mm_aclk] [get_bd_pins axi_dma_4/s_axi_lite_aclk] [get_bd_pins axi_dma_40/m_axi_mm2s_aclk] [get_bd_pins axi_dma_40/m_axi_s2mm_aclk] [get_bd_pins axi_dma_40/s_axi_lite_aclk] [get_bd_pins axi_dma_41/m_axi_mm2s_aclk] [get_bd_pins axi_dma_41/m_axi_s2mm_aclk] [get_bd_pins axi_dma_41/s_axi_lite_aclk] [get_bd_pins axi_dma_42/m_axi_mm2s_aclk] [get_bd_pins axi_dma_42/m_axi_s2mm_aclk] [get_bd_pins axi_dma_42/s_axi_lite_aclk] [get_bd_pins axi_dma_43/m_axi_mm2s_aclk] [get_bd_pins axi_dma_43/m_axi_s2mm_aclk] [get_bd_pins axi_dma_43/s_axi_lite_aclk] [get_bd_pins axi_dma_44/m_axi_mm2s_aclk] [get_bd_pins axi_dma_44/m_axi_s2mm_aclk] [get_bd_pins axi_dma_44/s_axi_lite_aclk] [get_bd_pins axi_dma_45/m_axi_mm2s_aclk] [get_bd_pins axi_dma_45/m_axi_s2mm_aclk] [get_bd_pins axi_dma_45/s_axi_lite_aclk] [get_bd_pins axi_dma_46/m_axi_mm2s_aclk] [get_bd_pins axi_dma_46/m_axi_s2mm_aclk] [get_bd_pins axi_dma_46/s_axi_lite_aclk] [get_bd_pins axi_dma_47/m_axi_mm2s_aclk] [get_bd_pins axi_dma_47/m_axi_s2mm_aclk] [get_bd_pins axi_dma_47/s_axi_lite_aclk] [get_bd_pins axi_dma_5/m_axi_mm2s_aclk] [get_bd_pins axi_dma_5/m_axi_s2mm_aclk] [get_bd_pins axi_dma_5/s_axi_lite_aclk] [get_bd_pins axi_dma_6/m_axi_mm2s_aclk] [get_bd_pins axi_dma_6/m_axi_s2mm_aclk] [get_bd_pins axi_dma_6/s_axi_lite_aclk] [get_bd_pins axi_dma_7/m_axi_mm2s_aclk] [get_bd_pins axi_dma_7/m_axi_s2mm_aclk] [get_bd_pins axi_dma_7/s_axi_lite_aclk] [get_bd_pins axi_dma_8/m_axi_mm2s_aclk] [get_bd_pins axi_dma_8/m_axi_s2mm_aclk] [get_bd_pins axi_dma_8/s_axi_lite_aclk] [get_bd_pins axi_dma_9/m_axi_mm2s_aclk] [get_bd_pins axi_dma_9/m_axi_s2mm_aclk] [get_bd_pins axi_dma_9/s_axi_lite_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_intc_1/s_axi_aclk] [get_bd_pins ps8_0_axi_periph_0/ACLK] [get_bd_pins ps8_0_axi_periph_0/M00_ACLK] [get_bd_pins ps8_0_axi_periph_0/M01_ACLK] [get_bd_pins ps8_0_axi_periph_0/M02_ACLK] [get_bd_pins ps8_0_axi_periph_0/M03_ACLK] [get_bd_pins ps8_0_axi_periph_0/M04_ACLK] [get_bd_pins ps8_0_axi_periph_0/M05_ACLK] [get_bd_pins ps8_0_axi_periph_0/M06_ACLK] [get_bd_pins ps8_0_axi_periph_0/M07_ACLK] [get_bd_pins ps8_0_axi_periph_0/M08_ACLK] [get_bd_pins ps8_0_axi_periph_0/M09_ACLK] [get_bd_pins ps8_0_axi_periph_0/M10_ACLK] [get_bd_pins ps8_0_axi_periph_0/M11_ACLK] [get_bd_pins ps8_0_axi_periph_0/M12_ACLK] [get_bd_pins ps8_0_axi_periph_0/M13_ACLK] [get_bd_pins ps8_0_axi_periph_0/M14_ACLK] [get_bd_pins ps8_0_axi_periph_0/M15_ACLK] [get_bd_pins ps8_0_axi_periph_0/M16_ACLK] [get_bd_pins ps8_0_axi_periph_0/M17_ACLK] [get_bd_pins ps8_0_axi_periph_0/M18_ACLK] [get_bd_pins ps8_0_axi_periph_0/M19_ACLK] [get_bd_pins ps8_0_axi_periph_0/M20_ACLK] [get_bd_pins ps8_0_axi_periph_0/M21_ACLK] [get_bd_pins ps8_0_axi_periph_0/M22_ACLK] [get_bd_pins ps8_0_axi_periph_0/M23_ACLK] [get_bd_pins ps8_0_axi_periph_0/M24_ACLK] [get_bd_pins ps8_0_axi_periph_0/M25_ACLK] [get_bd_pins ps8_0_axi_periph_0/M26_ACLK] [get_bd_pins ps8_0_axi_periph_0/M27_ACLK] [get_bd_pins ps8_0_axi_periph_0/M28_ACLK] [get_bd_pins ps8_0_axi_periph_0/M29_ACLK] [get_bd_pins ps8_0_axi_periph_0/M30_ACLK] [get_bd_pins ps8_0_axi_periph_0/M31_ACLK] [get_bd_pins ps8_0_axi_periph_0/M32_ACLK] [get_bd_pins ps8_0_axi_periph_0/M33_ACLK] [get_bd_pins ps8_0_axi_periph_0/M34_ACLK] [get_bd_pins ps8_0_axi_periph_0/M35_ACLK] [get_bd_pins ps8_0_axi_periph_0/M36_ACLK] [get_bd_pins ps8_0_axi_periph_0/M37_ACLK] [get_bd_pins ps8_0_axi_periph_0/M38_ACLK] [get_bd_pins ps8_0_axi_periph_0/M39_ACLK] [get_bd_pins ps8_0_axi_periph_0/M40_ACLK] [get_bd_pins ps8_0_axi_periph_0/M41_ACLK] [get_bd_pins ps8_0_axi_periph_0/M42_ACLK] [get_bd_pins ps8_0_axi_periph_0/M43_ACLK] [get_bd_pins ps8_0_axi_periph_0/M44_ACLK] [get_bd_pins ps8_0_axi_periph_0/M45_ACLK] [get_bd_pins ps8_0_axi_periph_0/M46_ACLK] [get_bd_pins ps8_0_axi_periph_0/M47_ACLK] [get_bd_pins ps8_0_axi_periph_0/M48_ACLK] [get_bd_pins ps8_0_axi_periph_0/M49_ACLK] [get_bd_pins ps8_0_axi_periph_0/S00_ACLK] [get_bd_pins ps8_0_axi_periph_1/ACLK] [get_bd_pins ps8_0_axi_periph_1/M00_ACLK] [get_bd_pins ps8_0_axi_periph_1/M01_ACLK] [get_bd_pins ps8_0_axi_periph_1/M02_ACLK] [get_bd_pins ps8_0_axi_periph_1/M03_ACLK] [get_bd_pins ps8_0_axi_periph_1/M04_ACLK] [get_bd_pins ps8_0_axi_periph_1/M05_ACLK] [get_bd_pins ps8_0_axi_periph_1/M06_ACLK] [get_bd_pins ps8_0_axi_periph_1/M07_ACLK] [get_bd_pins ps8_0_axi_periph_1/M08_ACLK] [get_bd_pins ps8_0_axi_periph_1/M09_ACLK] [get_bd_pins ps8_0_axi_periph_1/M10_ACLK] [get_bd_pins ps8_0_axi_periph_1/M11_ACLK] [get_bd_pins ps8_0_axi_periph_1/M12_ACLK] [get_bd_pins ps8_0_axi_periph_1/M13_ACLK] [get_bd_pins ps8_0_axi_periph_1/M14_ACLK] [get_bd_pins ps8_0_axi_periph_1/M15_ACLK] [get_bd_pins ps8_0_axi_periph_1/M16_ACLK] [get_bd_pins ps8_0_axi_periph_1/M17_ACLK] [get_bd_pins ps8_0_axi_periph_1/M18_ACLK] [get_bd_pins ps8_0_axi_periph_1/M19_ACLK] [get_bd_pins ps8_0_axi_periph_1/M20_ACLK] [get_bd_pins ps8_0_axi_periph_1/M21_ACLK] [get_bd_pins ps8_0_axi_periph_1/M22_ACLK] [get_bd_pins ps8_0_axi_periph_1/M23_ACLK] [get_bd_pins ps8_0_axi_periph_1/M24_ACLK] [get_bd_pins ps8_0_axi_periph_1/M25_ACLK] [get_bd_pins ps8_0_axi_periph_1/M26_ACLK] [get_bd_pins ps8_0_axi_periph_1/M27_ACLK] [get_bd_pins ps8_0_axi_periph_1/M28_ACLK] [get_bd_pins ps8_0_axi_periph_1/M29_ACLK] [get_bd_pins ps8_0_axi_periph_1/M30_ACLK] [get_bd_pins ps8_0_axi_periph_1/M31_ACLK] [get_bd_pins ps8_0_axi_periph_1/M32_ACLK] [get_bd_pins ps8_0_axi_periph_1/M33_ACLK] [get_bd_pins ps8_0_axi_periph_1/M34_ACLK] [get_bd_pins ps8_0_axi_periph_1/M35_ACLK] [get_bd_pins ps8_0_axi_periph_1/M36_ACLK] [get_bd_pins ps8_0_axi_periph_1/M37_ACLK] [get_bd_pins ps8_0_axi_periph_1/M38_ACLK] [get_bd_pins ps8_0_axi_periph_1/M39_ACLK] [get_bd_pins ps8_0_axi_periph_1/M40_ACLK] [get_bd_pins ps8_0_axi_periph_1/M41_ACLK] [get_bd_pins ps8_0_axi_periph_1/M42_ACLK] [get_bd_pins ps8_0_axi_periph_1/M43_ACLK] [get_bd_pins ps8_0_axi_periph_1/M44_ACLK] [get_bd_pins ps8_0_axi_periph_1/M45_ACLK] [get_bd_pins ps8_0_axi_periph_1/M46_ACLK] [get_bd_pins ps8_0_axi_periph_1/M47_ACLK] [get_bd_pins ps8_0_axi_periph_1/S00_ACLK] [get_bd_pins rst_ps8_0_99M/slowest_sync_clk] [get_bd_pins sc_hp0_mm2s/aclk] [get_bd_pins sc_hp1_s2mm/aclk] [get_bd_pins sc_hp2_mm2s/aclk] [get_bd_pins sc_hp3_s2mm/aclk] [get_bd_pins sc_hpc0_mm2s/aclk] [get_bd_pins sc_hpc1_s2mm/aclk] [get_bd_pins zcore32_0/ap_clk] [get_bd_pins zcore32_1/ap_clk] [get_bd_pins zcore32_10/ap_clk] [get_bd_pins zcore32_11/ap_clk] [get_bd_pins zcore32_12/ap_clk] [get_bd_pins zcore32_13/ap_clk] [get_bd_pins zcore32_14/ap_clk] [get_bd_pins zcore32_15/ap_clk] [get_bd_pins zcore32_16/ap_clk] [get_bd_pins zcore32_17/ap_clk] [get_bd_pins zcore32_18/ap_clk] [get_bd_pins zcore32_19/ap_clk] [get_bd_pins zcore32_2/ap_clk] [get_bd_pins zcore32_20/ap_clk] [get_bd_pins zcore32_21/ap_clk] [get_bd_pins zcore32_22/ap_clk] [get_bd_pins zcore32_23/ap_clk] [get_bd_pins zcore32_24/ap_clk] [get_bd_pins zcore32_25/ap_clk] [get_bd_pins zcore32_26/ap_clk] [get_bd_pins zcore32_27/ap_clk] [get_bd_pins zcore32_28/ap_clk] [get_bd_pins zcore32_29/ap_clk] [get_bd_pins zcore32_3/ap_clk] [get_bd_pins zcore32_30/ap_clk] [get_bd_pins zcore32_31/ap_clk] [get_bd_pins zcore32_32/ap_clk] [get_bd_pins zcore32_33/ap_clk] [get_bd_pins zcore32_34/ap_clk] [get_bd_pins zcore32_35/ap_clk] [get_bd_pins zcore32_36/ap_clk] [get_bd_pins zcore32_37/ap_clk] [get_bd_pins zcore32_38/ap_clk] [get_bd_pins zcore32_39/ap_clk] [get_bd_pins zcore32_4/ap_clk] [get_bd_pins zcore32_40/ap_clk] [get_bd_pins zcore32_41/ap_clk] [get_bd_pins zcore32_42/ap_clk] [get_bd_pins zcore32_43/ap_clk] [get_bd_pins zcore32_44/ap_clk] [get_bd_pins zcore32_45/ap_clk] [get_bd_pins zcore32_46/ap_clk] [get_bd_pins zcore32_47/ap_clk] [get_bd_pins zcore32_5/ap_clk] [get_bd_pins zcore32_6/ap_clk] [get_bd_pins zcore32_7/ap_clk] [get_bd_pins zcore32_8/ap_clk] [get_bd_pins zcore32_9/ap_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk1] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp2_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp3_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihpc0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihpc1_fpd_aclk]
+  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_dma_1/m_axi_mm2s_aclk] [get_bd_pins axi_dma_1/m_axi_s2mm_aclk] [get_bd_pins axi_dma_1/s_axi_lite_aclk] [get_bd_pins axi_dma_10/m_axi_mm2s_aclk] [get_bd_pins axi_dma_10/m_axi_s2mm_aclk] [get_bd_pins axi_dma_10/s_axi_lite_aclk] [get_bd_pins axi_dma_11/m_axi_mm2s_aclk] [get_bd_pins axi_dma_11/m_axi_s2mm_aclk] [get_bd_pins axi_dma_11/s_axi_lite_aclk] [get_bd_pins axi_dma_12/m_axi_mm2s_aclk] [get_bd_pins axi_dma_12/m_axi_s2mm_aclk] [get_bd_pins axi_dma_12/s_axi_lite_aclk] [get_bd_pins axi_dma_13/m_axi_mm2s_aclk] [get_bd_pins axi_dma_13/m_axi_s2mm_aclk] [get_bd_pins axi_dma_13/s_axi_lite_aclk] [get_bd_pins axi_dma_14/m_axi_mm2s_aclk] [get_bd_pins axi_dma_14/m_axi_s2mm_aclk] [get_bd_pins axi_dma_14/s_axi_lite_aclk] [get_bd_pins axi_dma_15/m_axi_mm2s_aclk] [get_bd_pins axi_dma_15/m_axi_s2mm_aclk] [get_bd_pins axi_dma_15/s_axi_lite_aclk] [get_bd_pins axi_dma_16/m_axi_mm2s_aclk] [get_bd_pins axi_dma_16/m_axi_s2mm_aclk] [get_bd_pins axi_dma_16/s_axi_lite_aclk] [get_bd_pins axi_dma_17/m_axi_mm2s_aclk] [get_bd_pins axi_dma_17/m_axi_s2mm_aclk] [get_bd_pins axi_dma_17/s_axi_lite_aclk] [get_bd_pins axi_dma_18/m_axi_mm2s_aclk] [get_bd_pins axi_dma_18/m_axi_s2mm_aclk] [get_bd_pins axi_dma_18/s_axi_lite_aclk] [get_bd_pins axi_dma_19/m_axi_mm2s_aclk] [get_bd_pins axi_dma_19/m_axi_s2mm_aclk] [get_bd_pins axi_dma_19/s_axi_lite_aclk] [get_bd_pins axi_dma_2/m_axi_mm2s_aclk] [get_bd_pins axi_dma_2/m_axi_s2mm_aclk] [get_bd_pins axi_dma_2/s_axi_lite_aclk] [get_bd_pins axi_dma_20/m_axi_mm2s_aclk] [get_bd_pins axi_dma_20/m_axi_s2mm_aclk] [get_bd_pins axi_dma_20/s_axi_lite_aclk] [get_bd_pins axi_dma_21/m_axi_mm2s_aclk] [get_bd_pins axi_dma_21/m_axi_s2mm_aclk] [get_bd_pins axi_dma_21/s_axi_lite_aclk] [get_bd_pins axi_dma_22/m_axi_mm2s_aclk] [get_bd_pins axi_dma_22/m_axi_s2mm_aclk] [get_bd_pins axi_dma_22/s_axi_lite_aclk] [get_bd_pins axi_dma_23/m_axi_mm2s_aclk] [get_bd_pins axi_dma_23/m_axi_s2mm_aclk] [get_bd_pins axi_dma_23/s_axi_lite_aclk] [get_bd_pins axi_dma_24/m_axi_mm2s_aclk] [get_bd_pins axi_dma_24/m_axi_s2mm_aclk] [get_bd_pins axi_dma_24/s_axi_lite_aclk] [get_bd_pins axi_dma_25/m_axi_mm2s_aclk] [get_bd_pins axi_dma_25/m_axi_s2mm_aclk] [get_bd_pins axi_dma_25/s_axi_lite_aclk] [get_bd_pins axi_dma_26/m_axi_mm2s_aclk] [get_bd_pins axi_dma_26/m_axi_s2mm_aclk] [get_bd_pins axi_dma_26/s_axi_lite_aclk] [get_bd_pins axi_dma_27/m_axi_mm2s_aclk] [get_bd_pins axi_dma_27/m_axi_s2mm_aclk] [get_bd_pins axi_dma_27/s_axi_lite_aclk] [get_bd_pins axi_dma_28/m_axi_mm2s_aclk] [get_bd_pins axi_dma_28/m_axi_s2mm_aclk] [get_bd_pins axi_dma_28/s_axi_lite_aclk] [get_bd_pins axi_dma_29/m_axi_mm2s_aclk] [get_bd_pins axi_dma_29/m_axi_s2mm_aclk] [get_bd_pins axi_dma_29/s_axi_lite_aclk] [get_bd_pins axi_dma_3/m_axi_mm2s_aclk] [get_bd_pins axi_dma_3/m_axi_s2mm_aclk] [get_bd_pins axi_dma_3/s_axi_lite_aclk] [get_bd_pins axi_dma_30/m_axi_mm2s_aclk] [get_bd_pins axi_dma_30/m_axi_s2mm_aclk] [get_bd_pins axi_dma_30/s_axi_lite_aclk] [get_bd_pins axi_dma_31/m_axi_mm2s_aclk] [get_bd_pins axi_dma_31/m_axi_s2mm_aclk] [get_bd_pins axi_dma_31/s_axi_lite_aclk] [get_bd_pins axi_dma_32/m_axi_mm2s_aclk] [get_bd_pins axi_dma_32/m_axi_s2mm_aclk] [get_bd_pins axi_dma_32/s_axi_lite_aclk] [get_bd_pins axi_dma_33/m_axi_mm2s_aclk] [get_bd_pins axi_dma_33/m_axi_s2mm_aclk] [get_bd_pins axi_dma_33/s_axi_lite_aclk] [get_bd_pins axi_dma_34/m_axi_mm2s_aclk] [get_bd_pins axi_dma_34/m_axi_s2mm_aclk] [get_bd_pins axi_dma_34/s_axi_lite_aclk] [get_bd_pins axi_dma_35/m_axi_mm2s_aclk] [get_bd_pins axi_dma_35/m_axi_s2mm_aclk] [get_bd_pins axi_dma_35/s_axi_lite_aclk] [get_bd_pins axi_dma_36/m_axi_mm2s_aclk] [get_bd_pins axi_dma_36/m_axi_s2mm_aclk] [get_bd_pins axi_dma_36/s_axi_lite_aclk] [get_bd_pins axi_dma_37/m_axi_mm2s_aclk] [get_bd_pins axi_dma_37/m_axi_s2mm_aclk] [get_bd_pins axi_dma_37/s_axi_lite_aclk] [get_bd_pins axi_dma_38/m_axi_mm2s_aclk] [get_bd_pins axi_dma_38/m_axi_s2mm_aclk] [get_bd_pins axi_dma_38/s_axi_lite_aclk] [get_bd_pins axi_dma_39/m_axi_mm2s_aclk] [get_bd_pins axi_dma_39/m_axi_s2mm_aclk] [get_bd_pins axi_dma_39/s_axi_lite_aclk] [get_bd_pins axi_dma_4/m_axi_mm2s_aclk] [get_bd_pins axi_dma_4/m_axi_s2mm_aclk] [get_bd_pins axi_dma_4/s_axi_lite_aclk] [get_bd_pins axi_dma_5/m_axi_mm2s_aclk] [get_bd_pins axi_dma_5/m_axi_s2mm_aclk] [get_bd_pins axi_dma_5/s_axi_lite_aclk] [get_bd_pins axi_dma_6/m_axi_mm2s_aclk] [get_bd_pins axi_dma_6/m_axi_s2mm_aclk] [get_bd_pins axi_dma_6/s_axi_lite_aclk] [get_bd_pins axi_dma_7/m_axi_mm2s_aclk] [get_bd_pins axi_dma_7/m_axi_s2mm_aclk] [get_bd_pins axi_dma_7/s_axi_lite_aclk] [get_bd_pins axi_dma_8/m_axi_mm2s_aclk] [get_bd_pins axi_dma_8/m_axi_s2mm_aclk] [get_bd_pins axi_dma_8/s_axi_lite_aclk] [get_bd_pins axi_dma_9/m_axi_mm2s_aclk] [get_bd_pins axi_dma_9/m_axi_s2mm_aclk] [get_bd_pins axi_dma_9/s_axi_lite_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_intc_1/s_axi_aclk] [get_bd_pins ps8_0_axi_periph_0/ACLK] [get_bd_pins ps8_0_axi_periph_0/M00_ACLK] [get_bd_pins ps8_0_axi_periph_0/M01_ACLK] [get_bd_pins ps8_0_axi_periph_0/M02_ACLK] [get_bd_pins ps8_0_axi_periph_0/M03_ACLK] [get_bd_pins ps8_0_axi_periph_0/M04_ACLK] [get_bd_pins ps8_0_axi_periph_0/M05_ACLK] [get_bd_pins ps8_0_axi_periph_0/M06_ACLK] [get_bd_pins ps8_0_axi_periph_0/M07_ACLK] [get_bd_pins ps8_0_axi_periph_0/M08_ACLK] [get_bd_pins ps8_0_axi_periph_0/M09_ACLK] [get_bd_pins ps8_0_axi_periph_0/M10_ACLK] [get_bd_pins ps8_0_axi_periph_0/M11_ACLK] [get_bd_pins ps8_0_axi_periph_0/M12_ACLK] [get_bd_pins ps8_0_axi_periph_0/M13_ACLK] [get_bd_pins ps8_0_axi_periph_0/M14_ACLK] [get_bd_pins ps8_0_axi_periph_0/M15_ACLK] [get_bd_pins ps8_0_axi_periph_0/M16_ACLK] [get_bd_pins ps8_0_axi_periph_0/M17_ACLK] [get_bd_pins ps8_0_axi_periph_0/M18_ACLK] [get_bd_pins ps8_0_axi_periph_0/M19_ACLK] [get_bd_pins ps8_0_axi_periph_0/M20_ACLK] [get_bd_pins ps8_0_axi_periph_0/M21_ACLK] [get_bd_pins ps8_0_axi_periph_0/M22_ACLK] [get_bd_pins ps8_0_axi_periph_0/M23_ACLK] [get_bd_pins ps8_0_axi_periph_0/M24_ACLK] [get_bd_pins ps8_0_axi_periph_0/M25_ACLK] [get_bd_pins ps8_0_axi_periph_0/M26_ACLK] [get_bd_pins ps8_0_axi_periph_0/M27_ACLK] [get_bd_pins ps8_0_axi_periph_0/M28_ACLK] [get_bd_pins ps8_0_axi_periph_0/M29_ACLK] [get_bd_pins ps8_0_axi_periph_0/M30_ACLK] [get_bd_pins ps8_0_axi_periph_0/M31_ACLK] [get_bd_pins ps8_0_axi_periph_0/M32_ACLK] [get_bd_pins ps8_0_axi_periph_0/M33_ACLK] [get_bd_pins ps8_0_axi_periph_0/M34_ACLK] [get_bd_pins ps8_0_axi_periph_0/M35_ACLK] [get_bd_pins ps8_0_axi_periph_0/M36_ACLK] [get_bd_pins ps8_0_axi_periph_0/M37_ACLK] [get_bd_pins ps8_0_axi_periph_0/M38_ACLK] [get_bd_pins ps8_0_axi_periph_0/M39_ACLK] [get_bd_pins ps8_0_axi_periph_0/M40_ACLK] [get_bd_pins ps8_0_axi_periph_0/M41_ACLK] [get_bd_pins ps8_0_axi_periph_0/M42_ACLK] [get_bd_pins ps8_0_axi_periph_0/M43_ACLK] [get_bd_pins ps8_0_axi_periph_0/M44_ACLK] [get_bd_pins ps8_0_axi_periph_0/M45_ACLK] [get_bd_pins ps8_0_axi_periph_0/M46_ACLK] [get_bd_pins ps8_0_axi_periph_0/M47_ACLK] [get_bd_pins ps8_0_axi_periph_0/M48_ACLK] [get_bd_pins ps8_0_axi_periph_0/M49_ACLK] [get_bd_pins ps8_0_axi_periph_0/S00_ACLK] [get_bd_pins ps8_0_axi_periph_1/ACLK] [get_bd_pins ps8_0_axi_periph_1/M00_ACLK] [get_bd_pins ps8_0_axi_periph_1/M01_ACLK] [get_bd_pins ps8_0_axi_periph_1/M02_ACLK] [get_bd_pins ps8_0_axi_periph_1/M03_ACLK] [get_bd_pins ps8_0_axi_periph_1/M04_ACLK] [get_bd_pins ps8_0_axi_periph_1/M05_ACLK] [get_bd_pins ps8_0_axi_periph_1/M06_ACLK] [get_bd_pins ps8_0_axi_periph_1/M07_ACLK] [get_bd_pins ps8_0_axi_periph_1/M08_ACLK] [get_bd_pins ps8_0_axi_periph_1/M09_ACLK] [get_bd_pins ps8_0_axi_periph_1/M10_ACLK] [get_bd_pins ps8_0_axi_periph_1/M11_ACLK] [get_bd_pins ps8_0_axi_periph_1/M12_ACLK] [get_bd_pins ps8_0_axi_periph_1/M13_ACLK] [get_bd_pins ps8_0_axi_periph_1/M14_ACLK] [get_bd_pins ps8_0_axi_periph_1/M15_ACLK] [get_bd_pins ps8_0_axi_periph_1/M16_ACLK] [get_bd_pins ps8_0_axi_periph_1/M17_ACLK] [get_bd_pins ps8_0_axi_periph_1/M18_ACLK] [get_bd_pins ps8_0_axi_periph_1/M19_ACLK] [get_bd_pins ps8_0_axi_periph_1/M20_ACLK] [get_bd_pins ps8_0_axi_periph_1/M21_ACLK] [get_bd_pins ps8_0_axi_periph_1/M22_ACLK] [get_bd_pins ps8_0_axi_periph_1/M23_ACLK] [get_bd_pins ps8_0_axi_periph_1/M24_ACLK] [get_bd_pins ps8_0_axi_periph_1/M25_ACLK] [get_bd_pins ps8_0_axi_periph_1/M26_ACLK] [get_bd_pins ps8_0_axi_periph_1/M27_ACLK] [get_bd_pins ps8_0_axi_periph_1/M28_ACLK] [get_bd_pins ps8_0_axi_periph_1/M29_ACLK] [get_bd_pins ps8_0_axi_periph_1/M30_ACLK] [get_bd_pins ps8_0_axi_periph_1/M31_ACLK] [get_bd_pins ps8_0_axi_periph_1/M32_ACLK] [get_bd_pins ps8_0_axi_periph_1/M33_ACLK] [get_bd_pins ps8_0_axi_periph_1/M34_ACLK] [get_bd_pins ps8_0_axi_periph_1/M35_ACLK] [get_bd_pins ps8_0_axi_periph_1/M36_ACLK] [get_bd_pins ps8_0_axi_periph_1/M37_ACLK] [get_bd_pins ps8_0_axi_periph_1/M38_ACLK] [get_bd_pins ps8_0_axi_periph_1/M39_ACLK] [get_bd_pins ps8_0_axi_periph_1/M40_ACLK] [get_bd_pins ps8_0_axi_periph_1/M41_ACLK] [get_bd_pins ps8_0_axi_periph_1/M42_ACLK] [get_bd_pins ps8_0_axi_periph_1/M43_ACLK] [get_bd_pins ps8_0_axi_periph_1/M44_ACLK] [get_bd_pins ps8_0_axi_periph_1/M45_ACLK] [get_bd_pins ps8_0_axi_periph_1/M46_ACLK] [get_bd_pins ps8_0_axi_periph_1/M47_ACLK] [get_bd_pins ps8_0_axi_periph_1/S00_ACLK] [get_bd_pins rst_ps8_0_99M/slowest_sync_clk] [get_bd_pins sc_hp0_mm2s/aclk] [get_bd_pins sc_hp1_s2mm/aclk] [get_bd_pins sc_hp2_mm2s/aclk] [get_bd_pins sc_hp3_s2mm/aclk] [get_bd_pins sc_hpc0_mm2s/aclk] [get_bd_pins sc_hpc1_s2mm/aclk] [get_bd_pins zcore32_0/ap_clk] [get_bd_pins zcore32_1/ap_clk] [get_bd_pins zcore32_10/ap_clk] [get_bd_pins zcore32_11/ap_clk] [get_bd_pins zcore32_12/ap_clk] [get_bd_pins zcore32_13/ap_clk] [get_bd_pins zcore32_14/ap_clk] [get_bd_pins zcore32_15/ap_clk] [get_bd_pins zcore32_16/ap_clk] [get_bd_pins zcore32_17/ap_clk] [get_bd_pins zcore32_18/ap_clk] [get_bd_pins zcore32_19/ap_clk] [get_bd_pins zcore32_2/ap_clk] [get_bd_pins zcore32_20/ap_clk] [get_bd_pins zcore32_21/ap_clk] [get_bd_pins zcore32_22/ap_clk] [get_bd_pins zcore32_23/ap_clk] [get_bd_pins zcore32_24/ap_clk] [get_bd_pins zcore32_25/ap_clk] [get_bd_pins zcore32_26/ap_clk] [get_bd_pins zcore32_27/ap_clk] [get_bd_pins zcore32_28/ap_clk] [get_bd_pins zcore32_29/ap_clk] [get_bd_pins zcore32_3/ap_clk] [get_bd_pins zcore32_30/ap_clk] [get_bd_pins zcore32_31/ap_clk] [get_bd_pins zcore32_32/ap_clk] [get_bd_pins zcore32_33/ap_clk] [get_bd_pins zcore32_34/ap_clk] [get_bd_pins zcore32_35/ap_clk] [get_bd_pins zcore32_36/ap_clk] [get_bd_pins zcore32_37/ap_clk] [get_bd_pins zcore32_38/ap_clk] [get_bd_pins zcore32_39/ap_clk] [get_bd_pins zcore32_4/ap_clk] [get_bd_pins zcore32_5/ap_clk] [get_bd_pins zcore32_6/ap_clk] [get_bd_pins zcore32_7/ap_clk] [get_bd_pins zcore32_8/ap_clk] [get_bd_pins zcore32_9/ap_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk1] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp2_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp3_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihpc0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihpc1_fpd_aclk]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins rst_ps8_0_99M/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
   # Create address segments
@@ -1663,54 +1531,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_39/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
   create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_39/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
   create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_39/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_40/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_40/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_40/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_40/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_40/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_40/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_41/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_41/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_41/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_41/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_41/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_41/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_42/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_42/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_42/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_42/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_42/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_42/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_43/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_43/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_43/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_43/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_43/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_43/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_44/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_44/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_44/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_44/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_44/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_44/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_45/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_45/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_45/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_45/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_45/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_45/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_46/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_46/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_46/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_46/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_46/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_46/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_47/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC0_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_47/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC0_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_47/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_QSPI] SEG_zynq_ultra_ps_e_0_HPC0_QSPI
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_47/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_DDR_LOW] SEG_zynq_ultra_ps_e_0_HPC1_DDR_LOW
-  create_bd_addr_seg -range 0x10000000 -offset 0xE0000000 [get_bd_addr_spaces axi_dma_47/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_PCIE_LOW] SEG_zynq_ultra_ps_e_0_HPC1_PCIE_LOW
-  create_bd_addr_seg -range 0x20000000 -offset 0xC0000000 [get_bd_addr_spaces axi_dma_47/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_QSPI] SEG_zynq_ultra_ps_e_0_HPC1_QSPI
   create_bd_addr_seg -range 0x00010000 -offset 0xA0000000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] SEG_axi_dma_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA00A0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_10/S_AXI_LITE/Reg] SEG_axi_dma_10_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA00B0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_11/S_AXI_LITE/Reg] SEG_axi_dma_11_Reg
@@ -1745,14 +1565,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   create_bd_addr_seg -range 0x00010000 -offset 0xA0260000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_38/S_AXI_LITE/Reg] SEG_axi_dma_38_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA0270000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_39/S_AXI_LITE/Reg] SEG_axi_dma_39_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA0030000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_3/S_AXI_LITE/Reg] SEG_axi_dma_3_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA0280000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_40/S_AXI_LITE/Reg] SEG_axi_dma_40_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA0290000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_41/S_AXI_LITE/Reg] SEG_axi_dma_41_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02A0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_42/S_AXI_LITE/Reg] SEG_axi_dma_42_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02B0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_43/S_AXI_LITE/Reg] SEG_axi_dma_43_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02C0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_44/S_AXI_LITE/Reg] SEG_axi_dma_44_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02D0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_45/S_AXI_LITE/Reg] SEG_axi_dma_45_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02E0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_46/S_AXI_LITE/Reg] SEG_axi_dma_46_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xA02F0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_47/S_AXI_LITE/Reg] SEG_axi_dma_47_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA0040000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_4/S_AXI_LITE/Reg] SEG_axi_dma_4_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA0050000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_5/S_AXI_LITE/Reg] SEG_axi_dma_5_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA0060000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_6/S_AXI_LITE/Reg] SEG_axi_dma_6_Reg
@@ -1795,14 +1607,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
   create_bd_addr_seg -range 0x00010000 -offset 0xB0260000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_38/s_axi_control/Reg] SEG_zcore32_38_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xB0270000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_39/s_axi_control/Reg] SEG_zcore32_39_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xB0030000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_3/s_axi_control/Reg] SEG_zcore32_3_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB0280000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_40/s_axi_control/Reg] SEG_zcore32_40_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB0290000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_41/s_axi_control/Reg] SEG_zcore32_41_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02A0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_42/s_axi_control/Reg] SEG_zcore32_42_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02B0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_43/s_axi_control/Reg] SEG_zcore32_43_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02C0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_44/s_axi_control/Reg] SEG_zcore32_44_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02D0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_45/s_axi_control/Reg] SEG_zcore32_45_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02E0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_46/s_axi_control/Reg] SEG_zcore32_46_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0xB02F0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_47/s_axi_control/Reg] SEG_zcore32_47_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xB0040000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_4/s_axi_control/Reg] SEG_zcore32_4_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xB0050000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_5/s_axi_control/Reg] SEG_zcore32_5_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xB0060000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zcore32_6/s_axi_control/Reg] SEG_zcore32_6_Reg
@@ -2020,54 +1824,6 @@ CONFIG.PSU__USE__S_AXI_GP5 {1} \
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_4/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP3/HP1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HP1_LPS_OCM
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_4/Data_S2MM/SEG_zynq_ultra_ps_e_0_HP1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_40/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_40/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_40/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_40/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_41/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_41/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_41/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_41/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_42/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_42/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_42/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_42/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_43/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_43/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_43/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_43/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_44/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_44/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_44/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_44/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_45/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_45/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_45/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_45/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_46/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_46/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_46/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_46/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_47/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP0/HPC0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_47/Data_MM2S/SEG_zynq_ultra_ps_e_0_HPC0_LPS_OCM]
-
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_47/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP1/HPC1_LPS_OCM] SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM
-  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_47/Data_S2MM/SEG_zynq_ultra_ps_e_0_HPC1_LPS_OCM]
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_5/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HP0_LPS_OCM
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_5/Data_MM2S/SEG_zynq_ultra_ps_e_0_HP0_LPS_OCM]

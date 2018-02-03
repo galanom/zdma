@@ -47,7 +47,7 @@ set srcDir	""
 #set proj_name	"base_sym_zedboard"
 #set top		"sym_pb4"
 
-set proj_dir	"../base_zcu102"
+set proj_dir	"../base_zcu102_lite"
 set proj_name	"base_zcu102"
 set top		"sym"
 
@@ -69,7 +69,7 @@ set core_easiest "loopback"
 set core_hardest "gauss"
 set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
 
-for {set pblock_list [list]; set i 0} {$i < 48} {incr i} {
+for {set pblock_list [list]; set i 0} {$i < 40} {incr i} {
 	lappend pblock_list $i
 }; #pblock_list will be [0, 1, 2, ... N-1]
 

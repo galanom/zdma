@@ -2,3 +2,4 @@
 find . -iname '*.aux' | xargs rm -f
 rm -f *.acn *.acr *.alg *.bbl *.blg *.fdb_latexmk *.fls *.glg *.glo *.gls *.ist *.log *.out *.toc
 rm -rf svg-inkscape
+ln -s build/main.ist main.ist

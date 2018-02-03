@@ -4,7 +4,7 @@
 #proj_name="base_sym_zedboard"
 #top="sym_pb4"
 
-proj_dir="../base_zcu102/"
+proj_dir="../base_zcu102_lite/"
 proj_name="base_zcu102"
 top="sym"
 
@@ -12,7 +12,7 @@ instance_name="zcore32"
 solution="solution_32u_300"
 
 cores_dir="../cores"
-INSTANCE_LIST=`printf "${instance_name}_%d " {0..47}`
+INSTANCE_LIST=`printf "${instance_name}_%d " {0..39}`
 CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
 
 rm -rf ./prj/*  ./bit ./hd_visual ./synth ./impl ./dcp/*.dcp *.log \

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 cd ~/work/zdma/doc
-latexmk --shell-escape -interaction=nonstopmode -lualatex -outdir=build main.tex
+latexmk --shell-escape -lualatex -outdir=build main.tex
+#2>& 1 | grep -v "/usr/share" | grep -v texmf
 cd -
 

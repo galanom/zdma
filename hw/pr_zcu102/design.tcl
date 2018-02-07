@@ -24,8 +24,8 @@ set tclParams [list hd.visual 1 \
 ####flow control
 set run.rmSynth        0
 set run.prImpl         1
-set run.prVerify       1
-set run.writeBitstream 1
+set run.prVerify       0
+set run.writeBitstream 0
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -65,9 +65,11 @@ set_attribute module $static synthCheckpoint $top_dcp
 ####################################################################
 
 set core_basename "zcore32"
-set core_easiest "loopback"
+set core_easiest "negative"
 set core_hardest "gauss"
-set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
+set core_list [list "gauss" "sobel" "emboss" "outline" \
+		"sharpen" "contrast" "negative" "threshold"]
+# removed loopback
 
 for {set pblock_list [list]; set i 0} {$i < 48} {incr i} {
 	lappend pblock_list $i
@@ -135,6 +137,7 @@ foreach core $core_list {
 	set_attribute impl $config route_directive "Explore"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above
+	set_param place.closeImportedSites false
 	set_attribute impl $config pr.impl	1
 	set_attribute impl $config implXDC	${top_xdc}
 	set_attribute impl $config impl		${run.prImpl}

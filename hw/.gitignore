@@ -1,6 +1,6 @@
 base*
-zedtest
-zcu102test
+zed*
+zcu*
 pipeline
 hd_visual
 vivado*

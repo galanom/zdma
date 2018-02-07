@@ -1,6 +1,6 @@
 #!/opt/Xilinx/Vivado_HLS/2017.2/bin/vivado_hls
 set cores [list gauss sobel emboss outline sharpen contrast threshold loopback negative]
-set sizes [list 64]
+set sizes [list 8 16]
 
 foreach core $cores {
 	foreach size $sizes {

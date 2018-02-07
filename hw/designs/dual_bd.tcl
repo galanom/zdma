@@ -161,7 +161,10 @@ proc create_root_design { parentCell } {
   set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_0
@@ -170,9 +173,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_1 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
-CONFIG.c_m_axi_mm2s_data_width {64} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
-CONFIG.c_mm2s_burst_size {8} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_1
@@ -181,7 +185,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_2 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_2
@@ -190,7 +197,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_3 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_3 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_3
@@ -199,7 +209,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_4 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_4 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_4
@@ -208,7 +221,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_5 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_5 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_5
@@ -217,7 +233,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_6 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_6 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_6
@@ -226,7 +245,10 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_7 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_7 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {128} \
+CONFIG.c_m_axi_s2mm_data_width {128} \
 CONFIG.c_m_axis_mm2s_tdata_width {32} \
+CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_7
@@ -271,7 +293,7 @@ CONFIG.S14_HAS_DATA_FIFO {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_DATA_FIFO {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
-CONFIG.XBAR_DATA_WIDTH {64} \
+CONFIG.XBAR_DATA_WIDTH {128} \
  ] $axi_interconnect_0
 
   # Create instance: axi_interconnect_1, and set properties
@@ -314,7 +336,7 @@ CONFIG.S14_HAS_DATA_FIFO {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_DATA_FIFO {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
-CONFIG.XBAR_DATA_WIDTH {64} \
+CONFIG.XBAR_DATA_WIDTH {128} \
  ] $axi_interconnect_1
 
   # Create instance: ps8_0_axi_periph_0, and set properties
@@ -577,8 +599,8 @@ CONFIG.PSU__SATA__LANE1__IO {GT Lane3} \
 CONFIG.PSU__SATA__PERIPHERAL__ENABLE {1} \
 CONFIG.PSU__SATA__REF_CLK_FREQ {125} \
 CONFIG.PSU__SATA__REF_CLK_SEL {Ref Clk1} \
-CONFIG.PSU__SAXIGP2__DATA_WIDTH {64} \
-CONFIG.PSU__SAXIGP3__DATA_WIDTH {64} \
+CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP3__DATA_WIDTH {128} \
 CONFIG.PSU__SD1__DATA_TRANSFER_MODE {8Bit} \
 CONFIG.PSU__SD1__GRP_CD__ENABLE {1} \
 CONFIG.PSU__SD1__GRP_CD__IO {MIO 45} \

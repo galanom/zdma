@@ -26,6 +26,7 @@
 {
 	name = {devc},
 	long = {Device Configuration controller},
+	first = {\glsentrylong{devc} (\glsentryname{devc})},
 	description = {
 		A configuration controller for the Zynq-7000.
 		It contains an \gls{axi} to \gls{pcap} bridge
@@ -38,6 +39,7 @@
 {
 	name = {PCAP},
 	long = {Processor Configuration Access Port},
+	first = {\glsentrylong{pcap} (\glsentryname{pcap})},
 	description = {\emph{\glsentrylong{pcap}}:
 		The port to the FPGA configuration interface from the PS side.
 		In Xilinx FPGA-SoCs it is the default port from boot-up.
@@ -51,6 +53,7 @@
 {
 	name = {ICAP},
 	long = {Internal Configuration Access Port},
+	first = {\glsentrylong{icap} (\glsentryname{icap})},
 	description = {\emph{\glsentrylong{icap}}:
 		The port to the FPGA configuration interface from the PL side.
 	},
@@ -62,6 +65,7 @@
 {
 	name = {AMBA},
 	long = {Advanced Microcontroller Bus Architecture},
+	first = {\glsentrylong{amba} (\glsentryname{amba})},
 	description = {\emph{\glsentrylong{amba}}:
 		A family of interconnect protocols that originates 
 		from the ARM microcontrollers but now it is used widely
@@ -74,6 +78,7 @@
 {
 	name = {DAP},
 	long = {Device Access Port},
+	first = {\glsentrylong{dap} (\glsentryname{dap})},
 	description = {\emph{\glsentrylong{dap}}:
 		An external debug interface to an ARM core. It can debug a running system
 		without the intervention of the CPU. It is available in Xilinx FPGA-SoCs.
@@ -84,7 +89,6 @@
 {
 	name = {GP},
 	long = {General Purpose port},
-%	first = {\glsentrylong{gp} (\glsentryname{gp})},
 	description = {\emph{\glsentrylong{gp}}:
 		An AXI compatible port, found in Zynq-7000 but not in UltraScale+.
 		It is present both as a slave to PS and as a master. 
@@ -174,12 +178,22 @@
 \newglossaryentry{bram}
 {
 	name = {BRAM},
-	long = {Block RAM},
 	first = {\glsentrylong{bram} (\glsentryname{bram})},
 	description = {\emph{\glsentrylong{bram}}:
-		A type of on-chip FPGA memory resource with one cycle access latency.
+		A specialized type of on-chip FPGA memory resource with one cycle access latency.
 	}
+	see = {lutram},
 }
+
+\newglossaryentry{lutram}
+{
+	name = {distributed RAM},
+	description = {\emph{\Gls{lutram} or LUT RAM}:
+		Memory implemented in generic LUTs that are distributed over all the FPGA silicon area.
+	},
+	see = {bram},
+}
+
 
 \newglossaryentry{acelite}
 {
@@ -197,6 +211,7 @@
 {
 	name = {AHB},
 	long = {Advanced High-performance Bus},
+	first = {\glsentrylong{ahb} (\glsentryname{ahb})},
 	description = {\emph{\glsentrylong{ahb}}:
 		A high-performance, single-channel multiple-master shared bus, 
 		introduced with \gls{amba} version 2.
@@ -219,6 +234,7 @@
 {
 	name = {APB},
 	long = {Advanced Peripheral Bus},
+	first = {\glsentrylong{apb} (\glsentryname{apb})},
 	description = {\emph{\glsentrylong{apb}}:
 		A low-complexity, low-performance shared-bus, defined in the original
 		specification of \gls{amba}.
@@ -267,7 +283,7 @@
 
 \newglossaryentry{cci}
 {
-	name = {CCI}
+	name = {CCI},
 	long = {Cache Coherent Interconnect},
 	description = {\emph{\glsentrylong{cci}}:
 		A cache-coherent interconnect by ARM. 
@@ -294,6 +310,7 @@
 {
 	name = {SCU},
 	long = {Snoop Control Unit},
+	first = {\glsentrylong{scu} (\glsentryname{scu})},
 	description = {\emph{\glsentrylong{scu}}:
 		The logic that implements cache coherency at the processor side.
 	}
@@ -303,6 +320,7 @@
 {
 	name = {ACP},
 	long = {Accelerator Coherency Port},
+	first = {\glsentrylong{acp} (\glsentryname{acp})},
 	description = {\emph{\glsentrylong{acp}}:
 		An \gls{axi} port that offers IO-Coherency to a non cache-aware AXI Master.
 	},
@@ -313,7 +331,7 @@
 {
 	name = {HP},
 	long = {High Performance port},
-%	first = {\glsentrylong{hp} (\glsentryname{hp})},
+	first = {\glsentrylong{hp} (\glsentryname{hp})},
 %	firstplural={\glsentrylong{hp}\glspluralsuffix\ (\glsentryname{hp}\glspluralsuffix)},
 	description = {\emph{\glsentrylong{hp}}:
 		A high-performance non-coherent port that interfaces 
@@ -321,6 +339,17 @@
 		In Zynq-7000 it can be configured as a 32 or 64 bit port, running at up to 150MHz.
 		In Zynq UltraScale+ it can also be configured as a 128 bit port and the maximum
 		frequency is raised to 333MHz.
+	},
+}
+
+\newglossaryentry{afi}
+{
+	name = {AFI},
+	long = {\gls{axi} FIFO Interface},
+	first = {\glsentrylong{afi} (\glsentryname{afi})},
+	description = {\emph{\glsentrylong{afi}}:
+		FIFO buffers placed in silicon just after the \gls{hp} ports. 
+		Their purpose is to smooth out traffic in order to make DDR access more efficient.
 	},
 }
 

@@ -191,9 +191,57 @@
 	description = {\emph{\Gls{lutram} or LUT RAM}:
 		Memory implemented in generic LUTs that are distributed over all the FPGA silicon area.
 	},
-	see = {bram},
+	see = {bram,lut},
 }
 
+
+\newglossaryentry{clb}
+{
+	name = {CLB},
+	description = {\emph{Configurable Logic Block}:
+		The fundamental configurable block in an FPGA. It consists of a few \Glspl{slice}
+		(the number depends on the architecture) and a switch matrix that provides
+		access to the general routing matrix.
+	},
+	see = {slice},
+}
+
+\newglossaryentry{slice}
+{
+	name = {slice},
+	description = {
+		The ``Slice'' in Xilinx terminology or ``Adaptive Logic Module'' in Altera's,
+		is the most basic group of configurable elements. It contains a few \gls{lut},
+		fixed logic such as multiplexers and fast carry propagation logic, as well as
+		some memory elements (flip-flops). An FPGA architecture may define several slice types
+		that co-exist in the same chip.
+	},
+	see = {lut},
+}
+
+\newglossaryentry{lut}
+{
+	name = {LUT},
+	description = {\emph{Look-Up Table}: 
+		A programmable function generator. It decides $n$ outputs according to $m$ inputs
+		over constant time. 
+		The number of the inputs, the outputs and the legal configurations
+		are architecture dependant. 
+		Essentially, it is a bit-addressable array of SRAM memory cells
+		that stores the boolean function truth table.
+	},
+}
+
+\newglossaryentry{pblock}
+{
+	name = {pblock},
+	description = {\emph{Partition Block}:
+		A group of physical FPGA resources. It may be dynamically reconfigurable or not.
+		If it is, the architecture will impose several shape, content and placement restrictions.
+		If it is not, it acts as its assigned module container but it may as well share logic
+		from other modules.
+	},
+}
 
 \newglossaryentry{acelite}
 {

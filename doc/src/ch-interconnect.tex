@@ -1050,6 +1050,7 @@ or 128-bit port (UltraScale+ default).
 32 bit SI, 64 bit MI	& 5421	&5286	&1826	\\
 32 bit SI, 128 bit MI	& 8053	&8214	&1962	\\
 \bottomrule
+% for 128 bits smartconnect &4231   &8389   &2368 pg
 \end{tabular}
 \caption{The effect of master-slave data width mismatch on AXI Interconnect implementation size.\\
 	Configuration: AXI Interconnect v2.1, 16 SI / 1 MI, outer reg slices and 32-deep FIFO}
@@ -1064,35 +1065,56 @@ An example case that the proverb ``if it ain't broke, don't fix it'' doesn't alw
 
 Since both Zynq families offer multiple PS-PL ports that lead to 
 multiple memory ports of the memory controller,
-it is a huge oportunity for access parallellization.
-Despite that as shown in section \ref{sect:zynq7000-hp} 
-\emph{TODO να βρω την ταχυτητα της θυρας DDR του US+} in Zynq-7000 case, 
-the aggregate throughput of the highest performance ports
-will not only saturate the memory controller but even
-the memory interconnect, we still could expect a linear increse
-of performance but certainly something much better than that of a single port.
-That is because the port is clocked by the PL clock and its width is
-user configured to that of the driving AXI DMA. In contrast,
-the PS memory interconnect and the memory controller run in different clock domains
-and have constand data widths.
+it is an oportunity for access parallellization.
 
-Therefore, a more realistic expectation for per port speed for Zynq-7000 
-would define a clock of 133MHz and data width of 32 bits, giving a 532MB/s
-per direction or 1064MB/s in the best case. This rate cannot saturate
-neither the memory controller nor the memory interconnect.
+However, in section \ref{sect:zynq7000-hp} 
+\emph{[TODO να βρω την ταχυτητα της θυρας DDR του US+]} 
+we saw that, regarding Zynq-7000,
+the aggregate throughput of just two \gls{hp} ports
+is suffucient to saturate the memory controller, 
+even if we do not take into account its other potential users, 
+e.g. the processor or the I/O peripherals.
+Given the comparatively low throughput of the Zynq-7000 memory subsystem,
+one may wonder if there is sufficient motivation for even attempting parallellization.
+There are two arguments in favor of doing it -- and virtually none against.
+
+Firstly, the maximum theoretical throughput of 2400MB/s that Xilinx asserts (\cite{pg585}, pg 652)
+was calculated assuming maximum port frequency, maximum port width, and continuous bidirectional
+traffic. The latter is unlikely, but there is little we can do. As for the other two,
+they are subject to design trade-offs between per-accelerator performance vs. accelerator count
+and lower values might be chosen, effectively operating the port at a fraction of its
+maximum rate. At the PS side however, the memory interconnect and the memory controller
+operate in separate clock domains and with fixed width ports,
+so their maximum throughput is undifferentiated by the PL design.
+
+Secondly, the complexity of the interconnect might limit the maximum attainable clock.
+Breaking down a single big interconnect to several smaller will allow a far better
+	\footnote{
+		According to \cite{pg059} pg 23, for Artix-7 class FPGAs, 
+		like the smaller members of Zynq-7000 family, the maximum attainable
+		clock for speed grade 2 devices is 130MHz for a 64b interconnect of
+		16 slave / 1 master interfaces, and 205MHz for a 4 slave / 1 master.
+	}
+maximum clock.
+
+Therefore, the parallellization is worth of exploring, the only question is
+which is the best architecture for our purpose.
 
 Intuition would command us to increase the number of AXI Interconnect
-Master Interfaces. Granted, it will complicate the processor memory map
+Master Interfaces. Granted, it violates our second argument, but since
+it is the simplest architecture and actually the first that was attempted
+in this work, it is worth of assessing it.
+
+This configuration will complicate the processor memory map
 since a peripheral must be able to reach a processor address using
-strictly one route. This could be solved by segmenting the processor memory
+exactly one possible route. 
+This could be solved by segmenting the processor memory
 and offsetting the burden of access parallelization to the software,
 in the sense that if software choses the memory buffers properly
 it can balance the \gls{transaction} rates between all ports.
 
-This was actually the first parallelization attempt 
-in this work that was later scrapped. 
-Nonetheless, it is worth to assess it. Firstly, in table \ref{tab:int-mmi}
-the effect on resource utilization is displayed.
+What cannot be solved however, is the hardware cost that arises of the increased
+complexity, as it is shown in table \ref{tab:int-mmi}.
 
 \begin{figure}[ht!]
 \centering
@@ -1190,7 +1212,25 @@ Apparently, splitting up the interconnect proved to only marginally increase
 resource utilization, essentially giving us all the aforementioned advantages at almost no cost.
 
 
-\subsubsection{Compairing AXI Interconnect and SmartConnect}
+\subsubsection{Comparing AXI Interconnect and SmartConnect}
+
+In 2016, Xilinx released a new IP core that implements 
+the functionality of a Full \gls{axi} interconnect,
+claiming remarkably higher maximum clock at UltraScale+ devices.
+
+The new core is put to the test at both designs in a non-PR workflow 
+but with all \gls{pblock} placement constraints active.
+On the per-core performance oriented design, 
+SmartConnect managed to achieve a clock of 143MHz,
+whereas the AXI Interconnect, in similar configuration, achieved only 125MHz.
+The more congested core-count oriented design however, 
+failed to be placed with SmartConnect as the device did not have the required free \glspl{clb}.
+In contrast, with AXI Interconnect it was successfully implemented at 133MHz.
+
+Unfortunately, this achievement comes at great expense of resource utilization.
+The table \ref{tab:smartconnect} summarizes the results of implementing 
+a test-case of a single 16 SI / 1 MI interconnect implemented with both the 
+AXI Interconnect and the SmartConnect, in both Zynq-7000 and UltraScale+ devices.
 
 \begin{figure}[ht!]
 \centering
@@ -1222,8 +1262,15 @@ resource utilization, essentially giving us all the aforementioned advantages at
 	Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
 	AXI Interconnect v2.1 vs AXI SmartConnect v1.0, 4 instances of 4 SI / 1 MI, 32 bit crossbar.\\ 
 	Configuration: Outer register and 32 byte FIFO per port.}
+\label{tab:smartconnect}
 \end{figure}
-%389 490
+
+As it was observed, SmartConnect increased resource utilization over AXI Interconnect by a factor of 3.
+However, the overall impact in the design is not so obvious. 
+For Zedboard, one instance of such an interconnect would consume the 24\% of the device.
+For the quadruple-sized zcu102, four of such instances 
+
+
 \subsubsection{Conclusion}
 
 

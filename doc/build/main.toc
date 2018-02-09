@@ -33,7 +33,7 @@
 \contentsline {subsection}{\numberline {1.4.2}The Interconnect}{16}{subsection.1.4.2}
 \contentsline {subsubsection}{A Naïve Solution and Basic Configuration}{16}{section*.23}
 \contentsline {subsubsection}{Attempting Parallel Access to Memory}{19}{section*.28}
-\contentsline {subsubsection}{Compairing AXI Interconnect and SmartConnect}{21}{section*.32}
+\contentsline {subsubsection}{Comparing AXI Interconnect and SmartConnect}{21}{section*.32}
 \contentsline {subsubsection}{Conclusion}{22}{section*.34}
 \contentsline {chapter}{Glossary}{23}{section*.35}
 \contentsline {chapter}{Bibliography}{29}{chapter.2}

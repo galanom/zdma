@@ -66,8 +66,8 @@ set_attribute module $static synthCheckpoint $top_dcp
 
 set core_basename "zcore32"
 set core_easiest "loopback"
-set core_hardest "gauss"
-set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
+set core_hardest "sobel"
+set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold"]
 
 for {set pblock_list [list]; set i 0} {$i < 40} {incr i} {
 	lappend pblock_list $i
@@ -129,10 +129,11 @@ foreach core $core_list {
 	# and therefore some newer options are recognized or some older may no longer be valid.
 	# Please modify tcl/implementation.tcl if that problem arises.
 	
-	set_attribute impl $config opt_directive   "Explore"
-	set_attribute impl $config place_directive "ExtraTimingOpt"
-	set_attribute impl $config phys_directive  "Explore"
-	set_attribute impl $config route_directive "Explore"
+	set_param place.closeImportedSites false	
+	#set_attribute impl $config opt_directive   "Explore"
+	#set_attribute impl $config place_directive "ExtraTimingOpt"
+	#set_attribute impl $config phys_directive  "Explore"
+	#set_attribute impl $config route_directive "Explore"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above
 	set_attribute impl $config pr.impl	1

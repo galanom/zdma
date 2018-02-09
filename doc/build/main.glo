@@ -5,7 +5,9 @@
 \glossaryentry{M\_GP?\glossentry{mgp}|glsseeformat[\seename ]{gp}}{Z}
 \glossaryentry{CHI?\glossentry{chi}|glsseeformat[\seename ]{ace}}{Z}
 \glossaryentry{ACE?\glossentry{ace}|glsseeformat[\seename ]{acelite}}{Z}
-\glossaryentry{distributed RAM?\glossentry{lutram}|glsseeformat[\seename ]{bram}}{Z}
+\glossaryentry{distributed RAM?\glossentry{lutram}|glsseeformat[\seename ]{bram,lut}}{Z}
+\glossaryentry{CLB?\glossentry{clb}|glsseeformat[\seename ]{slice}}{Z}
+\glossaryentry{slice?\glossentry{slice}|glsseeformat[\seename ]{lut}}{Z}
 \glossaryentry{ACE-Lite?\glossentry{acelite}|glsseeformat[\seename ]{ace}}{Z}
 \glossaryentry{AXI?\glossentry{axi}|glsseeformat[\seename ]{axilite}}{Z}
 \glossaryentry{AXI-Lite?\glossentry{axilite}|glsseeformat[\seename ]{axi}}{Z}
@@ -271,7 +273,11 @@
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{19}
 \glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{22}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{23}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{23}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{23}

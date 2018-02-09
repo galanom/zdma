@@ -26,6 +26,8 @@ case $1 in
 	git add .
 	git add -f yocto/build/conf
 	git add -f yocto/meta-local
+	git add -f hw/base_zcu102/base_zcu102.srcs/sym/new/pblocks.xdc
+	git add -f hw/base_zcu102_lite/base_zcu102.srcs/sym/new/pblocks.xdc
 	git reset yocto/meta-local/recipes-bsp/zdma-firmware/files/*.xz
 	git status
 	;;

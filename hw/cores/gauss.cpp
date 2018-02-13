@@ -7,8 +7,13 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
-#pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
-#pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#ifdef CLK_AXILITE
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=line_width bundle=control offset=0x10
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x1C
+#else
+#  pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
+#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#endif
 #pragma HLS INTERFACE ap_stable port=line_width
 	axi_elem_t data_in, data_out;
 	int16_t col;

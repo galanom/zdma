@@ -1,54 +1,93 @@
-\chapter{Interconnect and Memory Management}
-\label{chap:interconnect}
+\chapter{Hardware Architecture}
 
-This chapter discusses how the data is transported 
-from the main memory to an accelerator and vice versa. 
-Essentially, this covers the communication protocol 
-and its underlying physical interconnect, 
-as well as their impact on system performance 
-and software complexity.
+This chapter is devoted to the system's hardware architecture.
+At first, the target hardware platforms will be introduced.
+A strong emphasis will be given to the communication protocol and the interconnect architecture
+as they were a pivotal point for this system's design.
 
-The choices made in hardware architecture are 
-a trade-off between silicon area, clock speed and flexibility. 
-The latter takes the form of restrictions on memory view from the FPGA side, 
-which necessitates proper software support 
-for the memory allocator and acclerator scheduler.
+Afterwards, the most significant system components will be presented.
+There will be a discussion on their operation modes, 
+the possible configurations, and the design trade-offs involved in their implementation.
 
-The software framework, or more precisely, the kernel module
-is flexible enough to support a wide diversity of system configurations. 
-To demonstrate this, there have been implemented two hardware designs
-for the Zynq-7000 series:
+The discussion will conclude with the presentation of the final hardware designs
+that were chosen for implementation, describing the reasoning behind the
+design choices.
 
-The first is geared to accelerator performance featuring
-accelerators with deeper pipeline and wider interconnect that allow
-greater data processing parallellization.
-It has homogenous reconfigurable partitions with
-full memory view on the accelerator side, 
-allowing a freedom of accelerator placement that
-maximizes the scheduler's decision options.
+%The point of focus will be how data will be transfered between
+%the memory and the accelerator and vice versa.
+%%Essentially, this covers the communication protocol 
+%and its underlying physical interconnect,
 
-The second one is geared to high accelerator core count 
-that sacrifices per-core performance and flexibility.
-It uses simpler accelerators with 
-narrower and simpler interconnect that lacks buffering.
-More importantly, it segments the memory view, 
-imposing restrictions on accelerator placement. 
-Finally, it features two types of reconfigurable partitions,
-further complicating the scheduler.
+\section{The Hardware Platform}
 
-Furthermore, as part of the effort to port the system
-to the newer 64-bit FPGA-SoC from Xilinx, the Zynq UltraScale+,
-one more design was created. The accelerator complexity is midway
-between the two other designs. Nonetheless, the newer platform's
-increased capacity, routing capabilities and 
-more flexible partial reconfiguration restrictions
-allowed the packing of several times more accelerator instances
-operating at much higher frequency.
+The primary hardware target of this work was the Zynq-7000 All Programmable SoC family from Xilinx.
+An ``All Programmable SoC`` in Xilinx terminology or an ``SoC FPGA'' according to Altera/Intel and Microsemi,
+is a device that combines a ``hard'' (i.e. implemented in silicon, not \gls{softip}) System-on-Chip
+and the \gls{fabric} of an FPGA.
 
-By providing the correct hardware description 
-by the means of a Device Tree\cite{devicetree} data structure, 
-the kernel module will be capable to detect and configure the hardware
-without the need of source code modification or even a recompilation.
+The notion of the ``SoC'' typically encompassess all the basic functional elements of
+an embedded computer system capable to run a modern general purpose operating system,
+excluding the main memory and storage. Still, vendors deviate from this definition --
+Microsemi uses a microcontroller grade processing system based on Cortex-M3
+which does not feature an MMU restricting operating system choice
+\footnote{There is a port of GNU/Linux, the μClinux Project, that enables support of systems
+that do not feature a Memory Management Unit. The port has been included in the mainline kernel.}
+whereas Altera and Xilinx use the Cortex-A9 and A53 application processors. 
+Still, the assortment of peripherals differ: 
+Some devices omit even the GPU while others include secondary independent real-time processors.
+
+The integrated FPGA \gls{fabric} is comparable that of the standalone FPGAs these vendors offer.
+For example, the lower members of the Zynq-7000 family contain Artix-7 class \gls{fabric},
+while the higher members contain a Kintex-7 class.
+
+As a secondary hardware platform, a port for the Zynq UltraScale+ was made.
+The port was intended to explore the significantly different (compared to Zynq 7000)
+mechanics of partial reconfiguration 
+as well as affirming the system's portability to a 64-bit SoC.
+
+In the following table, the most important technical specifications 
+of these two platforms are described.
+
+
+\begin{figure}[ht!]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cl cc}
+\toprule
+&			&Zynq 7000 & Zynq UltraScale+ \\
+\cmidrule(l{.3em}r{.3em}){1-4}
+\multirow{4}{*}{\rotatebox[origin=c]{90}{\small Board}}
+&Development Board	& ZedBoard		& ZCU102 Evaluation Kit\\
+&Device Model		& Z-7020 (-1)		& ZU9EG (-2)\\
+&PS Memory		& 512MiB DDR3 (fixed)	& 4GiB ECC DDR4 SO-DIMM\\
+&PL Memory		& n/a			& 512MiB DDR4 (fixed)\\
+\cmidrule(l{.3em}r{.3em}){1-4}
+\multirow{7}{*}{\rotatebox[origin=c]{90}{\small Processing System}}
+&Main Processor		& ARM Cortex-A9 	& ARM Cortex-A53\\
+&			& 32bit, 2 cores, 866MHz& 64bit, 4 cores, 1.5GHz\\
+&			& L1 32kiB i/d per core	& 32kiB i/d per core\\
+&			& L2 512KiB, OCM 256KiB	& L2 1024KiB, OCM 256kiB\\
+&Real-Time Processor	& n/a			& ARM Cortex-R5\\
+&			&			& 32bit, 2 cores, 600MHz\\
+&Graphics Processor	& n/a			& Mali-400 MP2 667MHz\\
+\cmidrule(l{.3em}r{.3em}){1-4}
+\multirow{5}{*}{\rotatebox{90}{\small Programmable Logic}}
+&FPGA fabric		& Artix-7 (28nm)	& UltraScale+ EG (16nm FinFET)\\
+&LUT			& 53.2k 		& 274k	\\
+&FF			& 106.4k		& 548k	\\
+&BRAM (Mb)		& 4.9			& 32.1 \\
+&DSP (slices)		& 220			& 2520 \\
+&Transceivers		& n/a			& 24 GTH (16.3Gbps)\\
+\bottomrule
+\end{tabular}}
+\caption{Technical specifications of the target hardware platforms.}
+\label{tab:zynq}
+\end{figure}
+
+The internal interconnect of the Processing System (PS) and its 
+connectivity with the Programmable Logic (PL) will be covered in detail in section \ref{sect:interconnect}.
+Before that, it is important to describe the communication protocol
+that all the on-chip interconnect utilizes.
 
 \section{The Communication Protocol}
 
@@ -115,19 +154,18 @@ Tha \gls{axi} family has several members, but for this system the following thre
 
 	The \gls{axi} comprises five channels: Read Data (R), Read Address (AR),
 	Write Data (W), Write Address (AW), Write Response (B). An \gls{axi} link
-	however, may be unidirectional, discarding the unneeded channels.
-
-	Its typical use in the FPGA realm is transferring data between memory resources,
- 	like \glspl{bram}, processor RAM, FPGA memory controllers, etc.
+	may be unidirectional, discarding the unneeded channels.
 
 	The addressing information must be communicated before a transfer to take place, 
 	which consists a performance barrier. 
 	To amend this, \gls{axi} supports \gls{burst} mode, 
 	where sequential \glspl{beat} of data may be transferred without 
 	re-transmitting any addressing information.
-	
-	\gls{axi} typically needs glue logic 
-	between the two endpoints, called ``\gls{axi} Interconnect''. 
+	Between the two communicating endpoints, 
+	an intermediary ``\gls{axi} Interconnect'' must be inserted.
+
+	Its typical use in the FPGA realm is transferring data between memory resources,
+ 	like \glspl{bram}, processor RAM, FPGA memory controllers, etc.
 
 \item	\textbf{\gls{axilite}}. Introduced with \gls{amba} 4.0, 
 	the \gls{axilite}, as the  name implies,
@@ -135,6 +173,7 @@ Tha \gls{axi} family has several members, but for this system the following thre
 	The most notable simplification is the 
 	lack of support for \gls{burst} transfers. 
 	In exchange, it offers a much lower silicon footprint. 
+	
 	It is best suited for low intensity traffic, 
 	typically for configuration or status registers.
 
@@ -144,7 +183,10 @@ Tha \gls{axi} family has several members, but for this system the following thre
 	This greatly simplifies implementation and reduces wire count.
 	Data flows from the one endpoint to the other, in one direction, 
 	without the need of any intermediary interconnect.
-	It allows the addition of user defined out-of-band data,
+	Transmission size is not known in advance; data will flow
+	indefinately until a control signal (TLAST) is asserted.
+
+	\gls{axistream} allows the addition of user defined out-of-band data,
 	typically for synchronization, and it supports sender and receiver IDs, 
 	which enables stream routing for virtual circuits.
 \end{itemize}
@@ -185,7 +227,7 @@ protocols may be of our use and therefore it will be examined.
 
 The \gls{axi} implementation in Xilinx products consists of the hardware 
 implementation in Zynq 7000 and Zynq UltraScale+ devices,
-the \gls{soft-ip} protocol infrastructure offered in IP Integrator, 
+the \gls{softip} protocol infrastructure offered in IP Integrator, 
 and the \gls{axi} compatible IP building blocks. 
 Additionally, Xilinx offers automation for creating 
 custom cores with \gls{axi} interfaces.
@@ -349,13 +391,14 @@ there are five options available.
 \end{itemize}
 
 \section{The Physical Interconnect}
+\label{sect:interconnect}
 
 So far, we discussed the communication protocol and its implementation at both 
 the programmable logic and the silicon domains.
 The next logical step would be to examine the underlying physical interconnect
 that supports it on the SoC-FPGAs that this work targets. 
 
-Granted, in the FPGA fabric there is infinite flexibility and any topology may be created.
+Granted, in the FPGA \gls{fabric} there is infinite flexibility and any topology may be created.
 The presence of a hard IP however, presents a constraining factor.
 In both Zynq 7000 and UltraScale+ series, 
 there is a single multi-port memory controller
@@ -599,8 +642,6 @@ tha requirements for latency or thoughput,
 the power consumption and the need of a higer level of determinism,
 all of them will derive the optimal solution for each problem.
 
-Let us now discuss the possible scenarios.
-
 \subsection{Programmed I/O from a Processor}
 
 The Zynq 7000 features two ARM Cortex-A9 processor cores
@@ -649,7 +690,7 @@ reading status or other initialization work.
 Such small data exchanges are latency sensitive, not throughput,
 making a perfect fit for programmed I/O.
 
-\subsection{Using the PS DMA}
+\subsection{Using the ``hard'' DMA controller in the PS}
 
 The Zynq-7000 features an eight-channel DMA controller on the PS side.
 Looking back at figure \ref{fig:zynq7000-interconnect} we can see that it is connected
@@ -767,10 +808,10 @@ optionally be cache-coherent, and secondly, the crossing of \gls{cci}
 will induce a latency penalty.
 
 Eventually, since cache coherency is not important for this implementation,
-the \gls{hp} ports will be preferred. However, despite that \gls{hpc} ports
+the \gls{hp} ports would be preferable. However, despite that \gls{hpc} ports
 incure a small latency, they offer a path to access two further memory controller
 ports, increasing our potential bandwidth by 66\%. 
-Therefore, they will be used in addition to the \gls{hp} ports, albeit with
+Therefore, they could be used in addition to the \gls{hp} ports, albeit with
 cache coherency disabled.
 
 \subsubsection{The ACP port}
@@ -840,7 +881,7 @@ By initial problem statement it was decided that the system will feature
 streaming accelerators. This narrows down the DMA controller selection
 to AXI DMA and AXI VDMA. The latter is video oriented, offering additional
 functionality that is desirable in video applications -- and even required
-by some controller cores of imaging peripherals. Our benchmark application
+by some controller cores of imaging peripherals. Our test application
 is indeed imaging oriented and would be benefited by AXI VDMA in a few ways.
 Firstly, it would enable the possibility of using the Xilinx OpenCV-compatible
 HLS video libraries. Secondly, the out-of-band synchronization that is possible
@@ -848,11 +889,43 @@ with the VDMA would enable the accelerator to detect when the image line changes
 and when the frame ends. Lastly, as VDMA was made for embedded use, it would be
 beneficial in case it was decided to bring this system in an embedded setting.
 
-However, our benchmark application is just a benchmark and not the only intended use.
+However, the test application is just for testing and not the only intended use.
 The loss of generality, or even the increased complexity due to specialization,
-were undesired. That leaves us with only the AXI DMA.
+was undesired. That leaves us with only the AXI DMA.
 
-The AXI DMA IP core has t
+The AXI DMA IP core has a few operating modes that are worthy of mentioning.
+
+\begin{itemize}
+\item	\textbf{Direct Register}: 
+	This is the simplest operating mode. A DMA operation is initiated 
+	by writing the control, source and destination registers.
+	The processor can query the status register for completion, 
+	either by polling or by interrupt notification.
+	Operation queueing is not supported, therefore there will be a time gap 
+	between completion and re-programming with next operation.
+	This operation trades performance for resource utilization.
+\item	\textbf{Scatter-Gather}:
+	In this mode, the AXI DMA creates an auxiliary \gls{axi} port
+	to a memory resource that contains a list of transfer descriptors.
+	The AXI DMA will execute sequentially all the descriptors without
+	any intermediate pause. Upon completion, it may pause or restart
+	executing the same list. This mode offers higher performance 
+	as the DMA controller never stalls.
+\item	\textbf{Multichannel}: 
+	An option to the Scatter-Gather mode,
+	that allows multiple virtual channels on the streaming side.
+	The AXI DMA will still have only two interfaces and the channels
+	will be differentiated by the sideband information that is carried
+	over a standard \gls{axistream} channel. This option is interesting
+	in that it permits a single DMA controller to handle multiple accelerators.
+\end{itemize}
+
+The more complex operating modes show a lot of promise for our intended system.
+However, the Direct Register mode was chosen, on the grounds of simplicity
+and as a ``starting point''. The potential of the other modes will be
+discussed at the ``Future Work'' section.
+
+In table \ref{tab:dma-modes} the resource cost of each operating mode is displayed.
 
 \begin{figure}[ht!]
 \centering
@@ -896,6 +969,7 @@ The AXI DMA IP core has t
 \caption{Resource utilization of the AXI DMA core. Configuration: Burst size 16, address width 32b.\\
 	LUT: Look-up tables, FF: Flip-flops, BRAM: Block RAM (36kb/18kb), Nets: Boundary crossing nets.\\
 	DR: Direct Register, SG: Scatter-Gather, MC: Multi-channel, $n$-ch: number of channels}
+\label{tab:dma-modes}
 \end{figure}
 
 
@@ -1040,6 +1114,17 @@ To illustrate this, the table \ref{tab:int-dw} shows the effect of using the def
 settings when connecting a 32-bit accelerator to a 64-bit port (Zynq-7000 default)
 or 128-bit port (UltraScale+ default).
 
+A special case that arose during the development of the UltraScale+ port,
+is the \gls{axilite} peripheral control interconnect. 
+If the ip core is automatically placed by Vivado Block Automation,
+it is instantiated with a data width converter on its single slave interface
+and the crossbar hierarchy is implemented in 32 bits.
+However, if it is manually placed, the data width converter will be placed
+at the slave interfaces of all tier-2 crossbars, while the tier-1 crossbar will be
+at the port width, i.e. 128 bits. 
+This effect, in our case, lead to a comparative 2.5x increase in LUT and 2x increase in FF utilization.
+
+
 \begin{figure}[ht!]
 \centering
 \begin{tabular}{lrrr}
@@ -1057,9 +1142,9 @@ or 128-bit port (UltraScale+ default).
 \label{tab:int-dw}
 \end{figure}
 
-We observe a drastic increase in resource utilization just because
-we left a setting at its default value. 
-An example case that the proverb ``if it ain't broke, don't fix it'' doesn't always apply.
+Unless this is desirable (e.g. to increase the maximum port throughput),
+it is advisable to configure the Zynq port at identical data width with the
+full \gls{axi} ports of AXI DMA.
 
 \subsubsection{Attempting Parallel Access to Memory}
 
@@ -1218,16 +1303,15 @@ In 2016, Xilinx released a new IP core that implements
 the functionality of a Full \gls{axi} interconnect,
 claiming remarkably higher maximum clock at UltraScale+ devices.
 
-The new core is put to the test at both designs in a non-PR workflow 
-but with all \gls{pblock} placement constraints active.
-On the per-core performance oriented design, 
-SmartConnect managed to achieve a clock of 143MHz,
-whereas the AXI Interconnect, in similar configuration, achieved only 125MHz.
-The more congested core-count oriented design however, 
-failed to be placed with SmartConnect as the device did not have the required free \glspl{clb}.
-In contrast, with AXI Interconnect it was successfully implemented at 133MHz.
+During the hardware design development, the new IP core was put to test.
+The maximum clock frequency was sought in a moderately congested design,
+using a static workflow but with all partial reconfiguration related 
+\gls{pblock} placement constraints enabled. The end result was that
+using SmartConnect a clock of 143MHz was achieved, whereas with
+AXI Interconnect only 125MHz could be attained.
 
-Unfortunately, this achievement comes at great expense of resource utilization.
+Unfortunately, this achievement came at the expense of resource utilization.
+As the increase was significant, it was deemed necessary to quantify the overhead.
 The table \ref{tab:smartconnect} summarizes the results of implementing 
 a test-case of a single 16 SI / 1 MI interconnect implemented with both the 
 AXI Interconnect and the SmartConnect, in both Zynq-7000 and UltraScale+ devices.
@@ -1258,19 +1342,475 @@ AXI Interconnect and the SmartConnect, in both Zynq-7000 and UltraScale+ devices
 &&SmartConnect v1.0		& 15046	& 12154	&2652	&& 14404& 11608 & 2732\\
 \bottomrule
 \end{tabular}
-\caption{
-	Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
+\caption{Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
 	AXI Interconnect v2.1 vs AXI SmartConnect v1.0, 4 instances of 4 SI / 1 MI, 32 bit crossbar.\\ 
 	Configuration: Outer register and 32 byte FIFO per port.}
 \label{tab:smartconnect}
 \end{figure}
 
-As it was observed, SmartConnect increased resource utilization over AXI Interconnect by a factor of 3.
-However, the overall impact in the design is not so obvious. 
-For Zedboard, one instance of such an interconnect would consume the 24\% of the device.
-For the quadruple-sized zcu102, four of such instances 
+Apparently, the 15\% gain in clock speed was accompanied by a threefold increase in LUT utilization. 
+Therefore, its use may not be recommended in the following cases:
+
+\begin{itemize}
+\item	If area is at a premium and functional completeness cannot be achieved with SmartConnect.
+\item	If the critical path resides inside the accelerator core.
+\item	For the \gls{axilite} peripheral control interconnect. Either way, \gls{axilite} peripherals
+	cannot be clocked as high as full \gls{axi} or \gls{axistream} ones.
+	\footnote{For the AXI DMA case, the figure is actually around 25\% 
+	lower (see \cite{pg021}, pg 8).} Given that configuration
+	ports, the typical users of \gls{axilite}, are not performance critical, it would be
+	better that the \gls{axilite} paths reside in a separate (lower) clock domain.
+\end{itemize}
+
+\section{The Implemented Designs}
+
+At the end of the day, taking into account all these observations,
+an architecture had to be designed.
+Firstly, the design objectives must be stated:
+
+\begin{itemize}
+\item	\textbf{Correctness}:
+	The design will be the means to prove that the proposed system does work.
+	It shall function properly for any user input data within its specifications
+	and process it in a timely manner.
+\item	\textbf{Flexibility}: 
+	The software (i.e. the kernel driver) shall support,
+	without recompilation or additional user intervention,
+	any possible interconnect architecture and memory topology.
+	as long as it is properly described in the \gls{dt}.
+	An accelerator may have a restricted view of the addressable memory space
+	or might be given exclusive access to a certain region.
+	The memory space itself might be a collection of different memory resources
+	with unequal proximity to the programmable logic. 
+	The designer must be able to express a relative preference 
+	to one resource against another.
+\item	\textbf{Performance}:
+	The design will implement an efficient interconnect that enables 
+	parallell memory access for the accelerators. 
+	Its architecture must permit sufficiently high clock speeds.
+	Finally the final system will show the performance of partial reconfiguration
+	as well as the flexibility of the accelerator scheduler.
+	However, we will not explore the optimal architecture for solving any specific problem.
+\item	\textbf{Portability}:
+	A constant effort throught both hardware and software design was that they should be
+	as decoupled as possible. The software shall use standardized operating system
+	interfaces to ensure that porting the system to a different would be done with
+	least effort possible.
+\end{itemize}
+
+In order to pursue these objectives, three designs were developed.
+
+\subsection{An Accelerator Performance Oriented Approach}
+
+The first design is geared to accelerator performance, featuring
+accelerators with wider interconnect that allow
+greater data processing parallellization.
+It has homogenous reconfigurable partitions with
+full memory view on the accelerator side, 
+allowing a freedom of accelerator placement that
+maximizes the scheduler's decision options.
 
 
-\subsubsection{Conclusion}
+\begin{figure}[ht!]
+\centering
+\hspace{-15mm}
+\begin{tikzpicture}
+
+	% Border
+	\draw[dotted] (-40mm,0) -- node[above left = 0mm and 50mm]{PL} node[below left = 0mm and 50mm]{PS} (80mm,0);
+	
+	% The PS-PL ports
+	\node[port] (hp0) at (-16mm,0) {\ttfamily HP0};
+	\node[port] (hp3) at ($(hp0) + (32mm,0mm)$) {\ttfamily HP3};
+	\node[port] (hp1) at ($(hp0)!0.333!(hp3)$) {\ttfamily HP1};
+	\node[port] (hp2) at ($(hp0)!0.667!(hp3)$) {\ttfamily HP2};
+
+	\node[port] (plint) at ($(hp3) + (16mm,0mm)$) {\ttfamily INT};
+
+	\node[port] (mgp0) at ($(plint) + (20mm,0mm)$) {\ttfamily M\_GP0};
+	\node[port] (mgp1) at ($(mgp0) + (12mm,0mm)$) {\ttfamily M\_GP1};
+	
+	% The Memory Interconnect
+	\node[block, minimum width = 50mm] (mem-interconnect) at ($(hp0)!0.5!(hp3) - (0,20mm)$) {Memory\\Interconnect};
+	
+	% HP to Memory Interconnect
+	\draw[axi64, name path=hp0p] (hp0) -- (hp0 |- mem-interconnect.north);
+	\draw[axi64, name path=hp1p] (hp1) -- (hp1 |- mem-interconnect.north);
+	\draw[axi64, name path=hp2p] (hp2) -- (hp2 |- mem-interconnect.north);
+	\draw[axi64, name path=hp3p] (hp3) -- (hp3 |- mem-interconnect.north);
+
+	% Lines internal to Memory Interconnect
+	\draw[gray, from end of path=hp0p, name path=mem0p] 
+		-- ($(mem-interconnect.south west)!0.28!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp1p] 
+		-- ($(mem-interconnect.south west)!0.28!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp2p, name path=mem1p] 
+		-- ($(mem-interconnect.south west)!0.73!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp3p] 
+		-- ($(mem-interconnect.south west)!0.73!(mem-interconnect.south east)$);
+
+	% Memory controller and DDR box
+	\node[block, minimum width=50mm,minimum height=12mm,align=left,text width=29mm, below=12mm of mem-interconnect] 
+		(mem-controller) {Memory\\Controller};
+	\node[block, minimum width=8mm, minimum height=7mm,right=-15mm of mem-controller] (ps-ddr) {DDR3};
+
+	% From Memory Interconnect to Memory Controller (uses constants!)
+	\draw[axi64, from end of path=mem0p] -- +(0,-12mm);
+	\draw[axi64, from end of path=mem1p] -- +(0,-12mm);
+
+	% PL Interconnect
+	\node[interconnect] (int0) at ($(hp0) + (0, 20mm)$) {};
+	\node[interconnect] (int1) at ($(hp1) + (0, 20mm)$) {};
+	\node[interconnect] (int2) at ($(hp2) + (0, 20mm)$) {};
+	\node[interconnect] (int3) at ($(hp3) + (0, 20mm)$) {};
+	\draw[axi64] (int0) -- (int0 |- hp0.north);
+	\draw[axi64] (int1) -- (int1 |- hp1.north);
+	\draw[axi64] (int2) -- (int2 |- hp2.north);
+	\draw[axi64] (int3) -- (int3 |- hp3.north);
+	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=50mm, minimum height=28mm]
+		(axi-int) at ($(int0.north west) + (-5mm, 12mm)$) {};
+	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]{\footnotesize 64b Full AXI Interconnects};
+
+	% The AXI DMA multi-block
+	\node[mblock, minimum width = 50mm, minimum height = 16mm] (axidma) 
+		at ($(int0)!0.5!(int3) + (0, 40mm)$) {64 bit AXI DMA};
+	\node at ($(axidma.north east) + (2mm,2mm)$) {\ttfamily x6};
+	
+	% Connection of AXI DMA to AXI Interconnect blocks
+	\draw[maxi64] (int0 |- axidma.south) 
+		node[above]{\texttt{MM2S}}
+		node[above left,rotate=90]{\texttt{\small 0..5}} 
+		-- 
+		node[below left,rotate=90]{\texttt{\small 0..2}} (int0);
+	\draw[maxi64] (int0 |- axidma.south) 
+		-- +(0,-6mm) -| 
+		node[above left]{\texttt{\small 3..5}}
+		(int2);
+	\draw[maxi64] (int3 |- axidma.south)
+		node[above]{\texttt{S2MM}}
+		node[above left,rotate=90]{\texttt{\small 0..5}}
+		-- node[below left,rotate=90]{\texttt{\small 0..2}} (int3);
+	\draw[maxi64] (int3 |- axidma.south) -- +(0,-12mm) -|
+		node[above right]{\texttt{\small 3..5}} (int1);
+
+	% The Accelerators
+	\node[mblock, minimum width = 50mm, minimum height = 16mm, above=16mm of axidma] (acc) {64 bit Accelerator};
+	\node at ($(acc.north east) + (2mm,2mm)$) {\ttfamily x6};
+
+	\draw[raxis64] ($(acc.south west)!0.25!(acc.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma.north west)!0.25!(axidma.north east)$);
+	\draw[axis64] ($(acc.south west)!0.75!(acc.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma.north west)!0.75!(axidma.north east)$);
+
+
+	% The Master Interconect
+	\node[block, minimum width = 50mm] (master-interconnect) at ($(mgp0)!0.5!(mgp1) - (0,20mm)$) 
+		{Master Interconnect\\for Slave Peripherals};
+
+	% M_GP to Master Interconnect
+	\draw[raxi64] (mgp0) -- (mgp0 |- master-interconnect.north);
+	\draw[raxi64] (mgp1) -- (mgp1 |- master-interconnect.north);
+
+	% APU
+	\node[block, minimum width = 20mm, minimum height = 12mm, anchor = north west] (apu)
+		at ($(master-interconnect.south west) - (0,12mm)$) {APU};
+	\draw[axi64] (apu) -- (apu |- master-interconnect.south);
+	\draw[axi64] (apu) -- (mem-controller);
+
+	% The Interrupt
+	\draw[-,postaction={decorate}] ([yshift=2mm]axidma.south east) 
+		node[below right] {\ttfamily\scriptsize 6}
+		node[above right]{\ttfamily\scriptsize S2MM Interrupt}
+		-| ([xshift=2mm]plint.north west);
+	\draw[-] ([xshift=2mm]plint.south west)
+		|- ([yshift=-2mm]apu.north west);
+
+	
+	% Central Interconnect
+	\node[block, minimum width = 25mm, minimum height = 12mm, anchor=west] (central-interconnect) 
+		at ($(apu.east) + (5mm,0)$) {Central\\Interconnect};
+	\draw[axi64] (central-interconnect) -- (central-interconnect |- master-interconnect.south);
+	\draw[axi64] (central-interconnect) |- +(0mm,-10mm) -| ($(mem-controller.south east) - (5mm,0)$);
+
+	% Peripheral Interconnect
+	\node[interconnect] (per-int0) at ($(mgp0) + (0, 20mm)$) {};
+	\node[interconnect] (per-int1) at ($(mgp1) + (0, 20mm)$) {};
+	\draw[raxi32] (per-int0) -- (per-int0 |- mgp0.north);
+	\draw[raxi32] (per-int1) -- (per-int1 |- mgp1.north);
+	\draw[maxil] (per-int0) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..5}}
+		|- node[above left = 0mm and 26mm]{\ttfamily\textcolor{black}{CTL/ST}} (axidma);
+	\draw[maxil] (per-int1) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..5}}
+		|- node[above left = 0mm and 38mm]{\ttfamily\textcolor{black}{CTL/ST}} (acc);
+	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=30mm, minimum height=28mm]
+		(axilite-int) at ($(per-int0.north west) + (-5mm, 12mm)$) {};
+	\node[textonly, left of=axilite-int, xshift=-8mm, rotate=90]{\footnotesize AXI-Lite Interconnects};
+
+
+	\draw[axi64] ($(acc.north east) + (45mm,0)$) 
+		-- node[above]{\ttfamily \footnotesize AXI} +(15mm,0);
+	\draw[axil] ($(acc.north east) + (45mm,-6mm)$) 
+		-- node[above]{\ttfamily \footnotesize AXI-Lite} +(15mm,0);
+	\draw[axis64] ($(acc.north east) + (45mm,-12mm)$) 
+		-- node[above]{\ttfamily \footnotesize AXI-Stream} +(15mm,0);
+	\draw[maxi64] ($(acc.north east) + (45mm,-18mm)$) 
+		-- node[above]{\ttfamily \footnotesize multiple links} +(15mm,0);
+\end{tikzpicture}
+
+\caption{The accelerator performance oriented design's block diagram.\\
+	Arrow direction is from master to slave.}
+\label{dia:arch-1}
+\end{figure}
+
+
+\subsection{An Accelerator Count Oriented Approach}
+
+The second design is geared to high accelerator core count 
+that sacrifices per-core performance and flexibility.
+It uses simpler accelerators with 
+narrower and simpler interconnect that lacks buffering.
+More importantly, it segments the memory view, 
+imposing restrictions on accelerator placement. 
+Finally, it features two types of reconfigurable partitions,
+further complicating the scheduler.
+
+\begin{figure}[ht!]
+\centering
+\hspace{-15mm}
+\begin{tikzpicture}
+
+	% Border
+	\draw[dotted] (-40mm,0) -- node[above left = 0mm and 50mm]{PL} node[below left = 0mm and 50mm]{PS} (80mm,0);
+	
+	% The PS-PL ports
+	\node[port] (hp0) at (-16mm,0) {\ttfamily HP0};
+	\node[port] (hp3) at ($(hp0) + (32mm,0mm)$) {\ttfamily HP3};
+	\node[port] (hp1) at ($(hp0)!0.333!(hp3)$) {\ttfamily HP1};
+	\node[port] (hp2) at ($(hp0)!0.667!(hp3)$) {\ttfamily HP2};
+
+	\node[port] (plint) at ($(hp3) + (12mm,0mm)$) {\ttfamily INT};
+	
+	\node[port] (mgp0) at ($(plint) + (12mm,0mm)$) {\ttfamily M\_GP0};
+	\node[port] (mgp1) at ($(mgp0) + (12mm,0mm)$) {\ttfamily M\_GP1};
+
+	\node[port] (sgp0) at ($(mgp1) + (25mm,0mm)$) {\ttfamily S\_GP0};
+	\node[port] (sgp1) at ($(sgp0) + (12mm,0mm)$) {\ttfamily S\_GP1};
+	
+	% The Memory Interconnect
+	\node[block, minimum width = 50mm] (mem-interconnect) at ($(hp0)!0.5!(hp3) - (0,20mm)$) {Memory\\Interconnect};
+	
+	% HP to Memory Interconnect
+	\draw[axi64, name path=hp0p] (hp0) -- (hp0 |- mem-interconnect.north);
+	\draw[axi64, name path=hp1p] (hp1) -- (hp1 |- mem-interconnect.north);
+	\draw[axi64, name path=hp2p] (hp2) -- (hp2 |- mem-interconnect.north);
+	\draw[axi64, name path=hp3p] (hp3) -- (hp3 |- mem-interconnect.north);
+
+	% Lines internal to Memory Interconnect
+	\draw[gray, from end of path=hp0p, name path=mem0p] 
+		-- ($(mem-interconnect.south west)!0.28!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp1p] 
+		-- ($(mem-interconnect.south west)!0.28!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp2p, name path=mem1p] 
+		-- ($(mem-interconnect.south west)!0.73!(mem-interconnect.south east)$);
+	\draw[gray, from end of path=hp3p] 
+		-- ($(mem-interconnect.south west)!0.73!(mem-interconnect.south east)$);
+
+	% Memory controller and DDR box
+	\node[block, minimum width=50mm,minimum height=12mm,align=left,text width=29mm, below=12mm of mem-interconnect] 
+		(mem-controller) {Memory\\Controller};
+	\node[block, minimum width=8mm, minimum height=7mm,right=-15mm of mem-controller] (ps-ddr) {DDR3};
+
+	% From Memory Interconnect to Memory Controller (uses constants!)
+	\draw[axi64, from end of path=mem0p] -- +(0,-12mm);
+	\draw[axi64, from end of path=mem1p] -- +(0,-12mm);
+
+	% PL Interconnect
+	\node[interconnect] (int0) at ($(hp0) + (0, 20mm)$) {};
+	\node[interconnect] (int1) at ($(hp1) + (0, 20mm)$) {};
+	\node[interconnect] (int2) at ($(hp2) + (0, 20mm)$) {};
+	\node[interconnect] (int3) at ($(hp3) + (0, 20mm)$) {};
+	\node[interconnect] (int4) at ($(sgp0) + (0, 20mm)$) {};
+	\node[interconnect] (int5) at ($(sgp1) + (0, 20mm)$) {};
+	
+	\draw[axi32] (int0) -- (int0 |- hp0.north);
+	\draw[axi32] (int1) -- (int1 |- hp1.north);
+	\draw[axi32] (int2) -- (int2 |- hp2.north);
+	\draw[axi32] (int3) -- (int3 |- hp3.north);
+	\draw[axi32] (int4) -- (int4 |- sgp0.north);
+	\draw[axi32] (int5) -- (int5 |- sgp1.north);
+	
+	\node[emptyblock, gray, very densely dashed, anchor=north west, 
+		minimum width=48mm, minimum height=28mm]
+		(axi-int) at ($(int0.north west) + (-4mm, 13mm)$) {};
+	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]
+		{\footnotesize 32b Full AXI Interconnects};
+
+	\node[emptyblock, gray, very densely dashed, anchor=north west,
+		minimum width=30mm, minimum height=28mm]
+		(axi-int-alt) at ($(int4.north west) + (-4mm, 13mm)$) {};
+	\node[textonly, right of=axi-int-alt, xshift=9mm, rotate=90]
+		{\footnotesize 32b Full AXI Interconnects};
+
+
+	% The AXI DMA multi-block
+	\node[mblock, minimum width = 45mm, minimum height = 16mm] 
+		(axidma) at ($(int0)!0.5!(int3) + (0, 40mm)$) {32 bit AXI DMA};
+	\node at ($(axidma.north east) + (2mm,2mm)$) {\ttfamily x12};
+
+	\node[mblock, minimum width = 45mm, minimum height = 16mm]
+		(axidma-alt) at ($(int4)!0.5!(int5) + (0, 40mm)$) {32 bit AXI DMA};
+	\node at ($(axidma-alt.north east) + (2mm,2mm)$) {\ttfamily x4};
+
+
+	% Connection of AXI DMA to AXI Interconnect blocks
+	\draw[maxi64] (int0 |- axidma.south) 
+		node[above]{\texttt{MM2S}}
+		node[above left,rotate=90]{\texttt{\small 0..11}} 
+		-- 
+		node[below left,rotate=90]{\texttt{\small 0..5}} (int0);
+	\draw[maxi64] (int0 |- axidma.south) 
+		-- +(0,-6mm) -| 
+		node[above left]{\texttt{\small 6..11}}
+		(int2);
+	\draw[maxi64] (int3 |- axidma.south)
+		node[above]{\texttt{S2MM}}
+		node[above left,rotate=90]{\texttt{\small 0..11}}
+		-- node[below left,rotate=90]{\texttt{\small 0..5}} (int3);
+	\draw[maxi64] (int3 |- axidma.south) -- +(0,-12mm) -|
+		node[above right]{\texttt{\small 6..11}} (int1);
+
+	\draw[maxi64] (int4 |- axidma-alt.south)
+		node[above]{\texttt{MM2S}}
+		-- node[below,rotate=90]{\texttt{\small 12..15}} (int4);
+	\draw[maxi64] (int5 |- axidma-alt.south)
+		node[above]{\texttt{S2MM}}
+		-- node[below,rotate=90]{\texttt{\small 12..15}} (int5);
+
+
+	% The Accelerators
+	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma] 
+		(acc) {16 bit Accelerator};
+	\node at ($(acc.north east) + (2mm,2mm)$) {\ttfamily x12};
+
+	\draw[raxis64] ($(acc.south west)!0.25!(acc.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma.north west)!0.25!(axidma.north east)$);
+	\draw[axis64] ($(acc.south west)!0.75!(acc.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma.north west)!0.75!(axidma.north east)$);
+
+	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma-alt]
+		(acc-alt) {16 bit Accelerator};
+	\node at ($(acc-alt.north east) + (2mm,2mm)$) {\ttfamily x4};
+
+	\draw[raxis64] ($(acc-alt.south west)!0.25!(acc-alt.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma-alt.north west)!0.25!(axidma-alt.north east)$);
+	\draw[axis64] ($(acc-alt.south west)!0.75!(acc-alt.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma-alt.north west)!0.75!(axidma-alt.north east)$);
+
+
+	% The Slave Interconect and the S_GP ports
+	\node[block, minimum width = 25mm] (slave-interconnect) at ($(sgp0)!0.5!(sgp1) - (0,20mm)$) 
+		{Slave\\Interconnect};
+	\draw[axi64] (sgp0) -- (sgp0 |- slave-interconnect.north);
+	\draw[axi64] (sgp1) -- (sgp1 |- slave-interconnect.north);
+
+
+	% The Master Interconect and the M_GP ports
+	\node[block, minimum width = 25mm] (master-interconnect) at ($(mgp0)!0.5!(mgp1) - (0,20mm)$) 
+		{Master\\Interconnect};
+	\draw[raxi64] (mgp0) -- (mgp0 |- master-interconnect.north);
+	\draw[raxi64] (mgp1) -- (mgp1 |- master-interconnect.north);
+
+
+	% Central Interconnect
+	\node[block, minimum width = 25mm, minimum height = 12mm, anchor=north west] (central-interconnect) 
+		at ($(slave-interconnect.south west) - (0,12mm)$)
+		{Central\\Interconnect};
+	\draw[axi64] ($(central-interconnect.north west)!0.33!(central-interconnect.north east)$) 
+		|-| ($(master-interconnect.south east) - (7mm,0)$);
+	\draw[raxi64] ($(central-interconnect.north west)!0.667!(central-interconnect.north east)$) 
+		-- +(0,12mm);
+	\draw[axi64] (central-interconnect) |- +(0mm,-10mm) -| ($(mem-controller.south east) - (5mm,0)$);
+
+
+	% APU
+	\node[block, minimum width = 25mm, minimum height = 12mm, anchor = north west] (apu)
+		at ($(master-interconnect.south west) - (0mm,12mm)$) {APU};
+	\draw[axi64] ([xshift=-6mm]apu.north) -- ([xshift=-6mm]master-interconnect.south);
+	\draw[axi64] (apu) -- (mem-controller);
+
+
+	% The Interrupt
+	\draw[-,postaction={decorate}] ([xshift=-2mm]axidma.south east) 
+		node[below left = 3.5mm and -1mm]{\ttfamily\scriptsize 12}
+		node[below right]{\ttfamily\scriptsize S2MM int}
+		to[|-|=.15] (plint);
+	\draw[-,postaction={decorate}] ([xshift=2mm]axidma-alt.south west) 
+		node[below right = 3.5mm and -1mm]{\ttfamily\scriptsize 4}
+		node[below left]{\ttfamily\scriptsize S2MM int}
+		to[|-|=.15] 
+		node[below left=-4mm and 11mm,postaction={decorate}]{\ttfamily\scriptsize 16}
+		(plint);
+%		node[above left]{\ttfamily\scriptsize 16}
+	\draw[-] ([xshift=-5mm]plint)
+		|- ([yshift=-2mm]apu.north west);
+
+
+
+	% Peripheral Interconnect
+	\node[interconnect] (per-int0) at ($(mgp0) + (0, 20mm)$) {};
+	\node[interconnect] (per-int1) at ($(mgp1) + (0, 20mm)$) {};
+	\draw[raxi32] (per-int0) -- (per-int0 |- mgp0.north);
+	\draw[raxi32] (per-int1) -- (per-int1 |- mgp1.north);
+	\draw[maxil] (per-int0) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..15}}
+		|- 
+		node[above left = 0mm and 2mm]{\ttfamily \textcolor{black}{0..11}}
+		node[above right = 0mm and 4mm]{\ttfamily \textcolor{black}{11..15}}
+		node[above left = -1mm and 16mm]{
+		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma);
+	\draw[maxil] (per-int1) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..15}}
+		|- 
+		node[above left = 0mm and 13mm]{\ttfamily \textcolor{black}{0..11}}
+		node[above right = 0mm and -7mm]{\ttfamily \textcolor{black}{11..15}}
+		node[above left = -1mm and 28mm]{
+		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc);
+	\draw[maxil] (per-int0)
+		|- node[above right = -1mm and 20mm]
+		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma-alt);
+	\draw[maxil] (per-int1) 
+		|- node[above right = -1mm and 8mm]
+		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc-alt);
+	\node[emptyblock, gray, very densely dashed, anchor=north west, 
+		minimum width=29mm, minimum height=28mm]
+		(axilite-int) at ($(per-int0.north west) + (-4mm, 13mm)$) {};
+	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
+\end{tikzpicture}
+
+\caption{The accelerator core count oriented design's block diagram.}
+\label{dia:arch-2}
+\end{figure}
+
+
+
+\subsection{The Zynq UltraScale+ Port}
+
+The final design is the UltraScale+ port.
+The accelerator complexity is midway between the two other designs. 
+The newer platform's increased capacity, routing capabilities 
+and more flexible partial reconfiguration restrictions
+allowed the packing of several times more accelerator instances
+operating at much higher frequency.
+
+
+
+
 
 

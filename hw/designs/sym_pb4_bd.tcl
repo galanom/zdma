@@ -244,8 +244,11 @@ CONFIG.intr_width {6} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
+CONFIG.PCW_EN_CLK1_PORT {1} \
+CONFIG.PCW_EN_RST1_PORT {1} \
 CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {140} \
+CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {100} \
+CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {155} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_USE_DEFAULT_ACP_USER_VAL {0} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
@@ -282,9 +285,6 @@ CONFIG.NUM_SI {1} \
 CONFIG.S00_HAS_DATA_FIFO {1} \
 CONFIG.S00_HAS_REGSLICE {1} \
  ] $ps7_0_axi_periph_0
-
-  # Create instance: rst_ps7_0_100M, and set properties
-  set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
 
   # Create instance: sc_port0_mm2s, and set properties
   set sc_port0_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port0_mm2s ]
@@ -329,22 +329,22 @@ CONFIG.NUM_PORTS {12} \
  ] $xlconcat_0
 
   # Create instance: zcore64_0, and set properties
-  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_0 ]
+  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_0 ]
 
   # Create instance: zcore64_1, and set properties
-  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_1 ]
+  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_1 ]
 
   # Create instance: zcore64_2, and set properties
-  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_2 ]
+  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_2 ]
 
   # Create instance: zcore64_3, and set properties
-  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_3 ]
+  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_3 ]
 
   # Create instance: zcore64_4, and set properties
-  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_4 ]
+  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_4 ]
 
   # Create instance: zcore64_5, and set properties
-  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_5 ]
+  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.6 zcore64_5 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins zcore64_0/src]
@@ -405,10 +405,8 @@ CONFIG.NUM_PORTS {12} \
   connect_bd_net -net axi_dma_5_mm2s_introut [get_bd_pins axi_dma_5/mm2s_introut] [get_bd_pins xlconcat_0/In11]
   connect_bd_net -net axi_dma_5_s2mm_introut [get_bd_pins axi_dma_5/s2mm_introut] [get_bd_pins xlconcat_0/In5]
   connect_bd_net -net debugger_0_LED [get_bd_ports LED] [get_bd_pins debugger_0/LED]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_dma_1/m_axi_mm2s_aclk] [get_bd_pins axi_dma_1/m_axi_s2mm_aclk] [get_bd_pins axi_dma_1/s_axi_lite_aclk] [get_bd_pins axi_dma_2/m_axi_mm2s_aclk] [get_bd_pins axi_dma_2/m_axi_s2mm_aclk] [get_bd_pins axi_dma_2/s_axi_lite_aclk] [get_bd_pins axi_dma_3/m_axi_mm2s_aclk] [get_bd_pins axi_dma_3/m_axi_s2mm_aclk] [get_bd_pins axi_dma_3/s_axi_lite_aclk] [get_bd_pins axi_dma_4/m_axi_mm2s_aclk] [get_bd_pins axi_dma_4/m_axi_s2mm_aclk] [get_bd_pins axi_dma_4/s_axi_lite_aclk] [get_bd_pins axi_dma_5/m_axi_mm2s_aclk] [get_bd_pins axi_dma_5/m_axi_s2mm_aclk] [get_bd_pins axi_dma_5/s_axi_lite_aclk] [get_bd_pins debugger_0/clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP2_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP3_ACLK] [get_bd_pins ps7_0_axi_periph_0/ACLK] [get_bd_pins ps7_0_axi_periph_0/M00_ACLK] [get_bd_pins ps7_0_axi_periph_0/M01_ACLK] [get_bd_pins ps7_0_axi_periph_0/M02_ACLK] [get_bd_pins ps7_0_axi_periph_0/M03_ACLK] [get_bd_pins ps7_0_axi_periph_0/M04_ACLK] [get_bd_pins ps7_0_axi_periph_0/M05_ACLK] [get_bd_pins ps7_0_axi_periph_0/M06_ACLK] [get_bd_pins ps7_0_axi_periph_0/M07_ACLK] [get_bd_pins ps7_0_axi_periph_0/M08_ACLK] [get_bd_pins ps7_0_axi_periph_0/M09_ACLK] [get_bd_pins ps7_0_axi_periph_0/M10_ACLK] [get_bd_pins ps7_0_axi_periph_0/M11_ACLK] [get_bd_pins ps7_0_axi_periph_0/M12_ACLK] [get_bd_pins ps7_0_axi_periph_0/M13_ACLK] [get_bd_pins ps7_0_axi_periph_0/S00_ACLK] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk] [get_bd_pins sc_port0_mm2s/aclk] [get_bd_pins sc_port0_s2mm/aclk] [get_bd_pins sc_port1_mm2s/aclk] [get_bd_pins sc_port1_s2mm/aclk] [get_bd_pins zcore64_0/ap_clk] [get_bd_pins zcore64_1/ap_clk] [get_bd_pins zcore64_2/ap_clk] [get_bd_pins zcore64_3/ap_clk] [get_bd_pins zcore64_4/ap_clk] [get_bd_pins zcore64_5/ap_clk]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_100M/ext_reset_in]
-  connect_bd_net -net rst_ps7_0_100M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph_0/ARESETN] [get_bd_pins rst_ps7_0_100M/interconnect_aresetn]
-  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_dma_1/axi_resetn] [get_bd_pins axi_dma_2/axi_resetn] [get_bd_pins axi_dma_3/axi_resetn] [get_bd_pins axi_dma_4/axi_resetn] [get_bd_pins axi_dma_5/axi_resetn] [get_bd_pins ps7_0_axi_periph_0/M00_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M01_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M02_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M03_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M04_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M05_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M06_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M07_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M08_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M09_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M10_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M11_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M12_ARESETN] [get_bd_pins ps7_0_axi_periph_0/M13_ARESETN] [get_bd_pins ps7_0_axi_periph_0/S00_ARESETN] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn] [get_bd_pins zcore64_0/ap_rst_n] [get_bd_pins zcore64_1/ap_rst_n] [get_bd_pins zcore64_2/ap_rst_n] [get_bd_pins zcore64_3/ap_rst_n] [get_bd_pins zcore64_4/ap_rst_n] [get_bd_pins zcore64_5/ap_rst_n]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_1/m_axi_mm2s_aclk] [get_bd_pins axi_dma_1/m_axi_s2mm_aclk] [get_bd_pins axi_dma_2/m_axi_mm2s_aclk] [get_bd_pins axi_dma_2/m_axi_s2mm_aclk] [get_bd_pins axi_dma_3/m_axi_mm2s_aclk] [get_bd_pins axi_dma_3/m_axi_s2mm_aclk] [get_bd_pins axi_dma_4/m_axi_mm2s_aclk] [get_bd_pins axi_dma_4/m_axi_s2mm_aclk] [get_bd_pins axi_dma_5/m_axi_mm2s_aclk] [get_bd_pins axi_dma_5/m_axi_s2mm_aclk] [get_bd_pins debugger_0/clk] [get_bd_pins processing_system7_0/FCLK_CLK1] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP2_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP3_ACLK] [get_bd_pins sc_port0_mm2s/aclk] [get_bd_pins sc_port0_s2mm/aclk] [get_bd_pins sc_port1_mm2s/aclk] [get_bd_pins sc_port1_s2mm/aclk] [get_bd_pins zcore64_0/ap_clk] [get_bd_pins zcore64_1/ap_clk] [get_bd_pins zcore64_2/ap_clk] [get_bd_pins zcore64_3/ap_clk] [get_bd_pins zcore64_4/ap_clk] [get_bd_pins zcore64_5/ap_clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK1 [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_dma_1/s_axi_lite_aclk] [get_bd_pins axi_dma_2/s_axi_lite_aclk] [get_bd_pins axi_dma_3/s_axi_lite_aclk] [get_bd_pins axi_dma_4/s_axi_lite_aclk] [get_bd_pins axi_dma_5/s_axi_lite_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph_0/ACLK] [get_bd_pins ps7_0_axi_periph_0/M00_ACLK] [get_bd_pins ps7_0_axi_periph_0/M01_ACLK] [get_bd_pins ps7_0_axi_periph_0/M02_ACLK] [get_bd_pins ps7_0_axi_periph_0/M03_ACLK] [get_bd_pins ps7_0_axi_periph_0/M04_ACLK] [get_bd_pins ps7_0_axi_periph_0/M05_ACLK] [get_bd_pins ps7_0_axi_periph_0/M06_ACLK] [get_bd_pins ps7_0_axi_periph_0/M07_ACLK] [get_bd_pins ps7_0_axi_periph_0/M08_ACLK] [get_bd_pins ps7_0_axi_periph_0/M09_ACLK] [get_bd_pins ps7_0_axi_periph_0/M10_ACLK] [get_bd_pins ps7_0_axi_periph_0/M11_ACLK] [get_bd_pins ps7_0_axi_periph_0/M12_ACLK] [get_bd_pins ps7_0_axi_periph_0/M13_ACLK] [get_bd_pins ps7_0_axi_periph_0/S00_ACLK] [get_bd_pins zcore64_0/axi_lite_clk] [get_bd_pins zcore64_1/axi_lite_clk] [get_bd_pins zcore64_2/axi_lite_clk] [get_bd_pins zcore64_3/axi_lite_clk] [get_bd_pins zcore64_4/axi_lite_clk] [get_bd_pins zcore64_5/axi_lite_clk]
   connect_bd_net -net sel_1 [get_bd_ports sel] [get_bd_pins debugger_0/sel]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins debugger_0/intr] [get_bd_pins processing_system7_0/IRQ_F2P] [get_bd_pins xlconcat_0/dout]
 

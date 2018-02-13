@@ -8,16 +8,39 @@
 
 %\usepackage{gnuplottex}
 \usepackage[european]{circuitikz}
-\usetikzlibrary{shapes,shadows,positioning,calc,paths.ortho,arrows.meta,decorations.markings}
+\usetikzlibrary{shapes,shadows,positioning,calc,paths.ortho,arrows.meta,decorations.markings,intersections}
 \tikzset{
 	block/.style = {
 		fill=white, draw=black, minimum height = 12mm, minimum width = 35mm,font=\small,align=center
+	},
+	emptyblock/.style = {
+		fill=none, draw=black, minimum height = 12mm, minimum width = 35mm,font=\small,align=center
 	},
 	mblock/.style = {
 		double copy shadow={shadow xshift=.8ex, shadow yshift=-.8ex, draw=black!30},
 		fill=white, draw=black, minimum height = 12mm, minimum width = 35mm,font=\small
 	},
-	port/.style = {rectangle, draw, thick, minimum height = 4mm, minimum width = 4mm, font=\scriptsize,fill=white,align=center},
+	port/.style = {
+		rectangle, draw, thick, minimum height = 4mm, minimum width = 4mm, 
+		font=\scriptsize,fill=white,align=center
+	},
+	interconnect/.style = {
+		rectangle,
+		fill=white, draw=black, 
+		minimum height = 9mm, minimum width = 9mm,
+		append after command = {
+			($(\tikzlastnode.north west) + (2mm,-2mm)$) edge[draw,thick] ++(  1.4mm,0mm)
+			($(\tikzlastnode.north east) + (-2mm,-2mm)$) edge[draw,thick] ++(-1.4mm,0mm)
+			($(\tikzlastnode.south west) + (2mm, 2mm)$) edge[draw,thick] ++(  1.4mm,0mm)
+			($(\tikzlastnode.south east) + (-2mm, 2mm)$) edge[draw,thick] ++(-1.4mm,0mm)
+
+			($(\tikzlastnode.north west) + (3.4mm,-2mm)$) edge[draw,thick] 	
+			($(\tikzlastnode.south east) + (-3.4mm,2mm)$)
+
+			($(\tikzlastnode.north east) + (-3.4mm,-2mm)$) edge[draw,thick] 	
+			($(\tikzlastnode.south west) + (3.4mm,2mm)$)
+		}
+	},
 	mux/.style = {
 			trapezium, draw,
 			minimum width = 40mm,
@@ -25,13 +48,53 @@
 			inner ysep=0pt, outer sep=1pt, inner xsep=1pt, 
 			text width = 3em, 
 			node distance=3cm, font=\large
-		},
-	decoration={markings,mark= at position 3mm with {\node[font=\footnotesize] {\diagup};}},
+	},
+	textonly/.style = {
+		fill=none, draw=none, font=\small, align=left
+	},
+	decoration={
+		markings,mark= at position 3mm with {\node[font=\footnotesize] {\diagup};}
+	},
 }
 \tikzstyle{very densely dashed}= [dash pattern=on 2pt off 1pt]
 
-\tikzstyle{axi64}=[black]
-\tikzstyle{axi32}=[gray]
-\tikzstyle{axis}=[black,very densely dashed]
+\tikzstyle{axi32}=[-Latex,black]
+\tikzstyle{raxi32}=[Latex-,black]
+\tikzstyle{axi64}=[-Latex,black]
+\tikzstyle{raxi64}=[Latex-,black]
+\tikzstyle{maxi64}=[-Latex, black, thick, double, line cap=rect]
+\tikzstyle{axil}=[-Latex,gray]
+\tikzstyle{raxil}=[Latex-,gray]
+\tikzstyle{maxil}=[-Latex,gray, thick, double, line cap=rect]
+\tikzstyle{axis64}=[-Latex,black,very densely dashed]
+\tikzstyle{raxis64}=[Latex-,black,very densely dashed]
 \tikzstyle{custom}=[black, thick]
 
+% continue from saved path
+\tikzset{%
+  from end of path/.style={
+    insert path={
+      \pgfextra{%
+        \expandafter\pgfprocesspathextractpoints%
+          \csname tikz@intersect@path@name@#1\endcsname%
+        \pgfpointlastonpath%
+        \pgfgetlastxy\lastx\lasty
+      }
+      (\lastx,\lasty)
+}}}
+
+
+ \makeatletter  
+ \tikzset{minimum dist/.style 2 args={%
+   insert path={% 
+     \pgfextra{% 
+      \path (#1);
+      \pgfgetlastxy{\xa}{\ya} 
+       \path (#2);
+      \pgfgetlastxy{\xb}{\yb}   
+      \pgfpointdiff{\pgfpoint{\xa}{\ya}}%
+                    {\pgfpoint{\xb}{\yb}}%
+      \pgf@xa=\pgf@x}
+       },
+   minimum width=\pgf@xa}
+   } 

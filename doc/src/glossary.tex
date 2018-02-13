@@ -1,5 +1,3 @@
-%\newacronym{dmac}{DMAC}{\acrshort{dma}Controller}
-
 \newglossaryentry{dt}
 {
 	name = {DT},
@@ -11,16 +9,6 @@
 		at the operating system the peripherals that cannot be auto-detected.
 	},
 }
-
-%\newglossaryentry{mmu}
-%{
-%	name = {MMU},
-%	long = {Memory Management Unit},
-%	description = {
-%		The system component responsible for providing the virtual memory
-%		functionality.
-%	},
-%}
 
 \newglossaryentry{devc}
 {
@@ -467,7 +455,7 @@
 	long = {Programmable Logic Power Domain},
 	description = {\emph{\glsentrylong{fpd}}:
 		The UltraScale+'s \glsentrylong{pd} that contains the
-		programmable logic and other \gls{fabric}, including
+		programmable logic, including
 		the high-speed tranceivers.
 	},
 	see = {pd},
@@ -508,26 +496,8 @@
 	an AXI channel.},
 }
 
-%\newglossaryentry{soc}
-%{
-%	name = {SoC},
-%	long = {System on a Chip},
-%	description = {\emph{\glsentrylong{soc}:
-%		An integrated circuit that contains all the components of a computer system,
-%		ie there is no dependence on any external chipset for basic operation.
-%	},
-%}
 
-%\newglossaryentry{fpgasoc}
-%{
-%	name = {\gls{fpga}-\gls{soc}},
-%	description = {
-%		A programmable device that consists of a \gls{soc} augmented by \gls{fabric}.
-%		Xilinx also uses the term ``All Programmable SoC''.
-%	}
-%}
-
-\newglossaryentry{hard-ip}
+\newglossaryentry{hardip}
 {
 	name = {hard-IP},
 	description = {
@@ -536,18 +506,18 @@
 	see={soft-ip},
 }
 
-\newglossaryentry{soft-ip}
+\newglossaryentry{softip}
 {
 	name = {soft-IP},
 	description = {
-		A programmable hardware component implemented in \gls{fabric}.
+		A programmable hardware component implemented in FPGA \gls{fabric}.
 	},
 	see={hard-ip},
 }
 
 \newglossaryentry{fabric}
 {
-	name = {FPGA fabric},
+	name = {fabric},
 	description = {The programmable structural units of an FPGA.},
 }
 

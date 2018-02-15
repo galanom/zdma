@@ -39,5 +39,6 @@
 \contentsline {subsection}{\numberline {1.6.1}An Accelerator Performance Oriented Approach}{24}{subsection.1.6.1}
 \contentsline {subsection}{\numberline {1.6.2}An Accelerator Count Oriented Approach}{25}{subsection.1.6.2}
 \contentsline {subsection}{\numberline {1.6.3}The Zynq UltraScale+ Port}{26}{subsection.1.6.3}
-\contentsline {chapter}{Glossary}{29}{section*.37}
+\contentsline {section}{\numberline {1.7}The Hardware Description}{28}{section.1.7}
+\contentsline {chapter}{Glossary}{29}{section*.38}
 \contentsline {chapter}{Bibliography}{35}{chapter.2}

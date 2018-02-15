@@ -121,6 +121,7 @@
 		\setentrycounter[]{page}\glsnumberformat{12\delimN 13}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{15}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{18\delimR 20}\delimN 
+		\setentrycounter[]{page}\glsnumberformat{26}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{29}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{32}}}%
 \glossentry{hpc}{\glossaryentrynumbers{\relax 
@@ -144,6 +145,7 @@
 		\setentrycounter[]{page}\glsnumberformat{12\delimN 13}\delimN 
 		\glsseeformat[\seename ]{pd}{Z}}}%
 \glossentry{lut}{\glossaryentrynumbers{\relax 
+		\setentrycounter[]{page}\glsnumberformat{26}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{34}}}\glsgroupskip
 \glsgroupheading{M}\relax \glsresetentrylist %
 \glossentry{mgp}{\glossaryentrynumbers{\relax 
@@ -166,6 +168,7 @@
 \glossentry{plpd}{\glossaryentrynumbers{\relax 
 		\glsseeformat[\seename ]{pd}{Z}}}%
 \glossentry{pd}{\glossaryentrynumbers{\relax 
+		\setentrycounter[]{page}\glsnumberformat{30\delimR 33}\delimN 
 		\glsseeformat[\seename ]{plpd,fpd,lpd,bpd}{Z}}}\glsgroupskip
 \glsgroupheading{R}\relax \glsresetentrylist %
 \glossentry{rpu}{\glossaryentrynumbers{\relax 
@@ -175,6 +178,7 @@
 \glossentry{sgp}{\glossaryentrynumbers{\relax 
 		\setentrycounter[]{page}\glsnumberformat{9}\delimN 
 		\setentrycounter[]{page}\glsnumberformat{16}\delimN 
+		\setentrycounter[]{page}\glsnumberformat{26}\delimN 
 		\glsseeformat[\seename ]{gp}{Z}}}%
 \glossentry{scu}{\glossaryentrynumbers{\relax 
 		\setentrycounter[]{page}\glsnumberformat{9\delimN 10}\delimN 

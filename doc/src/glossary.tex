@@ -199,7 +199,7 @@
 	name = {slice},
 	description = {
 		The ``Slice'' in Xilinx terminology or ``Adaptive Logic Module'' in Altera's,
-		is the most basic group of configurable elements. It contains a few \gls{lut},
+		is the most basic group of configurable elements. It contains a few \glspl{lut},
 		fixed logic such as multiplexers and fast carry propagation logic, as well as
 		some memory elements (flip-flops). An FPGA architecture may define several slice types
 		that co-exist in the same chip.
@@ -330,17 +330,6 @@
 	see = {IO Coherency},
 }
 
-%\newglossaryentry{api}
-%{
-%	name={API},
-%	long={Application Programming Interface},
-%	description={\glsentrylong{api}: 
-%		A well defined set of rules and specifications
-%		that a client program must follow in order to 
-%		access a library implementation.
-%	},
-%}
-
 
 \newglossaryentry{scu}
 {
@@ -420,7 +409,7 @@
 	name = {FPD},
 	long = {Full Power Domain},
 	description = {\emph{\glsentrylong{fpd}}:
-		The UltraScale+'s \glsentrylong{pd} where the A53 cores reside,
+		The UltraScale+'s \gls{pd} where the A53 cores reside,
 		along with the high-speed peripherals (PCIe, SATA, GPU, etc).
 	},
 	see = {pd},
@@ -431,7 +420,7 @@
 	name = {LPD},
 	long = {Low Power Domain},
 	description = {\emph{\glsentrylong{fpd}}:
-		The UltraScale+'s \glsentrylong{pd} where the R5 cores reside,
+		The UltraScale+'s \gls{pd} where the R5 cores reside,
 		along with the I/O peripherals and the \gls{ocm} memory.
 	},
 	see = {pd},
@@ -442,7 +431,7 @@
 	name = {BPD},
 	long = {Battery Power Domain},
 	description = {\emph{\glsentrylong{fpd}}:
-		A small \glsentrylong{pd} in UltraScale+ 
+		A small \gls{pd} in UltraScale+ 
 		that contains the most basic components,
 		like the oscillator, the RTC, etc.
 	},
@@ -454,7 +443,7 @@
 	name = {PLPD},
 	long = {Programmable Logic Power Domain},
 	description = {\emph{\glsentrylong{fpd}}:
-		The UltraScale+'s \glsentrylong{pd} that contains the
+		The UltraScale+'s \gls{pd} that contains the
 		programmable logic, including
 		the high-speed tranceivers.
 	},
@@ -466,10 +455,10 @@
 {
 	name = {power domain},
 	description = {
-		A part of the UltraScale+ system that 
+		A logical partition of the UltraScale+ system that 
 		can be individually isolated and powered.
-		A power cut-off, even accidental,
-		will not affect the correct functional behavior
+		A power cut-off in one power domain, even accidental,
+		can be configured to not affect the correct functional behavior
 		of the others.
 		There are four power domains in total.
 	},
@@ -510,7 +499,7 @@
 {
 	name = {soft-IP},
 	description = {
-		A programmable hardware component implemented in FPGA \gls{fabric}.
+		A programmable hardware component implemented in the FPGA \gls{fabric}.
 	},
 	see={hard-ip},
 }

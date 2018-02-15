@@ -1406,10 +1406,9 @@ The first design is geared to accelerator performance, featuring
 accelerators with wider interconnect that allow
 greater data processing parallellization.
 It has homogenous reconfigurable partitions with
-full memory view on the accelerator side, 
-allowing a freedom of accelerator placement that
+full memory view of uniform access on the accelerator side, 
+allowing total freedom of accelerator placement that
 maximizes the scheduler's decision options.
-
 
 \begin{figure}[ht!]
 \centering
@@ -1431,8 +1430,12 @@ maximizes the scheduler's decision options.
 	\node[port] (mgp1) at ($(mgp0) + (12mm,0mm)$) {\ttfamily M\_GP1};
 	
 	% The Memory Interconnect
-	\node[block, minimum width = 50mm] (mem-interconnect) at ($(hp0)!0.5!(hp3) - (0,20mm)$) {Memory\\Interconnect};
-	
+	\node[block, minimum width = 50mm] (mem-interconnect) 
+		at ($(hp0)!0.5!(hp3) - (0,20mm)$) {Memory\\Interconnect};
+	\draw[axi64] ($(mem-interconnect.south west)!0.1!(mem-interconnect.south east)$) 
+		|- node[below left=0mm and -3mm]{\ttfamily\scriptsize OCM Switch} +(-8mm, -4mm);
+
+
 	% HP to Memory Interconnect
 	\draw[axi64, name path=hp0p] (hp0) -- (hp0 |- mem-interconnect.north);
 	\draw[axi64, name path=hp1p] (hp1) -- (hp1 |- mem-interconnect.north);
@@ -1468,7 +1471,7 @@ maximizes the scheduler's decision options.
 	\draw[axi64] (int2) -- (int2 |- hp2.north);
 	\draw[axi64] (int3) -- (int3 |- hp3.north);
 	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=50mm, minimum height=28mm]
-		(axi-int) at ($(int0.north west) + (-5mm, 12mm)$) {};
+		(axi-int) at ($(int0.north west) + (-5mm, 13mm)$) {};
 	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]{\footnotesize 64b Full AXI Interconnects};
 
 	% The AXI DMA multi-block
@@ -1514,7 +1517,7 @@ maximizes the scheduler's decision options.
 	\draw[raxi64] (mgp1) -- (mgp1 |- master-interconnect.north);
 
 	% APU
-	\node[block, minimum width = 20mm, minimum height = 12mm, anchor = north west] (apu)
+	\node[block, minimum width = 50mm, minimum height = 12mm, anchor = north west] (apu)
 		at ($(master-interconnect.south west) - (0,12mm)$) {APU};
 	\draw[axi64] (apu) -- (apu |- master-interconnect.south);
 	\draw[axi64] (apu) -- (mem-controller);
@@ -1526,13 +1529,6 @@ maximizes the scheduler's decision options.
 		-| ([xshift=2mm]plint.north west);
 	\draw[-] ([xshift=2mm]plint.south west)
 		|- ([yshift=-2mm]apu.north west);
-
-	
-	% Central Interconnect
-	\node[block, minimum width = 25mm, minimum height = 12mm, anchor=west] (central-interconnect) 
-		at ($(apu.east) + (5mm,0)$) {Central\\Interconnect};
-	\draw[axi64] (central-interconnect) -- (central-interconnect |- master-interconnect.south);
-	\draw[axi64] (central-interconnect) |- +(0mm,-10mm) -| ($(mem-controller.south east) - (5mm,0)$);
 
 	% Peripheral Interconnect
 	\node[interconnect] (per-int0) at ($(mgp0) + (0, 20mm)$) {};
@@ -1546,7 +1542,7 @@ maximizes the scheduler's decision options.
 		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..5}}
 		|- node[above left = 0mm and 38mm]{\ttfamily\textcolor{black}{CTL/ST}} (acc);
 	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=30mm, minimum height=28mm]
-		(axilite-int) at ($(per-int0.north west) + (-5mm, 12mm)$) {};
+		(axilite-int) at ($(per-int0.north west) + (-5mm, 13mm)$) {};
 	\node[textonly, left of=axilite-int, xshift=-8mm, rotate=90]{\footnotesize AXI-Lite Interconnects};
 
 
@@ -1565,17 +1561,59 @@ maximizes the scheduler's decision options.
 \label{dia:arch-1}
 \end{figure}
 
+The design was floorplanned and implemented with moderate difficulty, 
+achieving a clock speed of 143MHz.
 
 \subsection{An Accelerator Count Oriented Approach}
 
 The second design is geared to high accelerator core count 
 that sacrifices per-core performance and flexibility.
-It uses simpler accelerators with 
-narrower and simpler interconnect that lacks buffering.
-More importantly, it segments the memory view, 
-imposing restrictions on accelerator placement. 
-Finally, it features two types of reconfigurable partitions,
-further complicating the scheduler.
+
+More specifically, the following compromises have been made:
+
+\begin{itemize}
+\item	The accelerator data width has been reduced from 64 down to 16 bits.
+	This cuts down accelerator size, in our application by 50 to 70 \%.
+	Furthermore, it helps routability by reducing the wire count of the
+	incoming and outgoing AXI streams. 
+	
+	The AXI DMA was accordingly reduced to 32 bit data width at its memory mapped channels,
+	which in turn allows the reduction of AXI Interconnect's crossbar to 32 bits.
+
+\item	The alternative pathway of \gls{sgp} ports was also used, forming a secondary
+	group of accelerators with inferior connectivity to memory of higher latency
+	and less predictability. 
+	It still offers a throutput increase as long as the central interconnect is not
+	saturated by other peripheral traffic.
+
+\item	Two accelerator sizes are defined. 
+	Both sizes consist of the same number of \glspl{lut},
+	however the ``big'' one contains BRAM and DSP slices. This was decided as the
+	Zedboard's FPGA is rather poor in BRAM slices, a resource that AXI DMA also needs,
+	and the reconfiguration technology
+	\footnote{In 7-series, a reconfigurable frame extends vertically to the extreme ends of a 
+	clock region wherever a reconfigurable partition exists. Any dynamic logic that resides
+	in the reconfigurable frame will be reset during reconfiguration even if it does not
+	belong in the reconfigurable partition. Despite that it would be possible to tolerate
+	this by assigning the pair of accelerator and its DMA controller at the same BRAM column,
+	the Xilinx placer tool will not allow this location constraint. In UltraScale+ this
+	restriction does not apply.}
+	of 7-series FPGAs make it almost impossible
+	for a single column of BRAM slices to be shared by static and reconfigurable design parts.
+	To ease the pressure on BRAM, a ``small'' accelerator size with no memory capability was
+	introduced. In our application, it translates to an accelerator that can transform
+	a pixel stream but cannot execute a 2D convolution.
+
+\item	Memory view is segmented. Each Zynq port is assigned an exclusive memory region
+	where the accelerator can read and another that can write. 
+	Initially this restriction was implemented as it was found that it improved routability,
+	however its real usefulness is to fulfill the stated flexibility goal of supporting
+	a scenario of heterogeneous memory resources as well as the possibility of exclusive region access.
+	Additionally, it allowed the implementation of allocator bias towards a memory resource over another.
+	This feature was indeed activated to discourage the use of high-latency and 
+	congenstion-prone \gls{sgp} ports over the lower latency \glspl{hp} that have a more direct access
+	to the memory controller.
+\end{itemize}
 
 \begin{figure}[ht!]
 \centering
@@ -1601,6 +1639,9 @@ further complicating the scheduler.
 	
 	% The Memory Interconnect
 	\node[block, minimum width = 50mm] (mem-interconnect) at ($(hp0)!0.5!(hp3) - (0,20mm)$) {Memory\\Interconnect};
+	\draw[axi64] ($(mem-interconnect.south west)!0.1!(mem-interconnect.south east)$) 
+		|- node[below left=0mm and -3mm]{\ttfamily\scriptsize OCM Switch} +(-8mm, -4mm);
+
 	
 	% HP to Memory Interconnect
 	\draw[axi64, name path=hp0p] (hp0) -- (hp0 |- mem-interconnect.north);
@@ -1772,14 +1813,14 @@ further complicating the scheduler.
 		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..15}}
 		|- 
 		node[above left = 0mm and 2mm]{\ttfamily \textcolor{black}{0..11}}
-		node[above right = 0mm and 4mm]{\ttfamily \textcolor{black}{11..15}}
+		node[above right = 0mm and 4mm]{\ttfamily \textcolor{black}{12..15}}
 		node[above left = -1mm and 16mm]{
 		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma);
 	\draw[maxil] (per-int1) 
 		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..15}}
 		|- 
 		node[above left = 0mm and 13mm]{\ttfamily \textcolor{black}{0..11}}
-		node[above right = 0mm and -7mm]{\ttfamily \textcolor{black}{11..15}}
+		node[above right = 0mm and -7mm]{\ttfamily \textcolor{black}{12..15}}
 		node[above left = -1mm and 28mm]{
 		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc);
 	\draw[maxil] (per-int0)
@@ -1798,18 +1839,307 @@ further complicating the scheduler.
 \label{dia:arch-2}
 \end{figure}
 
+The floorplanning of this design proved to be very challenging in order to achieve a clock of 133MHz.
+However it could be implemented at 125MHz with relative ease. 
+
+More importantly however, this design led to a complete rewrite of the kernel driver's special memory allocator
+to enable memory segmentation awareness. Furthermore, the scheduler needed to be revised in order to understand
+the partition schedulability constraints due to the corresponding interconnect's restricted view of memory.
 
 
 \subsection{The Zynq UltraScale+ Port}
 
 The final design is the UltraScale+ port.
 The accelerator complexity is midway between the two other designs. 
+
 The newer platform's increased capacity, routing capabilities 
-and more flexible partial reconfiguration restrictions
+and more relaxed partial reconfiguration restrictions
 allowed the packing of several times more accelerator instances
 operating at much higher frequency.
 
 
+\begin{figure}[ht!]
+\centering
+\hspace{-15mm}
+\begin{tikzpicture}
+
+	% Border
+	\draw[dotted] (-40mm,0) -- node[above left = 0mm and 50mm]{PL} node[below left = 0mm and 50mm]{PS} (80mm,0);
+	
+	% The PS-PL ports
+	\node[port] (hp0) at (-16mm,0) {\ttfamily HP0};
+	\node[port] (hp3) at ($(hp0) + (32mm,0mm)$) {\ttfamily HP3};
+	\node[port] (hp1) at ($(hp0)!0.333!(hp3)$) {\ttfamily HP1};
+	\node[port] (hp2) at ($(hp0)!0.667!(hp3)$) {\ttfamily HP2};
+	
+	\node[port] (hpm0) at ($(hp3) + (24mm,0mm)$) {\ttfamily HPM0};
+	\node[port] (hpm1) at ($(hpm0) + (12mm,0mm)$) {\ttfamily HPM1};
+
+	\node[port] (plint) at ($(hpm1) + (12mm,0mm)$) {\ttfamily INT};
+	
+	\node[port] (hpc0) at ($(hpm1) + (25mm,0mm)$) {\ttfamily HPC0};
+	\node[port] (hpc1) at ($(hpc0) + (12mm,0mm)$) {\ttfamily HPC1};
+
+	% HP port switches
+	\node[interconnect, below=8mm of hp0] (sw-l1-a) {};
+	\node[interconnect, below=8mm of $(hp1.south)!0.5!(hp2.south)$] (sw-l1-b) {};
+	\node[interconnect, below=8mm of hp3] (sw-l1-c) {};
+
+	\node[interconnect, below=8mm of sw-l1-a] (sw-l2-a) {};
+	\node[interconnect, below=8mm of sw-l1-b] (sw-l2-b) {};
+	\node[interconnect, below=8mm of sw-l1-c] (sw-l2-c) {};
+
+	% Memory controller and DDR box
+	\node[block, minimum width=50mm,minimum height=12mm,
+		align=left,text width=29mm, below=12mm of sw-l2-b] 
+		(mem-controller) {Memory\\Controller};
+	\node[block, minimum width=8mm, minimum height=7mm,right=-15mm of mem-controller] (ps-ddr) {DDR3};
+	\draw[raxi128] ([xshift=2mm]mem-controller.north west) 
+		|- node[above left=-1mm and 0mm]{\ttfamily\scriptsize RPU switch} +(-8mm, 5mm);
+
+
+	% HP to Memory
+	\draw[axi128] (hp0) -- (sw-l1-a);
+	\draw[axi128] (hp1) |-| ($(sw-l1-b.north west)!0.33!(sw-l1-b.north east)$ |- sw-l2-b.north east);
+	\draw[axi128] (hp2) |-| ($(sw-l1-b.north west)!0.66!(sw-l1-b.north east)$ |- sw-l2-b.north east);
+	\draw[axi128] (hp3) -- (sw-l1-c);
+
+	\draw[raxi128] ($(sw-l1-a.north west)!0.2!(sw-l1-a.north east)$) 
+		|- node[above left=-1mm and 3mm]{\ttfamily\scriptsize DP} +(-8mm, 5mm);
+	\draw[raxi128] ($(sw-l1-c.north west)!0.8!(sw-l1-c.north east)$) 
+		|- node[above right=-1mm and 0mm]{\ttfamily\scriptsize FPD DMA} +(8mm, 5mm);
+
+	\draw[axi128] (sw-l1-a) -- (sw-l2-a) {};
+	\draw[axi128] (sw-l1-b) -- (sw-l2-b) {};
+	\draw[axi128] (sw-l1-c) -- (sw-l2-c) {};
+
+	\draw[axi128] (sw-l2-a) -- (sw-l2-a |- mem-controller.north) {};
+	\draw[axi128] (sw-l2-b) -- (sw-l2-b |- mem-controller.north) {};
+	\draw[axi128] (sw-l2-c) -- (sw-l2-c |- mem-controller.north) {};
+
+
+
+	% PL Interconnect
+	\node[interconnect] (int0) at ($(hp0) + (0, 20mm)$) {};
+	\node[interconnect] (int1) at ($(hp1) + (0, 20mm)$) {};
+	\node[interconnect] (int2) at ($(hp2) + (0, 20mm)$) {};
+	\node[interconnect] (int3) at ($(hp3) + (0, 20mm)$) {};
+	\node[interconnect] (int4) at ($(sgp0) + (0, 20mm)$) {};
+	\node[interconnect] (int5) at ($(sgp1) + (0, 20mm)$) {};
+	
+	\draw[axi32] (int0) -- (int0 |- hp0.north);
+	\draw[axi32] (int1) -- (int1 |- hp1.north);
+	\draw[axi32] (int2) -- (int2 |- hp2.north);
+	\draw[axi32] (int3) -- (int3 |- hp3.north);
+	\draw[axi32] (int4) -- (int4 |- sgp0.north);
+	\draw[axi32] (int5) -- (int5 |- sgp1.north);
+	
+	\node[emptyblock, gray, very densely dashed, anchor=north west, 
+		minimum width=48mm, minimum height=28mm]
+		(axi-int) at ($(int0.north west) + (-4mm, 13mm)$) {};
+	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]
+		{\footnotesize 32b Full AXI Interconnects};
+
+	\node[emptyblock, gray, very densely dashed, anchor=north west,
+		minimum width=30mm, minimum height=28mm]
+		(axi-int-alt) at ($(int4.north west) + (-4mm, 13mm)$) {};
+	\node[textonly, right of=axi-int-alt, xshift=9mm, rotate=90]
+		{\footnotesize 32b Full AXI Interconnects};
+
+
+	% The AXI DMA multi-block
+	\node[mblock, minimum width = 45mm, minimum height = 16mm] 
+		(axidma) at ($(int0)!0.5!(int3) + (0, 40mm)$) {32 bit AXI DMA};
+	\node at ($(axidma.north east) + (2mm,2mm)$) {\ttfamily x32};
+
+	\node[mblock, minimum width = 45mm, minimum height = 16mm]
+		(axidma-alt) at ($(int4)!0.5!(int5) + (0, 40mm)$) {32 bit AXI DMA};
+	\node at ($(axidma-alt.north east) + (2mm,2mm)$) {\ttfamily x8};
+
+
+	% Connection of AXI DMA to AXI Interconnect blocks
+	\draw[maxi64] (int0 |- axidma.south) 
+		node[above]{\texttt{MM2S}}
+		node[above left,rotate=90]{\texttt{\small 0..31}} 
+		-- 
+		node[below left,rotate=90]{\texttt{\small 0..15}} (int0);
+	\draw[maxi64] (int0 |- axidma.south) -- +(0,-8mm)  
+		-| node[above left=-5.5mm and -5mm,rotate=90]{\texttt{\small 16..31}} (int1);
+	\draw[maxi64] (int2 |- axidma.south)
+		node[above]{\texttt{S2MM}}
+		node[above left,rotate=90]{\texttt{\small 0..31}}
+		-- node[below left=0mm and 0mm,rotate=90]{\texttt{\small 16..31}} (int2);
+	\draw[maxi64] (int2 |- axidma.south) -- +(0,-8mm) 
+		-| node[below left=6mm and 0mm,rotate=90]{\texttt{\small 0..15}} (int3);
+
+	\draw[maxi64] (int4 |- axidma-alt.south)
+		node[above]{\texttt{MM2S}}
+		-- node[below,rotate=90]{\texttt{\small 12..15}} (int4);
+	\draw[maxi64] (int5 |- axidma-alt.south)
+		node[above]{\texttt{S2MM}}
+		-- node[below,rotate=90]{\texttt{\small 12..15}} (int5);
+
+
+	% The Accelerators
+	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma] 
+		(acc) {32 bit Accelerator};
+	\node at ($(acc.north east) + (2mm,2mm)$) {\ttfamily x32};
+
+	\draw[raxis64] ($(acc.south west)!0.25!(acc.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma.north west)!0.25!(axidma.north east)$);
+	\draw[axis64] ($(acc.south west)!0.75!(acc.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma.north west)!0.75!(axidma.north east)$);
+
+	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma-alt]
+		(acc-alt) {32 bit Accelerator};
+	\node at ($(acc-alt.north east) + (2mm,2mm)$) {\ttfamily x8};
+
+	\draw[raxis64] ($(acc-alt.south west)!0.25!(acc-alt.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma-alt.north west)!0.25!(axidma-alt.north east)$);
+	\draw[axis64] ($(acc-alt.south west)!0.75!(acc-alt.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma-alt.north west)!0.75!(axidma-alt.north east)$);
+
+
+	% The HPC ports
+	\node[interconnect, below=8.2mm of hpc0.south] (sw-s-b) {};
+	\node[interconnect, below=8.2mm of hpc1.south] (sw-s-a) {};
+	\draw[axi128] (hpc0) |-| ($(sw-s-a.north west)!0.25!(sw-s-a.north east)$ |- sw-s-a.north east);
+	\draw[axi128] (hpc1) |-| ($(sw-s-a.north west)!0.50!(sw-s-a.north east)$ |- sw-s-a.north east);
+	\draw[raxi128] ($(sw-s-a.north west)!0.75!(sw-s-a.north east)$) 
+		|- node[above right=-1.5mm and 0]{\ttfamily\scriptsize CoreSight} +(8mm, 5mm);
+	\draw[axi128] (sw-s-a) -- (sw-s-b);
+	\draw[raxi128] ($(sw-s-b.north west)!0.25!(sw-s-b.north east)$) 
+		|- node[above left=-1mm and 0]{\ttfamily\scriptsize SMMU} +(-8mm, 5mm);
+	
+	% CCI
+	\node[block, minimum width = 25mm, below=5mm of $(sw-s-b.south west)!0.5!(sw-s-a.south east)$]
+		(cci) {Cache Coherent\\Interconnect};
+	\draw[axi128] (sw-s-b) -- (sw-s-b |- cci.north);
+	\draw[axi128] ($(cci.south west) + (0,6mm)$) -- ++(-18mm,-22mm) -- +(-27mm,0mm);
+	\draw[axi128] ($(cci.south west) + (0,2mm)$) -- ++(-18mm,-22mm) -- +(-27mm,0mm);
+	\draw[raxi128] ($(cci.north east)!0.2!(cci.south east)$) 
+		node[below right=0mm and -1mm,rotate=90]
+		{\ttfamily\scriptsize ACE Port} -| +(3mm, 12mm);
+	\draw[raxi128] ($(cci.north east)!0.4!(cci.south east)$) 
+		node[below right=0mm and 2mm,rotate=90]
+		{\ttfamily\scriptsize Peripherals sw} -| +(6mm, 12mm);
+	\draw[axi128] ($(cci.north east)!0.6!(cci.south east)$) 
+		node[below left=0mm and -2mm,rotate=90]
+		{\ttfamily\scriptsize LPD main sw} -| +(6mm, -12mm);
+	\draw[axi128] ($(cci.north east)!0.8!(cci.south east)$) 
+		node[below left=0mm and 1mm,rotate=90]
+		{\ttfamily\scriptsize SMMU} -| +(3mm, -12mm);
+
+	% The FPD Main Switch
+	\node[interconnect, below=8mm of $(mgp0.south)!0.5!(mgp1.south)$] (sw-m) {};
+	\draw[raxi128] (mgp0) |-| ($(sw-m.north west)!0.33!(sw-m.north east)$ |- sw-m.north east);
+	\draw[raxi128] (mgp1) |-| ($(sw-m.north west)!0.66!(sw-m.north east)$ |- sw-m.north east);
+	\node[block, minimum width = 25mm, below=5mm of sw-m] (main-switch) {FPD Main Switch};
+	\draw[axi128] (main-switch) -- (sw-m);
+	\draw[axi128] ($(sw-l2-c.south west)!0.75!(sw-l2-c.south east)$) 
+		-- +(0mm, -3mm) -| ($(main-switch.south west)!0.1!(main-switch.south east)$);
+	\draw[axi128] ($(sw-l2-b.south west)!0.75!(sw-l2-b.south east)$) 
+		-- +(0mm, -5mm) -| ($(main-switch.south west)!0.2!(main-switch.south east)$);
+	\draw[axi128] ($(sw-l2-a.south west)!0.75!(sw-l2-a.south east)$) 
+		-- +(0mm, -7mm) -| ($(main-switch.south west)!0.3!(main-switch.south east)$);
+	\draw[axi128] ($(main-switch.north west) + (3mm,0)$)
+		-- node[above right = -5mm and 0.6mm,rotate=90]
+		{\ttfamily\scriptsize OCM switch} +(0, 12mm);
+	\draw[axi128] ($(main-switch.north west) + (6mm,0)$)
+		-- node[above right = -5mm and 0.6mm,rotate=90]
+		{\ttfamily\scriptsize LPD inbound} +(0, 12mm);
+
+	% APU
+	\node[block, minimum width = 25mm, minimum height = 12mm, below=12mm of cci] (apu) {APU};
+	\draw[axi128] (apu) -- (cci);
+	\draw[raxi128] (apu.east) node[above right=-1mm and 1mm]
+		{\ttfamily\scriptsize ACP} -- +(8mm,0mm);
+	\draw[axi128] ($(apu.north west)!0.667!(apu.south west)$) 
+		-| ($(main-switch.south west)!0.9!(main-switch.south east)$);
+
+	% The Interrupt
+	\node[block,minimum width=12mm, minimum height=6mm,rotate=90] (intc-0) 
+		at ($(int3)!0.5!(per-int0) + (0mm,10mm) $) {INTC};
+	\node[block,minimum width=12mm, minimum height=6mm,rotate=90] (intc-1) 
+		at ($(per-int1)!0.5!(int4) + (0mm,10mm) $) {INTC};
+
+	\draw[-,postaction={decorate}] ([xshift=-2mm]axidma.south east) 
+		node[below left = 3.5mm and -1mm]{\ttfamily\scriptsize 32}
+		node[below right]{\ttfamily\scriptsize S2MM int}
+		|-| (intc-0);
+	\draw[-,postaction={decorate}] (intc-1 |- axidma-alt.south west) 
+		node[below right = 3.5mm and -1mm]{\ttfamily\scriptsize 8}
+		node[below left]{\ttfamily\scriptsize S2MM int}
+		-- (intc-1);
+	\draw[-] ([xshift=-5mm]plint)
+		|- ($(apu.north west)!0.33!(apu.south west)$);
+	\draw[-] (intc-0) to[|-|=0.8] (plint);
+	\draw[-] (plint) node[above=1.2mm]{\ttfamily\scriptsize ~\diagup 2} -- (intc-1);
+
+
+	% Peripheral Interconnect
+	\node[interconnect] (per-int0) at ($(mgp0) + (0, 20mm)$) {};
+	\node[interconnect] (per-int1) at ($(mgp1) + (0, 20mm)$) {};
+	\draw[raxi32] (per-int0) -- (per-int0 |- mgp0.north);
+	\draw[raxi32] (per-int1) -- (per-int1 |- mgp1.north);
+	\draw[maxil] (per-int0) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..41}}
+		|- 
+		node[above left = 0mm and 2mm]{\ttfamily \textcolor{black}{0..31}}
+		node[above right = 0mm and 4mm]{\ttfamily \textcolor{black}{32..39}}
+		node[above left = -1mm and 16mm]{
+		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma);
+	\draw[maxil] (per-int1) 
+		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..39}}
+		|- 
+		node[above left = 0mm and 13mm]{\ttfamily \textcolor{black}{0..31}}
+		node[above right = 0mm and -7mm]{\ttfamily \textcolor{black}{32..39}}
+		node[above left = -1mm and 28mm]{
+		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc);
+	\draw[maxil] (per-int0)
+		|- node[above right = -1mm and 20mm]
+		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma-alt);
+	\draw[maxil] (per-int1) 
+		|- node[above right = -1mm and 8mm]
+		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc-alt);
+	\draw[raxil] ([xshift=-2mm]intc-0.south east) 
+		|- node[above right=0mm and 2mm]{\ttfamily\textcolor{black}{40}} +(10.7mm,7.9mm);
+	\draw[raxil] ([xshift=-4mm]intc-1.south east) 
+		|- node[above left=0mm and 14mm]{\ttfamily\textcolor{black}{41}} +(-23.5mm,7.9mm);
+
+	\node[emptyblock, gray, very densely dashed, anchor=north west, 
+		minimum width=28mm, minimum height=28mm]
+		(axilite-int) at ($(per-int0.north west) + (-3mm, 13mm)$) {};
+	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
+\end{tikzpicture}
+
+\caption{The accelerator core count oriented design's block diagram.}
+\label{dia:arch-3}
+\end{figure}
+
+This was not as nearly optimized as the previous one. Furthermore technical difficulties with
+UltraScale+ support maturity in Vivado 2017.2 PR flow, induced a moderate result. Still, oweing to UltraScale+'s
+silicon superiority to Zedboard's Z-7020 a PR-enabled design of 40 
+32-bit accelerator cores running at 250MHz was made possible.
+
+\section{Describing the Hardware to the Linux Kernel}
+
+In the embedded world, the presence of a BIOS-like system that is able 
+to describe the hardware to the operating system consists a luxury.
+With the exception of a few plug-'n-play buses that can autodetect their peripherals,
+all hardware in an ARM-based system cannot be automatically discovered and it must somehow
+made known to the operating system kernel. At the dawn of embedded Linux computing,
+a system vendor used to create a custom Linux firmware that had knowledge of the platoform
+it was being executed. As the embedded Linux systems spread and the number of the available
+hardware increased by several order of magnitude, this tactic could not scale well.
+A great number of kernel and bootloader forks that incorporate platform-specific patches
+and required custom compila
+
+The \gls{dt} is a data structure 
 
 
 

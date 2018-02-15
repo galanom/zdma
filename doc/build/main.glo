@@ -293,6 +293,10 @@
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{24}
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{24}
 \glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{26}
+\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{26}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{26}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{26}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{29}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{29}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{29}
@@ -313,6 +317,7 @@
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{30}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{31}
@@ -320,12 +325,15 @@
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{31}
 \glossaryentry{PCAP?\glossentry{pcap}|setentrycounter[]{page}\glsnumberformat}{31}
 \glossaryentry{distributed RAM?\glossentry{lutram}|setentrycounter[]{page}\glsnumberformat}{31}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{31}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{32}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{ICAP?\glossentry{icap}|setentrycounter[]{page}\glsnumberformat}{33}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{33}
 \glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{34}
 \glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{34}

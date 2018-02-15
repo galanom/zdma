@@ -129,7 +129,7 @@ foreach core $core_list {
 	# and therefore some newer options are recognized or some older may no longer be valid.
 	# Please modify tcl/implementation.tcl if that problem arises.
 	
-	#set_param place.closeImportedSites false	
+	set_param place.closeImportedSites false	
 	#set_attribute impl $config opt_directive   "Explore"
 	#set_attribute impl $config place_directive "ExtraTimingOpt"
 	#set_attribute impl $config phys_directive  "Explore"

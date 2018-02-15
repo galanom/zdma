@@ -66,10 +66,10 @@ set_attribute module $static synthCheckpoint $top_dcp
 
 set core_basename "zcore32"
 set core_easiest "loopback"
-set core_hardest "sobel"
+set core_hardest "gauss"
 set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold"]
 
-for {set pblock_list [list]; set i 0} {$i < 32} {incr i} {
+for {set pblock_list [list]; set i 0} {$i < 48} {incr i} {
 	lappend pblock_list $i
 }; #pblock_list will be [0, 1, 2, ... N-1]
 

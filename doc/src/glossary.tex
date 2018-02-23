@@ -37,6 +37,7 @@
 	see={icap},
 }
 
+
 \newglossaryentry{icap}
 {
 	name = {ICAP},
@@ -48,6 +49,88 @@
 	see={pcap},
 }
 
+
+\newglossaryentry{rm}
+{
+	name = {reconfigurable module},
+	description = {
+		An hierarchical design module that is configurable.
+	},
+}
+
+
+\newglossaryentry{rl}
+{
+	name = {reconfigurable logic},
+	description = {
+		Logic that is part of a \gls{rm}.
+	},
+	see = {rm},
+}
+
+
+\newglossaryentry{rp}
+{
+	name = {reconfigurable partition},
+	description = {
+		A \gls{pblock} that is reconfigurable (i.e. contains a \gls{rm}).
+	},
+	see = {rm},
+}
+
+
+\newglossaryentry{ooc}
+{
+	name = {OOC synthesis},
+	long = {out-of-context synthesis},
+	first = {\glsentrylong{ooc} (\glsentryname{ooc})},
+	description = {\emph{\glsentrylong{ooc}}:
+		A bottom-up hierarchical approach in design synthesis. 
+		Each design module is synthesized independently of the final design.
+		This approach disables optimizations accross the boundaries of the
+		synthesized module as it has no knowledge of the final design.
+		This characteristic is essential to a P.R. design, however it is also
+		used in normal workflow as it greatly reduces total synthesis time by
+		re-synthesizing only the affected logic.
+	},
+}
+
+\newglossaryentry{dcp}
+{
+	name = {DCP},
+	long = {Device Check-Point},
+	first = {\glsentrylong{dcp} (\glsentryname{dcp})},
+	description = {\emph{\glsentrylong{dcp}}:
+		The saved state of a design. It may be at post-synthesis, post-placement or post-routing.
+	},
+}
+
+\newglossaryentry{staticdesign}
+{
+	name = {static design},
+	description = {
+		The part of the design that is not dynamically reconfigurable.
+	},
+}
+
+\newglossaryentry{pp}
+{
+	name = {partition pin},
+	description = {
+		A logical pin and physical site of a P.R. design that 
+		serves as a connection point between the static and the reconfigurable logic.
+	},
+}
+
+\newglossaryentry{mgt}
+{
+	name = {MGT},
+	long = {Multi Gigabit Transceiver},
+	first = {\glsentrylong{mgt} (\glsentryname{mgt})},
+	description = {\emph{\glsentrylong{mgt}}:
+		A programmable high-speed serial interface.
+	}
+}
 
 \newglossaryentry{amba}
 {

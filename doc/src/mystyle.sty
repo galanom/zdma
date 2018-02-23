@@ -4,8 +4,26 @@
 \usepackage{graphicx}
 \usepackage[justification=centering,font=small,font=it]{caption}
 \usepackage{lscape,rotating,wrapfig,float}
-\usepackage{subcaption}
+%\usepackage{subcaption}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{setspace}
+\onehalfspacing % or \doublespacing
+\usepackage[caption=false]{subfig}
+
+\lstdefinestyle{my-dt}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=xml,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
 
 \usepackage[nopostdot,toc,section=chapter,style=altlist]{glossaries}
 \glsdisablehyper

@@ -1,0 +1,248 @@
+Command: route_design -directive Explore
+Attempting to get a license for feature 'Implementation' and/or device 'xczu9eg-ffvb1156'
+INFO: [Common 17-349] Got license for feature 'Implementation' and/or device 'xczu9eg-ffvb1156'
+INFO: [Common 17-1223] The version limit for your license is '2017.12' and will expire in -36 days. A version limit expiration means that, although you may be able to continue to use the current version of tools or IP with this license, you will not be eligible for any updates or new releases.
+Running DRC as a precondition to command route_design
+Command: report_drc (run_mandatory_drcs) for: router_checks
+INFO: [DRC 23-27] Running DRC with 8 threads
+report_drc (run_mandatory_drcs) completed successfully
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+
+
+Starting Routing Task
+INFO: [Route 35-270] Using Router directive 'Explore'.
+INFO: [Route 35-254] Multithreading enabled for route_design using a maximum of 8 CPUs
+Checksum: PlaceDB: 45beeae3 ConstDB: 0 ShapeSum: bb7581db RouteDB: a363bfdb
+
+Phase 1 Build RT Design
+Phase 1 Build RT Design | Checksum: c716dba4
+
+Time (s): cpu = 00:05:38 ; elapsed = 00:02:22 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 657 ; free virtual = 35625
+
+Phase 2 Router Initialization
+
+Phase 2.1 Fix Topology Constraints
+Phase 2.1 Fix Topology Constraints | Checksum: 20c6cdc09
+
+Time (s): cpu = 00:06:04 ; elapsed = 00:02:48 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 486 ; free virtual = 35500
+
+Phase 2.2 Pre Route Cleanup
+Phase 2.2 Pre Route Cleanup | Checksum: 20c6cdc09
+
+Time (s): cpu = 00:06:06 ; elapsed = 00:02:50 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 481 ; free virtual = 35499
+
+Phase 2.3 Global Clock Net Routing
+ Number of Nodes with overlaps = 0
+Phase 2.3 Global Clock Net Routing | Checksum: 1f3c4036a
+
+Time (s): cpu = 00:06:28 ; elapsed = 00:03:06 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 426 ; free virtual = 35467
+
+Phase 2.4 Update Timing
+Phase 2.4 Update Timing | Checksum: 202735608
+
+Time (s): cpu = 00:09:59 ; elapsed = 00:04:31 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 549 ; free virtual = 35235
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.281  | TNS=0.000  | WHS=-0.035 | THS=-0.340 |
+
+Phase 2 Router Initialization | Checksum: 25115dc70
+
+Time (s): cpu = 00:12:27 ; elapsed = 00:05:11 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 540 ; free virtual = 35271
+
+Phase 3 Initial Routing
+
+Phase 3.1 Initial Routing Verification
+
+Post Initial-Routing Verification
+---------------------------------
+CRITICAL WARNING: [Route 35-54] Net: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5] is not completely routed.
+Resolution: Run report_route_status for more information.
+CRITICAL WARNING: [Route 35-54] Net: sym_i/ps8_0_axi_periph_1/i05_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/m_axi_wdata[18] is not completely routed.
+Resolution: Run report_route_status for more information.
+
+Unroutable connection Types: 
+----------------------------
+Checking all reachable nodes within 5 hops of driver and load 
+
+Unroute Type 1 : Potential Placement Issue
+
+SLICEL.FMUX/SLICEL.F_O/->SLICEL.B4
+	-----Num Open nets: 1
+	-----Representative Net: Net[140090] sym_i/ps8_0_axi_periph_1/i05_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/m_axi_wdata[18]
+	-----SLICE_X47Y142.FMUX/SLICE_X47Y142.F_O/ -> SLICE_X47Y85/B4
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/i05_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/m_axi_wdata[18]_INST_0/O Load Term [656954]: sym_i/zcore32_41/inst/zcore32_control_s_axi_U/int_func[18]_i_1/I0
+	Type 2 : SLICEM.DQ->SLICEL.C2
+	-----Num Open nets: 1
+	-----Representative Net: Net[124155] sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5]
+	-----SLICE_X44Y120/DQ -> SLICE_X57Y89/C2
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/gen_no_arbiter.m_amesg_i_reg[6]/Q Load Term [598460]: sym_i/zcore32_40/inst/zcore32_control_s_axi_U/int_ap_done_i_1/I4
+	Type 3 : SLICEM.DQ->SLICEL.F4
+	-----Num Open nets: 1
+	-----Representative Net: Net[124155] sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5]
+	-----SLICE_X44Y120/DQ -> SLICE_X57Y77/F4
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/gen_no_arbiter.m_amesg_i_reg[6]/Q Load Term [598459]: sym_i/zcore32_40/inst/zcore32_control_s_axi_U/rdata[31]_i_5/I3
+	Type 4 : SLICEM.DQ->SLICEL.G3
+	-----Num Open nets: 1
+	-----Representative Net: Net[124155] sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5]
+	-----SLICE_X44Y120/DQ -> SLICE_X57Y77/G3
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/gen_no_arbiter.m_amesg_i_reg[6]/Q Load Term [598458]: sym_i/zcore32_40/inst/zcore32_control_s_axi_U/rdata[31]_i_4/I2
+	Type 5 : SLICEM.DQ->SLICEM.F3
+	-----Num Open nets: 1
+	-----Representative Net: Net[124155] sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5]
+	-----SLICE_X44Y120/DQ -> SLICE_X58Y78/F3
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/gen_no_arbiter.m_amesg_i_reg[6]/Q Load Term [598457]: sym_i/zcore32_40/inst/zcore32_control_s_axi_U/rdata[7]_i_3/I0
+	Type 6 : SLICEM.DQ->SLICEM.G5
+	-----Num Open nets: 1
+	-----Representative Net: Net[124155] sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5]
+	-----SLICE_X44Y120/DQ -> SLICE_X58Y78/G5
+	-----Driver Term: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/gen_no_arbiter.m_amesg_i_reg[6]/Q Load Term [598461]: sym_i/zcore32_40/inst/zcore32_control_s_axi_U/rdata[31]_i_1/I4
+Phase 3.1 Initial Routing Verification | Checksum: ba75ff3c
+
+Time (s): cpu = 00:13:43 ; elapsed = 00:05:38 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 649 ; free virtual = 35256
+Phase 3 Initial Routing | Checksum: ba75ff3c
+
+Time (s): cpu = 00:13:45 ; elapsed = 00:05:40 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 647 ; free virtual = 35256
+
+Phase 4 Rip-up And Reroute
+
+Phase 4.1 Global Iteration 0
+ Number of Nodes with overlaps = 37870
+ Number of Nodes with overlaps = 4457
+ Number of Nodes with overlaps = 466
+ Number of Nodes with overlaps = 64
+ Number of Nodes with overlaps = 5
+ Number of Nodes with overlaps = 3
+ Number of Nodes with overlaps = 1
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.322  | TNS=0.000  | WHS=-0.008 | THS=-0.017 |
+
+Phase 4.1 Global Iteration 0 | Checksum: 2578b5f18
+
+Time (s): cpu = 00:25:05 ; elapsed = 00:09:50 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 320 ; free virtual = 35150
+
+Phase 4.2 Global Iteration 1
+ Number of Nodes with overlaps = 1
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.322  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 4.2 Global Iteration 1 | Checksum: 235df9abe
+
+Time (s): cpu = 00:26:33 ; elapsed = 00:10:27 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 299 ; free virtual = 35166
+
+Phase 4.3 Global Iteration 2
+ Number of Nodes with overlaps = 14
+ Number of Nodes with overlaps = 4
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.322  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 4.3 Global Iteration 2 | Checksum: 2e509ee30
+
+Time (s): cpu = 00:29:09 ; elapsed = 00:12:21 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 260 ; free virtual = 35167
+
+Phase 4.4 Additional Timing Iterations
+Phase 4.4 Additional Timing Iterations | Checksum: 2e509ee30
+
+Time (s): cpu = 00:29:11 ; elapsed = 00:12:23 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 258 ; free virtual = 35166
+Phase 4 Rip-up And Reroute | Checksum: 2e509ee30
+
+Time (s): cpu = 00:29:13 ; elapsed = 00:12:25 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 258 ; free virtual = 35167
+
+Phase 5 Delay and Skew Optimization
+
+Phase 5.1 Delay CleanUp
+
+Phase 5.1.1 Update Timing
+Phase 5.1.1 Update Timing | Checksum: 2d1cec68b
+
+Time (s): cpu = 00:31:56 ; elapsed = 00:13:22 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 224 ; free virtual = 35142
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.322  | TNS=0.000  | WHS=0.025  | THS=0.000  |
+
+Phase 5.1 Delay CleanUp | Checksum: 2d1cec68b
+
+Time (s): cpu = 00:31:58 ; elapsed = 00:13:25 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 222 ; free virtual = 35142
+
+Phase 5.2 Clock Skew Optimization
+Phase 5.2 Clock Skew Optimization | Checksum: 2d1cec68b
+
+Time (s): cpu = 00:32:00 ; elapsed = 00:13:27 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 220 ; free virtual = 35142
+Phase 5 Delay and Skew Optimization | Checksum: 2d1cec68b
+
+Time (s): cpu = 00:32:02 ; elapsed = 00:13:28 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 218 ; free virtual = 35141
+
+Phase 6 Post Hold Fix
+
+Phase 6.1 Hold Fix Iter
+
+Phase 6.1.1 Update Timing
+Phase 6.1.1 Update Timing | Checksum: 2436f7a7b
+
+Time (s): cpu = 00:33:54 ; elapsed = 00:14:13 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 227 ; free virtual = 35145
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.322  | TNS=0.000  | WHS=0.025  | THS=0.000  |
+
+Phase 6.1 Hold Fix Iter | Checksum: 21a61ac2d
+
+Time (s): cpu = 00:33:57 ; elapsed = 00:14:16 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 224 ; free virtual = 35145
+Phase 6 Post Hold Fix | Checksum: 21a61ac2d
+
+Time (s): cpu = 00:33:59 ; elapsed = 00:14:18 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 222 ; free virtual = 35145
+
+Phase 7 Route finalize
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 6.24794 %
+  Global Horizontal Routing Utilization  = 4.78723 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 2
+  Number of Unrouted Nets             = 0
+  Number of Partially Routed Nets     = 2
+  Number of Node Overlaps             = 0
+
+Phase 7 Route finalize | Checksum: 23b85b09a
+
+Time (s): cpu = 00:34:11 ; elapsed = 00:14:22 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 211 ; free virtual = 35137
+
+Phase 8 Verifying routed nets
+CRITICAL WARNING: [Route 35-54] Net: sym_i/ps8_0_axi_periph_1/tier2_xbar_5/inst/gen_sasd.crossbar_sasd_0/addr_arbiter_inst/m_axi_arprot[2][5] is not completely routed.
+Resolution: Run report_route_status for more information.
+CRITICAL WARNING: [Route 35-54] Net: sym_i/ps8_0_axi_periph_1/i05_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/m_axi_wdata[18] is not completely routed.
+Resolution: Run report_route_status for more information.
+CRITICAL WARNING: [Route 35-7] Design has 1 unroutable pin, potentially caused by placement issues.
+CRITICAL WARNING: [Route 35-8] Design has 5 unrouted pins, that are still reachable.
+
+ Verification failed
+Phase 8 Verifying routed nets | Checksum: 23b85b09a
+
+Time (s): cpu = 00:34:13 ; elapsed = 00:14:24 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 207 ; free virtual = 35134
+CRITICAL WARNING: [Route 35-1] Design is not completely routed. There are  2  nets that are not completely routed.
+
+Phase 9 Depositing Routes
+Phase 9 Depositing Routes | Checksum: 23b85b09a
+
+Time (s): cpu = 00:35:33 ; elapsed = 00:15:43 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 222 ; free virtual = 35168
+
+Phase 10 Reset Design
+Phase 10 Reset Design | Checksum: 23b85b09a
+
+Time (s): cpu = 00:35:35 ; elapsed = 00:15:46 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 225 ; free virtual = 35172
+
+Phase 11 Route finalize
+Phase 11 Route finalize | Checksum: 23b85b09a
+
+Time (s): cpu = 00:35:37 ; elapsed = 00:15:48 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 223 ; free virtual = 35172
+
+Phase 12 Post Router Timing
+INFO: [Route 35-20] Post Routing Timing Summary | WNS=0.323  | TNS=0.000  | WHS=0.026  | THS=0.000  |
+
+INFO: [Route 35-61] The design met the timing requirement.
+Phase 12 Post Router Timing | Checksum: 2b70527cb
+
+Time (s): cpu = 00:40:20 ; elapsed = 00:16:57 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 196 ; free virtual = 35012
+INFO: [Route 35-77] Router completed with failures. Please check the log file for Critical Warnings and run report_route_status for a summary of routing status.
+
+Time (s): cpu = 00:51:43 ; elapsed = 00:28:03 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 417 ; free virtual = 35650
+
+Routing Is Done.
+579 Infos, 105 Warnings, 56 Critical Warnings and 0 Errors encountered.
+route_design completed successfully
+route_design: Time (s): cpu = 00:57:00 ; elapsed = 00:31:33 . Memory (MB): peak = 12332.309 ; gain = 0.000 ; free physical = 417 ; free virtual = 35650

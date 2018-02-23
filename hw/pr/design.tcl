@@ -26,8 +26,8 @@ set tclParams [list hd.visual 1 \
 ####flow control
 set run.rmSynth        0
 set run.prImpl         1
-set run.prVerify       1
-set run.writeBitstream 1
+set run.prVerify       0
+set run.writeBitstream 0
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -49,8 +49,8 @@ set srcDir	""
 #set proj_name	"base_sym_zedboard"
 #set top		"sym_pb4"
 
-set proj_dir	"../base_alt_2"
-set proj_name	"base_alt_2"
+set proj_dir	"../base/"
+set proj_name	"base"
 set top		"zed_asym_cc_alt"
 
 set top_dcp	"${dcpDir}/base/${top}.dcp"

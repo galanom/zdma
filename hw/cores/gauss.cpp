@@ -57,7 +57,9 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width)
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					uint16_t tmp;
-//#pragma HLS resource variable=tmp core=DSP48
+#ifdef FORCE_DSP48
+#pragma HLS resource variable=tmp core=DSP48
+#endif
 					tmp = kern[i][j] * linebuf.getval(i, j+col+px);
 					acc += tmp;
 				}

@@ -54,7 +54,7 @@
 {
 	name = {reconfigurable module},
 	description = {
-		An hierarchical design module that is configurable.
+		An hierarchical design module that is defined as partially reconfigurable.
 	},
 }
 
@@ -73,9 +73,21 @@
 {
 	name = {reconfigurable partition},
 	description = {
-		A \gls{pblock} that is reconfigurable (i.e. contains a \gls{rm}).
+		A physical region of the FPGA, defined by \glspl{pblock},
+		that instantiates a single \gls{rm}.
 	},
-	see = {rm},
+	see = {pblock,rm},
+}
+
+\newglossaryentry{rf}
+{
+	name = {reconfigurable frame},
+	description = {
+		The smallest reconfigurable physical region of the FPGA. 
+		In 7-series it is one element (\gls{clb}, \gls{bram} or \gls{dsp}) wide by one clock region high.
+		In UltraScale+ it is a pair of \glspl{dsp} or a single \gls{bram}/\gls{dsp} 
+		tile and their neighboring \glspl{clb}.
+	},
 }
 
 
@@ -130,6 +142,17 @@
 	description = {\emph{\glsentrylong{mgt}}:
 		A programmable high-speed serial interface.
 	}
+}
+
+\newglossaryentry{gsr}
+{
+	name = {GSR},
+	long = {Global Set/Reset},
+	first = {\glsentrylong{gsr} (\glsentryname{gsr})},
+	description = {\emph{\glsentrylong{gsr}}:
+		A globally routed signal that forces logic to 
+		quiescence while the device is being programmed.
+	},
 }
 
 \newglossaryentry{amba}
@@ -252,6 +275,8 @@
 	first = {\glsentrylong{bram} (\glsentryname{bram})},
 	description = {\emph{\glsentrylong{bram}}:
 		A specialized type of on-chip FPGA memory resource with one cycle access latency.
+		Each tile may be used as a single 36kibit element (BRAM36) or as two 18kibit (BRAM18).
+		Optionally, BRAM may be configured as a FIFO and is capable of ECC.
 	}
 	see = {lutram},
 }
@@ -276,6 +301,20 @@
 	},
 	see = {slice},
 }
+
+\newglossaryentry{dsp}
+{
+	name = {DSP},
+	description = {
+		A specialized FPGA resource that implements an integer pre-adder,
+		a multiplier and an accumulator. In 7-series a DSP48E1 is implemented,
+		where the pre-adder is 25 bits wide, the multiplier is 25 by 18 bits wide,
+		and the accumulator is 48 bits wide (hence the name). 
+		The UltraScale/UltraScale+ feature a more advanced version, the DSP48E2,
+		which features a 27 by 18 bit wide multiplier.
+	}
+}
+
 
 \newglossaryentry{slice}
 {
@@ -312,6 +351,28 @@
 		If it is not, it acts as its assigned module container but it may as well share logic
 		from other modules.
 	},
+}
+
+\newglossaryentry{tns}
+{
+	name = {TNS},
+	long = {Total Negative Slack},
+	first = {\glsentrylong{tns} (\glsentryname{tns})},
+	description = {\emph{\glsentrylong{tns}}:
+		A metric of how far the timing closure is. It represents the sum
+		of negative slacks of all paths that fail timing constraints.
+	}
+}
+
+\newglossaryentry{drc}
+{
+	name = {DRC},
+	long = {Design Rule Checking},
+	%first = {\glsentrylong{drc} (\glsentryname{drc})},
+	description = {\emph{\glsentrylong{drc}}:
+		A process of design verification in order to conform to the requirements
+		of the implementing technology.
+	}
 }
 
 \newglossaryentry{acelite}

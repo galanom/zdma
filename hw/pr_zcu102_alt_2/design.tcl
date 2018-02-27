@@ -10,7 +10,9 @@ source $tclDir/hd_floorplan_utils.tcl
 ###############################################################
 ### Define Part, Package, Speedgrade 
 ###############################################################
+# For ZedBoard
 #set part "xc7z020clg484-1"
+# For zcu102
 set part "xczu9eg-ffvb1156-2-i"
 check_part $part
 
@@ -22,10 +24,10 @@ set tclParams [list hd.visual 1 \
               ]
 
 ####flow control
-set run.rmSynth        1
+set run.rmSynth        0
 set run.prImpl         1
 set run.prVerify       1
-set run.writeBitstream 1
+set run.writeBitstream 0
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -33,7 +35,7 @@ set verbose      1
 set dcpLevel     1
 
 ####Output Directories
-set synthDir	"./synth"
+set synthDir	"../pr_zcu102_alt/synth"
 set implDir	"./impl"
 set dcpDir	"./dcp"
 set bitDir	"./bit"
@@ -47,12 +49,12 @@ set srcDir	""
 #set proj_name	"base_sym_zedboard"
 #set top		"sym_pb4"
 
-set proj_dir	"../base_zcu102"
-set proj_name	"base_zcu102"
+set proj_dir	"../base_zcu102_alt"
+set proj_name	"base_zcu102_alt"
 set top		"sym"
 
 set top_dcp	"${dcpDir}/base/${top}.dcp"
-set top_xdc	[list	"${proj_dir}/${proj_name}.srcs/$top/new/pblocks.xdc"]
+set top_xdc	[list	"${proj_dir}/${proj_name}.srcs/${top}/new/pblocks.xdc"]
 
 set static "${top}_static"
 add_module $static
@@ -64,12 +66,12 @@ set_attribute module $static synthCheckpoint $top_dcp
 ### RP Module Definitions
 ####################################################################
 
-set core_basename "zcore64"
+set core_basename "zcore32"
 set core_easiest "loopback"
-set core_hardest "contrast"
-set core_list [list "gauss" "loopback" "contrast" "sobel" "sharpen" "emboss" "outline" "negative" "threshold"]
+set core_hardest "sobel"
+set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
 
-for {set pblock_list [list]; set i 0} {$i < 48} {incr i} {
+for {set pblock_list [list]; set i 0} {$i < 63} {incr i} {
 	lappend pblock_list $i
 }; #pblock_list will be [0, 1, 2, ... N-1]
 
@@ -129,8 +131,9 @@ foreach core $core_list {
 	# and therefore some newer options are recognized or some older may no longer be valid.
 	# Please modify tcl/implementation.tcl if that problem arises.
 	
+	set_param place.closeImportedSites false	
 	set_attribute impl $config opt_directive   "Explore"
-	set_attribute impl $config place_directive "ExtraTimingOpt"
+	set_attribute impl $config place_directive "ExtraPostPlacementOpt"
 	set_attribute impl $config phys_directive  "Explore"
 	set_attribute impl $config route_directive "Explore"
 

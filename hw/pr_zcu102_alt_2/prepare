@@ -4,15 +4,15 @@
 #proj_name="base_sym_zedboard"
 #top="sym_pb4"
 
-proj_dir="../base_alt/"
-proj_name="base_alt"
-top="zed_asym_cc_alt"
+proj_dir="../base_zcu102_alt/"
+proj_name="base_zcu102_alt"
+top="sym"
 
-instance_name="zcore16"
-solution="solution_16"
+instance_name="zcore32"
+solution="solution_32u_300"
 
 cores_dir="../cores"
-INSTANCE_LIST=`printf "${instance_name}_%d " {0..15}`
+INSTANCE_LIST=`printf "${instance_name}_%d " {0..62}`
 CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
 
 rm -rf ./prj/*  ./bit ./hd_visual ./synth ./impl ./dcp/*.dcp *.log \

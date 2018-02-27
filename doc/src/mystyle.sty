@@ -5,7 +5,6 @@
 \usepackage[justification=centering,font=small,font=it]{caption}
 \usepackage{lscape,rotating,wrapfig,float}
 %\usepackage{subcaption}
-\usepackage{hyperref}
 \usepackage{listings}
 \usepackage{setspace}
 \onehalfspacing % or \doublespacing
@@ -27,7 +26,8 @@
 
 \usepackage[nopostdot,toc,section=chapter,style=altlist]{glossaries}
 \glsdisablehyper
-
+\usepackage[perpage,bottom]{footmisc}
+\usepackage[section]{placeins}
 %\usepackage{tocstyle}\usetocstyle{nopagecolumn}
 \usepackage[export]{adjustbox}
 
@@ -35,3 +35,5 @@
 \input{src/diagrams.sty}
 
 \captionsetup{justification=centering,margin=0cm}
+
+\usepackage{hyperref}

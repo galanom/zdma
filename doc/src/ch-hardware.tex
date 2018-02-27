@@ -1163,7 +1163,7 @@ Given the comparatively low throughput of the Zynq-7000 memory subsystem,
 one may wonder if there is sufficient motivation for even attempting parallellization.
 There are two arguments in favor of doing it -- and virtually none against.
 
-Firstly, the maximum theoretical throughput of 2400MB/s that Xilinx asserts (\cite{pg585}, pg 652)
+Firstly, the maximum theoretical throughput of 2400MB/s that Xilinx asserts (\cite{ug585}, pg 652)
 was calculated assuming maximum port frequency, maximum port width, and continuous bidirectional
 traffic. The latter is unlikely, but there is little we can do. As for the other two,
 they are subject to design trade-offs between per-accelerator performance vs. accelerator count
@@ -2288,7 +2288,7 @@ The P.R. workflow defines these steps:
 	\end{enumerate}
 \end{itemize}
 
-\subsection{Physical Considerations and Floorplanning}
+\subsection{Physical Constraints}
 
 The Partial Reconfiguration workflow is subject to several physical constraints that
 arise from the FPGA architecture. These affect which hardware resources are reconfigurable,
@@ -2299,29 +2299,350 @@ and are usually architecture dependent.
 Between the Xilinx 7-series and UltraScale+ there has been a significant improvement
 in partial reconfiguration capability. In 7-series, only the CLB, the BRAM and the DSP tiles
 were partially reconfigurable. In UltraScale+, the clocking resources, the I/O and the
-\glspl{mgt} are also reconfigurable, albeit coarser granularity. 
+\glspl{mgt} are also reconfigurable, albeit coarser granularity.
 
 However, what really matters to our work is the flexibility in the physical layout.
 This is because in this work, we have several rather small accelerators.
 The shape and placement of their container \gls{pblock} is much more critical 
 to the system performance compared to, for example, a design with a single huge
-\gls{rp} that spawns multiple clock regions. 
+\gls{rp} that spawns multiple clock regions.
 
-To illustrate this, 
+It is in this respect that the architectural differences are more important.
+In 7-series there are several physical constraints that lead to a rather
+coarse \gls{rp} placement.
+A reconfigurable frame is a clock region tall. 
+A \gls{rp} is allowed to be shorter than this, 
+however it will lose its automatic post-reconfiguration initialization to a known state.
+Even worse, as we will see at the following example, 
+the vertical space between the \gls{rp} and the clock region border would be of less usability,
+as no memory resource can be placed there.
+On the horizontal axis the \gls{rp} is allowed to end at any column. 
+In this architecture, each resource colum has an interconnect column placed next to it.
+The pairs of resource plus interconnect columns are placed sequentially but with mirrored orientation,
+that is, two resource columns facing each other, two interconnect columns connected back to back,
+and so on.
+Though it is legal that a \gls{rp} ends between two interconnect columns, 
+this would cause the splitting of a clock distribution resource. 
+In order to avoid any distrubance, the tools will not place logic in any affected resource,
+causing a significant utilization efficiency drop. Therefore, almost always a \gls{rp}
+will end at a resource column border. Effectively, the minimum \gls{rp}
+size would be a clock region tall by two resource and their interconnect columns wide.
 
-In 7-series 
+In UltraScale and UltraScale+ however, this has changed radically. A \gls{rp}
+can be as small as a pair of \glspl{clb} or a single \gls{bram}/\gls{dsp} with
+its 5 neighboring \glspl{clb}. Xilinx actually recommends \emph{against} having
+clock region tall blocks, as this is restrictive to the router.
+This fine-grained \gls{rp} definition allows
+a far better FPGA utilization in the case of many small \glspl{rp}.
+It also makes easier to define non-rectangular \glspl{rp}, 
+though routing difficulty at the corners will still be a limiting factor. 
+Note that the \gls{rf} is still one clock region tall and all logic in
+that column will be reprogrammed. However, in constrast to 7-series,
+consistency is guaranteed for any resource that is placed between the \gls{rp} 
+and the horizontal clock region border, including memory resources.
+However, a \gls{rf} may be controlled by one \gls{rp} at most. Therefore,
+it is still prohibited for two \glspl{rp} to be vertically stacked within a clock region.
+
+To illustrate this, let us discuss the development of the two Zynq-7000 designs.
+Initially, the intent was that a single design of 12 accelerators would be created.
+Each accelerator, in order to convolve an 1080p image with a 5x5 kernel would need
+a line buffer of 1920 pixel by 5 lines by 1 byte/pixel for grayscale, which is 9600 bytes
+or 76.8 Kibits and therefore the implementation would require
+two BRAM36 or three BRAM18 resources. In figure \ref{tab:dma-modes} we saw that a single
+instance of a 32-bit AXI DMA requires two BRAM36 tiles. In total, for 12 cores,
+we need 36 BRAM18 and 24 BRAM36 tiles. The Z-7020 FPGA that Zedboard employs,
+has 14 clock region tall \gls{bram} columns, 
+each column containing 10 BRAM36 or equivalently 20 BRAM18 tiles.
+A static design would be easily implemented with a mere 30\% BRAM utilization.
+
+As a \gls{rp} extends vertically to clock region border, each \gls{rp}
+would be assigned an entire \gls{bram} column, underutilized at 3 out of 20 BRAM18 tiles.
+Out of the 14 columns the Z-7020 has, only two will be left for static logic offering 20 BRAM36 tiles,
+falling short of the 24 required. The designed was of course unplaceable.
+
+A first thought was to make the \gls{rp} shorter than a clock region,
+sacrificing the post-reconfiguration initialization. 
+The accelerator reset signal was instead driven by the reset-out signal of the AXI DMA core, 
+which is asserted when the AXI DMA itself is being reset.
+Since we anyways reset the corresponding AXI DMA after the accelerator reconfiguration, 
+it seemed a viable solution. 
+
+However, the placer would fail, declaring such a placement illegal.
+After contacting Xilinx, it was made clear that all logic within a \gls{rf}
+is reconfigured, even if it is \emph{not} included in the \gls{rp}.
+The hardware guarantees consistency for any combinatorial logic,
+but any sequential element (flip-flop, LUTRAM, \gls{bram}) would be initialized,
+regardless of the post-reconfiguration reset enablement.
+
+Despite that this could be tolerated if by location constraints we assigned this \gls{bram}
+only to the soon to be reset AXI DMA instance, the placer refused to be ``forced'' to accept
+this placement. The only solution was to place both accelerator and its DMA controller in
+the same \gls{rp} but this was not materialized as it would 
+double bitstream size and reconfiguration time. 
+
+At this point, it was decided to split the design
+to two targets, one of high accelerator count where some of the instances would contain no memory
+and one of high performance with no compromise in resource utilization.
+
+As this physical constraint does not exist in UltraScale+,
+our design was implemented mostly using rows of half clock region tall \glspl{rp},
+which additionally could be placed more tightly in the horizontal axis 
+as routing could pass from the bottom half of the clock region.
+
+%Despite the architectural differences, 
+%there are three basic physical rules that always apply to partial reconfiguration:
+
+%\begin{itemize}
+%\item	The physical interface between the static and the reconfigurable design must remain consistent
+%	across all \gls{rm} implementations. If a \gls{rm} version requires different interface,
+%	a superset of all signals must be defined on all versions.
+%\item	A \gls{rm} is fully contained within a \gls{rp}. This includes both logic and routing.
+%\item	Static logic is not allowed to be placed in a \gls{rp}. 
+%	The routing of static part however may cross a \gls{rp}.
+%\end{itemize}
+
+\subsection{Floorplanning and Implementation}
+
+Floorplanning for Partial Reconfiguration involves the placement and sizing of the \glspl{pblock}
+that will implement the \glspl{rp}. 
+
+The physical constraints of the Partial Reconfiguration technology 
+in the respective FPGA architecture have to be respected. 
+Furthermore, certain restrictions are derived from the implementation tools
+-- most notably, \gls{rp} nesting or partial overlapping is not supported.
+
+Apart from these, floorplanning in partial reconfiguration workflow is no different
+than in static design; only that problems are more pronounced and
+a sub-optimal decision will be more punishing. The difficulty heightens as
+the number of \glspl{rp} increases.
+
+As a starting point, a good practice proved to be to place the \glspl{rp}
+as far as possible between each other as this eases local congestion.
+
+Timing closure is first achieved in a static workflow that is gradually constrained
+to match the actual partial reconfiguration constraints. 
+A reasonable workflow could involve these steps:
+
+\begin{enumerate}
+\item	Initial clock estimation and functional validation should be done
+	in a static design instantiating the most difficult to route accelerator.
+	No \glspl{pblock} are defined.
+	This implementation will set our expectations on clock speed and
+	accelerator capacity. 
+	
+	Since \gls{rp} may not be stacked within a clock region,
+	if a special resource (\gls{bram} or \gls{dsp}) has to be included,
+	the maximum number of \glspl{rp} is bounded
+	by the number of clock-region tall resource columns in the device.
+	In 7-series, if the resource is the \gls{bram}, this upper bound is
+	further reduced because of the AXI DMA instances; 
+	ideally, five 32b or three 64b AXI DMA instances may be accomodated by
+	a single clock region \gls{bram} (see table \ref{tab:dma-modes}), 
+	but this packing may not be possible in actual design.
+\item	\glspl{pblock} are defined and accelerator instances are assigned
+	to them. \glspl{pblock} are places as sparsely as possible
+	and their size should target an 80\% utilization.
+	While a utilization of 85\% to 90\% may be possible to implement,
+	it might be better to be left as an optimization after getting
+	a first working P.R. implementation. If at this step the
+	design is unrouteable or it misses the clock target by far,
+	the initial floorplanning may be fundamentally bad.
+\item	The constraints of partial reconfiguration should be applied.
+	Setting the \texttt{HD.RECONFIGURABLE} property will enable
+	all the related constraints. 
+	It is possible to gradually import the P.R. constraints by
+	initially using \texttt{EXCLUSIVE\_PLACEMENT}, that pushes all
+	static logic outside of the \glspl{pblock}, and \texttt{CONTAIN\_ROUTING},
+	which will force all \gls{rm} routing to be contained within the \gls{pblock}.
+
+	\gls{drc} for partial reconfiguration
+	should be done now. Additionally, a good set of implementation settings
+	must be determined -- for our \gls{pblock} arrangement it was
+	usually a choice between the \texttt{ExtraTimingOpt}
+	and \texttt{RefinePlacement} strategies.
+
+\item	If implementation has failed despite \gls{drc} was successful, 
+	the first step to try would be the placer parameters.
+	Also, it must be ensured that \gls{pblock} utilization is well below 90\%.
+\item	In UltraScale+, if the initial \gls{rm} configuration succeeds but 
+	all subsequent fail at placement due to all \gls{bram} or \gls{dsp} tiles being reserved,
+	a change of placer directive to \texttt{ExtraPlacementOpt} 
+	and \gls{pblock} reshaping will likely resolve the issue.
+\item	If the initial configuration achieves timing closure while some of the others do not,
+	the choice of initial configuration was incorrect and must be changed.
+	If a configuration whose \glspl{pp} would satisfy all other configurations
+	cannot be found, floorplanning must be revised.
+\item	If the target clock was missed by a wide margin, e.g. a \gls{tns}
+	of more than 10ns, a different floorplan may be required or the clock
+	may be needed to be stepped down.
+\item	If the target clock was missed by a moderate amount, e.g. a \gls{tns} of 1ns,
+	the implemented design must be examined in order to identify congestions
+	that were caused by too dense \gls{pblock} placement.
+	A \gls{pblock} may be moved to the next column pair (7-series)
+	or have its aspect ratio changed (UltraScale+).
+	It is useful to group the \glspl{pblock} by the interconnect IP their \glspl{rm} use.
+\item	If timing closure is near, the specific settings of an implementation
+	strategy can be tweaked. The most sensitive tool appears to be the placer.
+	A P.R. workflow may be attempted -- oddly enough,
+	a case was met where a specific floorplan that failed timing closure in static workflow,
+	succeeded in P.R. workflow at the same clock target (see figure \ref{fig:floorplanning-cc}).
+\end{enumerate}
+
+The final implementation of the three example designs is presented 
+in table \ref{tab:impl-comp} and the floorplanning of a static workflow 
+implementation is shown in figure \ref{fig:floorplanning-perf} for
+performance oritented design and figure \ref{fig:floorplanning-cc} 
+for the accelerator count oriented.
+Finally, figure \ref{fig:floorplanning-usp} displays the UltraScale+ port implementation.
 
 \begin{figure}[ht!]
-\centering
-\subfloat[Successful timing closure in static workflow but not in PR.]%
-	{\includegraphics[scale=.45]{img/design1-floorplan-pr.pdf}}
-\\
-\subfloat[Successful timing closure in PR workflow but not in static.]%
-	{\includegraphics[scale=.45]{img/design1-floorplan-static.pdf}}
-\caption{Routability of a design in the static workflow \\
-	does not imply routability in the PR workflow, and vice versa.}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+			& Accelerator Performance& Accelerator Count 	& UltraScale+ Port\\
+\midrule
+Accelerator Count	& 6			& 10 big / 6 small	& 63		\\
+Accelerator Data Width	& 64b			& 16b			& 32b		\\
+Clock Frequency	(MHz)	& 143			& 133			& 250		\\
+LUT6 capacity		& 3600-4000 		& 800			& 1920-2160	\\
+LUT6 utilization\footnotemark (\%)& 87.7		& 74-83.5\footnotemark	& 74.3		\\
+BRAM36 capacity		& 10			& 10 / 0 		& 6-10		\\
+BRAM36 utilization (\%)	& 25			& 25 / -		& 41.7		\\
+DSP48 capacity		& 20-40			& 20 / 0 		& 16-24		\\
+DSP48 utilization (\%)	& 100			& 80 / -		& 75		\\
+Bitstream size (kiB)	& 516-666		& 294 / 148		& 341-637	\\
+AXI DMA Data Width	& 64b			& 32b			& 32b		\\
+AXI Crossbar Width	& 64b			& 32b			& 32b		\\
+Interconnect buffering	& yes (32)		& no			& no		\\
+Interconnect IP		& AXI Interconnect	& SmartConnect 		& AXI Interconnect\\
+\midrule
+Logic Optimizer		& Explore		& Explore		& Explore	\\
+Placer 			& ExtraTimingOpt	& ExtraPostPlacementOpt	& ExtraPostPlacementOpt\\
+			&			& ExtraTimingOpt	& \\
+Physical Optimizer	& Explore		& Explore		& Explore\\
+			&			& AlternateFlowWithRetiming &\\
+Router			& Explore		& Explore		& Explore\\
+\bottomrule
+\end{tabular}}
+\caption{Design parameters of the example designs.}
+\label{tab:impl-comp}
 \end{figure}
 
+Despite the apparently high numbers of resource utilization in first design,
+it was the second one that proved to be the most challenging. The two \gls{rp} types,
+``big'' and ``small'' refer to the specialized resource capacity. The ``big''
+contains \gls{bram} and \gls{dsp} tiles while the small does not. With respect to
+LUT6 capacity, they are equivalent.
+Two out of the nine accelerator types (``gauss'' and ``sobel'') 
+did not fit in the 800 LUT6 instances, and the HLS synthesizer was forced to use DSP48
+resources instead of common logic for implementing integer multiplication 
+in order to reduce the pressure on LUT6 resources.
+The same accelerators required alternative tool settings.
+While the initial configuration and all other accelerators were implemented with
+the placer directive \texttt{ExtraPostPlacementOpt} and physical optimizer directive \texttt{Explore},
+these accelerators required \texttt{ExtraTimingOpt} and \texttt{AlternateFlowWithRetiming}
+in order to achieve timing closure. \emph{TODO μήπως καλύτερα να μην τα αναφέρω αυτά εδώ;}.
+
+Both other designs were homogeneous. The variation of \gls{pblock} size in first design
+was used to help timing and there is no functionality difference.
+The UltraScale+ port required some tweaking in the \gls{pblock} shape, size and placement
+in order to avoid an unexplained placer behavior of locking the specialized resources
+of initial configuration and causing subsequent ones to fail. 
+This caused a variation in resouce capacity, utilization and partial bitstream size, 
+none of which has no further effect and will not be visible at the system level.
+
+\footnotetext[1]{Utilization of the biggest module version in the smallest \gls{rp}.}
+\footnotetext[2]{The former is for the most difficult to route version,
+	the latter is for the most resource demanding.}
+
+\begin{figure}[tb!]
+\centering
+	\includegraphics[scale=.41]{img/floorplanning-perf.pdf}
+\caption{Floorplan of accelerator performance oriented design.}
+\label{fig:floorplanning-perf}
+\end{figure}
+
+
+\begin{figure}[htb!]
+\centering
+\subfloat[Successful timing closure in PR workflow but not in static.]%
+	{\includegraphics[scale=.41]{img/floorplanning-cc-pr.pdf}}
+\\
+\subfloat[Successful timing closure in static workflow but not in PR.]%
+	{\includegraphics[scale=.41]{img/floorplanning-cc-static.pdf}}
+\caption{Floorplan of accelerator count oriented design.}
+\label{fig:floorplanning-cc}
+\end{figure}
+
+\begin{figure}[htb!]
+\centering
+	\includegraphics[scale=.9]{img/floorplanning-usp.pdf}
+\caption{Floorplan of UltraScale+ port.}
+\label{fig:floorplanning-usp}
+\end{figure}
+
+\subsection{Reconfigurable Partition Heterogeneity}
+
+It is shown that the choice of having two types of \glspl{rp} in the
+Accelerator Core Count oriented design was initially driven by necessity, 
+imposed by the available hardware.
+
+However it was a rational decision. A system may require accelerators that
+vary significantly in complexity or demand very specialized resources,
+like the \glspl{mgt} that were made reconfigurable in UltraScale+.
+In a different scenario, the same computation may be required in different
+degrees of intensity and power consumption.
+
+At some point, using homogenuous \glspl{rp} will essentially sacrifice both
+area efficiency, power efficiency, and functionality offered.
+
+In this design, a simple two-level approach was used. If an module variant
+cannot fit a certain \gls{rp}, a loopback variant is placed instead, which is later discarded.
+In this way, no partial bitstream will be produced for this combination of module variant and \gls{rp}.
+The kernel driver will detect its unavailability and will take this into account in scheduling decisions.
+
+\subsection{Accelerator Configuration}
+
+Most accelerators that may need to be implemented, apart from the input
+and output data stream, would need some kind of configuration input and/or
+status output. This configuration input will affect the accelerator processing
+and must remain constant throughout the execution phase. After that,
+it is desirable that a status output will be offered.
+
+A first thought would be the use of a \gls{gpio} port. However since the
+implemented functionality is not known in advance, the number of required
+signals is not known. Since the interface between the static part of a design
+and the partially reconfigurable must remain consistent throughout all \gls{rm} implementations, 
+whatever choice is made, it has to apply for all \glspl{rm} that will be implemented.
+This has many consequences. If the choice is too conservative, a new accelerator type
+might not be able to be supported. If the choice is too lenient, many superfluous
+wires will be created, complicating routing. The choice may not be able to be revised afterwards,
+if the final product is released.
+
+A sophisticated approach was used in \cite{charitopoulos}, where the researchers used
+micro-reconfiguration, a technology of dynamically altering the configuration of an
+FPGA element without creating any additional bitstream. 
+The principal use of micro-reconfiguration is for \gls{seu} mitigation in space applications,
+for correcting bit-flips in the configuration SRAM due to radiation.
+When used in our context, it has the advantage of being able to configure an
+accelerator in any way possible without using any additional routing resources.
+
+In this work, a simpler approach was used. Taking into advantage the low footprint of
+\gls{axilite} (it was tested to cost about 100 LUT6 for a slave),
+a configuration port was implemented in all accelerators. This defines
+an address space within the accelerator, where the host may read or write any value.
+The wire count can be made constant by defining the address bus width -- in this work
+it was chosen to be 6, leading to a 64 bytes of addressable space. Since this approach
+uses a general purpose bus, any \gls{axi} master can read or write this port,
+not only an owner of a FPGA programming port. The choice was primarily driven by
+the ease of implementation -- all interconnect logic is available and the Vivado HLS
+is able to generate \gls{axilite} compliant code through the use of simple compiler
+directives. The accelerator memory is mapped to the processor address space
+so communication is made through simple load/store instructions.
+
+Nonetheless, long after its implementation, despite that it was proven to work reliably,
+some doubts were cast for the efficiency of this solution. 
+More on this will be discussed in ``Future Work'' section. \emph{TODO: να βαλω ref}.
 
 \section{Describing the Hardware to the Operating System}
 

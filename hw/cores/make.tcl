@@ -1,6 +1,6 @@
 #!/opt/Xilinx/Vivado_HLS/2017.2/bin/vivado_hls
 set cores [list gauss sobel emboss outline sharpen contrast threshold loopback negative]
-set sizes [list 64]
+set sizes [list 32]
 
 foreach core $cores {
 	foreach size $sizes {
@@ -17,7 +17,7 @@ foreach core $cores {
 		open_solution -reset "solution_${size}u"
 		##set_part {xc7z020clg484-1}
 		set_part {xczu9eg-ffvb1156-2-i}
-		create_clock -period 3.33 -name default
+		create_clock -period 4 -name default
 
 		csynth_design
 		export_design -rtl verilog -format ip_catalog	\

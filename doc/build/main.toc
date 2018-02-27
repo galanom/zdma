@@ -39,9 +39,11 @@
 \contentsline {subsection}{\numberline {1.6.1}An Accelerator Performance Oriented Approach}{28}{subsection.1.6.1}
 \contentsline {subsection}{\numberline {1.6.2}An Accelerator Count Oriented Approach}{29}{subsection.1.6.2}
 \contentsline {subsection}{\numberline {1.6.3}The Zynq UltraScale+ Port}{32}{subsection.1.6.3}
-\contentsline {section}{\numberline {1.7}Partial Reconfiguration}{32}{section.1.7}
+\contentsline {section}{\numberline {1.7}Partial Reconfiguration}{33}{section.1.7}
 \contentsline {subsection}{\numberline {1.7.1}The Partial Reconfiguration Workflow}{35}{subsection.1.7.1}
-\contentsline {subsection}{\numberline {1.7.2}Physical Considerations and Floorplanning}{37}{subsection.1.7.2}
-\contentsline {section}{\numberline {1.8}Describing the Hardware to the Operating System}{37}{section.1.8}
-\contentsline {chapter}{Glossary}{45}{section*.43}
-\contentsline {chapter}{Bibliography}{53}{chapter.2}
+\contentsline {subsection}{\numberline {1.7.2}Physical Constraints}{37}{subsection.1.7.2}
+\contentsline {subsection}{\numberline {1.7.3}Floorplanning and Implementation}{40}{subsection.1.7.3}
+\contentsline {subsection}{\numberline {1.7.4}Reconfigurable Module Configuration}{43}{subsection.1.7.4}
+\contentsline {section}{\numberline {1.8}Describing the Hardware to the Operating System}{46}{section.1.8}
+\contentsline {chapter}{Glossary}{51}{section*.46}
+\contentsline {chapter}{Bibliography}{59}{chapter.2}

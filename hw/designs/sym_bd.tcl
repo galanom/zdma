@@ -1364,7 +1364,7 @@ CONFIG.PSU__CRL_APB__PCAP_CTRL__SRCSEL {IOPLL} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__DIVISOR0 {15} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {IOPLL} \
-CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {225} \
+CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {250} \
 CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {RPLL} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__FREQMHZ {125} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__SRCSEL {IOPLL} \
@@ -1445,6 +1445,8 @@ CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC0_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC1_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC2_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC3_SEL {APB} \
+CONFIG.PSU__MAXIGP0__DATA_WIDTH {32} \
+CONFIG.PSU__MAXIGP1__DATA_WIDTH {32} \
 CONFIG.PSU__OVERRIDE__BASIC_CLOCK {0} \
 CONFIG.PSU__PCIE__BAR0_ENABLE {0} \
 CONFIG.PSU__PCIE__CLASS_CODE_BASE {0x06} \
@@ -2119,6 +2121,8 @@ CONFIG.PSU__USE__S_AXI_GP6 {1} \
   create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_60/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP6/LPD_DDR_LOW] SEG_zynq_ultra_ps_e_0_LPD_DDR_LOW
   create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_61/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP6/LPD_DDR_LOW] SEG_zynq_ultra_ps_e_0_LPD_DDR_LOW
   create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_61/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP6/LPD_DDR_LOW] SEG_zynq_ultra_ps_e_0_LPD_DDR_LOW
+  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_62/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP6/LPD_DDR_LOW] SEG_zynq_ultra_ps_e_0_LPD_DDR_LOW
+  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_62/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP6/LPD_DDR_LOW] SEG_zynq_ultra_ps_e_0_LPD_DDR_LOW
   create_bd_addr_seg -range 0x00010000 -offset 0xA0000000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] SEG_axi_dma_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA00A0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_10/S_AXI_LITE/Reg] SEG_axi_dma_10_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0xA00B0000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_11/S_AXI_LITE/Reg] SEG_axi_dma_11_Reg

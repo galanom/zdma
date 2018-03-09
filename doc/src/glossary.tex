@@ -2,6 +2,7 @@
 {
 	name = {DT},
 	long = {Device Tree},
+	first = {\glsentrylong{dt} (\glsentryname{dt})},
 	description = {
 		A device structure that describes the hardware.
 		It is used in systems that offer no BIOS-like functionality,
@@ -139,6 +140,7 @@
 	name = {MGT},
 	long = {Multi Gigabit Transceiver},
 	first = {\glsentrylong{mgt} (\glsentryname{mgt})},
+	firstplural = {\glsentrylong{mgt}s (\glsentryname{mgt}s)},
 	description = {\emph{\glsentrylong{mgt}}:
 		A programmable high-speed serial interface.
 	}
@@ -685,5 +687,30 @@
 		therefore the peripheral may either do not posess any caches at all, or they
 		are non-coherent and manually managed.
 	}
+}
+
+
+\newglossaryentry{seu}
+{
+	name = {SEU},
+	long = {Single Event Upset},
+	first = {\glsentrylong{seu} (\glsentryname{seu})},
+	description = {
+		A bit flip in memory caused by ionizing radiation penetrating the semiconductor 
+		and releasing charge inside a transitor diffusion terminal. It is non-destructive
+		for the semiconductor itself but if the FPGA configuration memory is affected,
+		its operation will be altered.
+	},
+}
+
+\newglossaryentry{hls}
+{
+	name = {HLS},
+	long = {High Level Synthesis},
+	description = {\emph{\glsentrylong{hls}}:
+		A Xilinx tool that can compile an algorithm expressed in C/C++ to 
+		a hardware description language (Verilog) ready for synthesis by
+		the standard toolchain.
+	},
 }
 

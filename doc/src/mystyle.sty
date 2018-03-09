@@ -3,19 +3,26 @@
 \usepackage{multirow,multicol,booktabs}
 \usepackage{graphicx}
 \usepackage[justification=centering,font=small,font=it]{caption}
-\usepackage{lscape,rotating,wrapfig,float}
-%\usepackage{subcaption}
+\usepackage{lscape,rotating,wrapfig,float,array}
+\usepackage{subcaption}
 \usepackage{listings}
+\usepackage{nicefrac,xfrac}
 \usepackage{setspace}
+\usepackage{bytefield}
 \onehalfspacing % or \doublespacing
-\usepackage[caption=false]{subfig}
+%\usepackage[caption=false]{subfig}
 
-\lstdefinestyle{my-dt}{
+\lstset{
+    escapeinside={(*}{*)}
+}
+
+\lstdefinestyle{basic}{
+  language=xml,
+  tabsize=4,
   belowcaptionskip=1\baselineskip,
   breaklines=true,
   frame=L,
   xleftmargin=\parindent,
-  language=xml,
   showstringspaces=false,
   basicstyle=\footnotesize\ttfamily,
   keywordstyle=\bfseries\color{green!40!black},
@@ -24,6 +31,7 @@
   stringstyle=\color{orange},
 }
 
+\usepackage[toc,page]{appendix}
 \usepackage[nopostdot,toc,section=chapter,style=altlist]{glossaries}
 \glsdisablehyper
 \usepackage[perpage,bottom]{footmisc}

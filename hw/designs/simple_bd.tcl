@@ -353,22 +353,22 @@ CONFIG.NUM_PORTS {12} \
  ] $xlconcat_0
 
   # Create instance: zcore64_0, and set properties
-  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_0 ]
+  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_0 ]
 
   # Create instance: zcore64_1, and set properties
-  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_1 ]
+  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_1 ]
 
   # Create instance: zcore64_2, and set properties
-  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_2 ]
+  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_2 ]
 
   # Create instance: zcore64_3, and set properties
-  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_3 ]
+  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_3 ]
 
   # Create instance: zcore64_4, and set properties
-  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_4 ]
+  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_4 ]
 
   # Create instance: zcore64_5, and set properties
-  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_5 ]
+  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_5 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins zcore64_0/src]

@@ -1,21 +1,17 @@
 #!/usr/bin/env sh
 
-#proj_dir="../base_sym_zedboard_2/"
-#proj_name="base_sym_zedboard"
-#top="sym_pb4"
+proj_dir="../base/"
+proj_name="base"
+top="zed_asym_cc_alt"
 
-proj_dir="../base_zcu102_alt/"
-proj_name="base_zcu102_alt"
-top="sym"
-
-instance_name="zcore32"
-solution="solution_32u"
+instance_name="zcore16"
+solution="solution_16"
 
 cores_dir="../cores"
-INSTANCE_LIST=`printf "${instance_name}_%d " {0..62}`
+INSTANCE_LIST=`printf "${instance_name}_%d " {0..15}`
 CORE_LIST="loopback gauss sobel emboss outline sharpen negative contrast threshold"
 
-rm -rf ./prj/* ./bit ./hd_visual ./synth ./impl ./dcp/*.dcp *.log \
+rm -rf ./prj/* ./synth ./bit ./hd_visual ./impl ./dcp/*.dcp *.log \
 	*.html *.xml vivado* fsm_encoding.os
 
 design_dir="${proj_dir}/${proj_name}.srcs/sources_1/bd/${top}"
@@ -29,7 +25,7 @@ do
 		core_files="${cores_dir}/${core}/${solution}/impl/ip/hdl/verilog/*"
 		for file in ${core_files} ${module_file}
 		do
-			[ ! -f ${file} ] && echo "Oops! File ${file} was not found, please fix the script!" && exit
+			[ ! -f ${file} ] && echo "File ${file} was not found, please fix the script!" && exit
 			echo "verilog xil_defaultLib ${file}" >> ./prj/${instance}_${core}.prj
 		done
 	done

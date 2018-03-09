@@ -1,0 +1,49 @@
+\chapter{Partial Reconfiguration Scripts}
+
+The Partial Reconfiguration workflow, currently (early 2018) is not fully integrated at the Vivado GUI.
+In newer versions a designer may use the GUI to create an HDL-only design, but the use if IP Integrator
+is still not supported. For now, only the initial design can be created in Vivado GUI.
+After floorplanning, the synthesized result will be saved in a \gls{dcp} and the main P.R. workflow
+has to be done with the help of TCL scripts. 
+
+Xilinx has implemented a sample design that uses
+a single \gls{rm} for implementing an imaging filter. It is an integrated embedded system,
+that accepts a video stream from a HDMI capable daughtercard connected via the FMC,
+it performs the filtering and it outputs it to an HDMI capable output. It is implemented and
+documented in both ISE (see \cite{xapp1159}) and Vivado (see \cite{xapp1231}).
+
+From this application, the core TCL scripts were extracted, and the client script
+was rewritten to match our application.
+
+All scripts were created in GNU/Linux and use the UNIX directory structure.
+They will not work in a Microsoft Windows environment.
+
+\section{Creating static design Device Checkpoint (DCP)}
+This script, run from within Vivado with the synthesized design open, 
+will replace the instantiated accelerators with black-boxes and save
+the result to a \gls{dcp}.
+
+\lstinputlisting[style=basic,language=tcl]{scripts/gen_dcp.tcl}
+
+\section{Generating the Project Files}
+After static design floorplanning and synthesis, a project file must be
+created for each \gls{rm} version of each \gls{rp}.
+These project files are a requirement for Xilinx TCL scripts.
+
+\lstinputlisting[style=basic,language=bash]{scripts/prepare.sh}
+
+\section{TCL Client Script}
+This script is the client to Xilinx partial reconfiguration TCL scripts.
+It has to be modified to match the FPGA and hardware design of the designer.
+It was made to be as flexible as possible for future adaptation to other projects.
+
+\lstinputlisting[style=basic,language=tcl]{scripts/design.tcl}
+
+\section{Partial Bitstream Manipulation}
+The Xilinx TCL scripts will generate a large number of files, 
+including all partial bitstreams. This script will install them to our software framework,
+after first renaming according to the naming conventions set by the system library
+and compressing them with the XZ compresison tool.
+
+\lstinputlisting[style=basic,language=bash]{scripts/install.sh}
+

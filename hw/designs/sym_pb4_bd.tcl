@@ -244,8 +244,8 @@ CONFIG.intr_width {6} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
-CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {140} \
+CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {ARM PLL} \
+CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {150} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_USE_DEFAULT_ACP_USER_VAL {0} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
@@ -279,7 +279,7 @@ CONFIG.M14_HAS_REGSLICE {1} \
 CONFIG.M15_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {14} \
 CONFIG.NUM_SI {1} \
-CONFIG.S00_HAS_DATA_FIFO {1} \
+CONFIG.S00_HAS_DATA_FIFO {0} \
 CONFIG.S00_HAS_REGSLICE {1} \
  ] $ps7_0_axi_periph_0
 
@@ -289,7 +289,7 @@ CONFIG.S00_HAS_REGSLICE {1} \
   # Create instance: sc_port0_mm2s, and set properties
   set sc_port0_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port0_mm2s ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {     __view__ { }    } \
+CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AR_SIZE 0 R_SIZE 0 } S01_Buffer { AR_SIZE 0 R_SIZE 0 } S02_Buffer { AR_SIZE 0 R_SIZE 0 } M00_Buffer { AR_SIZE 0 R_SIZE 0 } } }     } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -298,7 +298,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port0_s2mm, and set properties
   set sc_port0_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port0_s2mm ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {     __view__ { }    } \
+CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S01_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S02_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } M00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } } }     } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -307,7 +307,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port1_mm2s, and set properties
   set sc_port1_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port1_mm2s ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {     __view__ { }    } \
+CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AR_SIZE 0 R_SIZE 0 } S01_Buffer { AR_SIZE 0 R_SIZE 0 } S02_Buffer { AR_SIZE 0 R_SIZE 0 } M00_Buffer { AR_SIZE 0 R_SIZE 0 } } }     } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -316,7 +316,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port1_s2mm, and set properties
   set sc_port1_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port1_s2mm ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {     __view__ { }    } \
+CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S01_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S02_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } M00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } } }     } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -329,22 +329,22 @@ CONFIG.NUM_PORTS {12} \
  ] $xlconcat_0
 
   # Create instance: zcore64_0, and set properties
-  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_0 ]
+  set zcore64_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_0 ]
 
   # Create instance: zcore64_1, and set properties
-  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_1 ]
+  set zcore64_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_1 ]
 
   # Create instance: zcore64_2, and set properties
-  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_2 ]
+  set zcore64_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_2 ]
 
   # Create instance: zcore64_3, and set properties
-  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_3 ]
+  set zcore64_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_3 ]
 
   # Create instance: zcore64_4, and set properties
-  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_4 ]
+  set zcore64_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_4 ]
 
   # Create instance: zcore64_5, and set properties
-  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.5 zcore64_5 ]
+  set zcore64_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore64:3.7 zcore64_5 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins zcore64_0/src]

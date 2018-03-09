@@ -3,24 +3,24 @@
 
 #define KERN_DIM 3
 
-int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, ap_uint<LINE_WIDTH_BITS> line_width, ap_uint<1> func)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
 #ifdef CLK_AXILITE
 #  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=line_width bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=func bundle=control offset=0x14
-#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=func bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x38
 #else
 #  pragma HLS INTERFACE s_axilite port=line_width bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite port=func bundle=control offset=0x14
-#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite port=func bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x38
 #endif
 
 #pragma HLS INTERFACE ap_stable port=line_width
 #pragma HLS INTERFACE ap_stable port=func
 	axi_elem_t data_in, data_out;
-	int16_t col;
+	ap_uint<LINE_WIDTH_BITS> col;
 	int ret;
 	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
 	hls::Window<KERN_DIM, KERN_DIM, ap_int<10> > win_x, win_y;
@@ -74,9 +74,10 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int line_width, int func)
 				for (int j = 0; j < KERN_DIM; j++) {
 					pixel_tmp = linebuf.getval(i, j+col+px);
 					uint16_t tmp_x, tmp_y;
-#ifdef FORCE_DSP48					
-#pragma HLS resource variable=tmp_x core=DSP48
-#pragma HLS resource variable=tmp_y core=DSP48
+#ifdef FORCE_DSP48
+// apparently, dsp48 makes things worse!
+//#pragma HLS resource variable=tmp_x core=DSP48
+//#pragma HLS resource variable=tmp_y core=DSP48
 #endif
 					tmp_x = kern_x[func][i][j] * pixel_tmp;
 					tmp_y = kern_y[func][i][j] * pixel_tmp;

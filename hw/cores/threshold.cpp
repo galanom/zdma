@@ -1,16 +1,16 @@
 #include "common.h"
 #include "ap_int.h"
 
-int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int threshold)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, uint8_t threshold)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
 #ifdef CLK_AXILITE
 #  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=threshold bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x38
 #else
 #  pragma HLS INTERFACE s_axilite port=threshold bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x38
 #endif
 #pragma HLS INTERFACE ap_stable port=threshold
 	axi_elem_t data_in, data_out;

@@ -443,8 +443,8 @@ CONFIG.S05_HAS_REGSLICE {1} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
-CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
+CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {ARM PLL} \
+CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {133} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_QSPI_GRP_SINGLE_SS_ENABLE {1} \
 CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {32} \
@@ -503,7 +503,7 @@ CONFIG.M31_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {16} \
 CONFIG.S00_HAS_DATA_FIFO {0} \
 CONFIG.S00_HAS_REGSLICE {1} \
-CONFIG.STRATEGY {0} \
+CONFIG.STRATEGY {1} \
  ] $ps7_0_axi_periph_0
 
   # Create instance: ps7_0_axi_periph_1, and set properties
@@ -545,7 +545,7 @@ CONFIG.M31_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {16} \
 CONFIG.S00_HAS_DATA_FIFO {0} \
 CONFIG.S00_HAS_REGSLICE {1} \
-CONFIG.STRATEGY {0} \
+CONFIG.STRATEGY {1} \
  ] $ps7_0_axi_periph_1
 
   # Create instance: rst_ps7_0_100M, and set properties
@@ -558,52 +558,52 @@ CONFIG.NUM_PORTS {16} \
  ] $xlconcat_0
 
   # Create instance: zcore16_0, and set properties
-  set zcore16_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_0 ]
+  set zcore16_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_0 ]
 
   # Create instance: zcore16_1, and set properties
-  set zcore16_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_1 ]
+  set zcore16_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_1 ]
 
   # Create instance: zcore16_2, and set properties
-  set zcore16_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_2 ]
+  set zcore16_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_2 ]
 
   # Create instance: zcore16_3, and set properties
-  set zcore16_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_3 ]
+  set zcore16_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_3 ]
 
   # Create instance: zcore16_4, and set properties
-  set zcore16_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_4 ]
+  set zcore16_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_4 ]
 
   # Create instance: zcore16_5, and set properties
-  set zcore16_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_5 ]
+  set zcore16_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_5 ]
 
   # Create instance: zcore16_6, and set properties
-  set zcore16_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_6 ]
+  set zcore16_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_6 ]
 
   # Create instance: zcore16_7, and set properties
-  set zcore16_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_7 ]
+  set zcore16_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_7 ]
 
   # Create instance: zcore16_8, and set properties
-  set zcore16_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_8 ]
+  set zcore16_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_8 ]
 
   # Create instance: zcore16_9, and set properties
-  set zcore16_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_9 ]
+  set zcore16_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_9 ]
 
   # Create instance: zcore16_10, and set properties
-  set zcore16_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_10 ]
+  set zcore16_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_10 ]
 
   # Create instance: zcore16_11, and set properties
-  set zcore16_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_11 ]
+  set zcore16_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_11 ]
 
   # Create instance: zcore16_12, and set properties
-  set zcore16_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_12 ]
+  set zcore16_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_12 ]
 
   # Create instance: zcore16_13, and set properties
-  set zcore16_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_13 ]
+  set zcore16_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_13 ]
 
   # Create instance: zcore16_14, and set properties
-  set zcore16_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_14 ]
+  set zcore16_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_14 ]
 
   # Create instance: zcore16_15, and set properties
-  set zcore16_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.5 zcore16_15 ]
+  set zcore16_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore16:3.7 zcore16_15 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins processing_system7_0/M_AXI_GP1] [get_bd_intf_pins ps7_0_axi_periph_1/S00_AXI]
@@ -811,6 +811,9 @@ CONFIG.NUM_PORTS {16} \
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_12/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_12/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP1] SEG_processing_system7_0_GP0_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP1]
+
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_12/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_MM2S/SEG_processing_system7_0_GP0_QSPI_LINEAR]
 
@@ -819,6 +822,9 @@ CONFIG.NUM_PORTS {16} \
 
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_12/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP0] SEG_processing_system7_0_GP1_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP0]
+
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_12/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP1] SEG_processing_system7_0_GP1_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP1]
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_12/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_QSPI_LINEAR] SEG_processing_system7_0_GP1_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_12/Data_S2MM/SEG_processing_system7_0_GP1_QSPI_LINEAR]
@@ -829,6 +835,9 @@ CONFIG.NUM_PORTS {16} \
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_13/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_13/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP1] SEG_processing_system7_0_GP0_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP1]
+
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_13/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_MM2S/SEG_processing_system7_0_GP0_QSPI_LINEAR]
 
@@ -837,6 +846,9 @@ CONFIG.NUM_PORTS {16} \
 
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_13/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP0] SEG_processing_system7_0_GP1_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP0]
+
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_13/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP1] SEG_processing_system7_0_GP1_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP1]
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_13/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_QSPI_LINEAR] SEG_processing_system7_0_GP1_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_13/Data_S2MM/SEG_processing_system7_0_GP1_QSPI_LINEAR]
@@ -847,6 +859,9 @@ CONFIG.NUM_PORTS {16} \
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_14/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_14/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP1] SEG_processing_system7_0_GP0_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP1]
+
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_14/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_MM2S/SEG_processing_system7_0_GP0_QSPI_LINEAR]
 
@@ -855,6 +870,9 @@ CONFIG.NUM_PORTS {16} \
 
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_14/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP0] SEG_processing_system7_0_GP1_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP0]
+
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_14/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP1] SEG_processing_system7_0_GP1_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP1]
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_14/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_QSPI_LINEAR] SEG_processing_system7_0_GP1_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_14/Data_S2MM/SEG_processing_system7_0_GP1_QSPI_LINEAR]
@@ -865,6 +883,9 @@ CONFIG.NUM_PORTS {16} \
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_15/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP0]
 
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_15/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP1] SEG_processing_system7_0_GP0_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_MM2S/SEG_processing_system7_0_GP0_M_AXI_GP1]
+
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_15/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_MM2S/SEG_processing_system7_0_GP0_QSPI_LINEAR]
 
@@ -873,6 +894,9 @@ CONFIG.NUM_PORTS {16} \
 
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_dma_15/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP0] SEG_processing_system7_0_GP1_M_AXI_GP0
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP0]
+
+  create_bd_addr_seg -range 0x40000000 -offset 0x80000000 [get_bd_addr_spaces axi_dma_15/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_M_AXI_GP1] SEG_processing_system7_0_GP1_M_AXI_GP1
+  exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_S2MM/SEG_processing_system7_0_GP1_M_AXI_GP1]
 
   create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_dma_15/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP1/GP1_QSPI_LINEAR] SEG_processing_system7_0_GP1_QSPI_LINEAR
   exclude_bd_addr_seg [get_bd_addr_segs axi_dma_15/Data_S2MM/SEG_processing_system7_0_GP1_QSPI_LINEAR]

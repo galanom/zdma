@@ -1,0 +1,109 @@
+///include/ "system-conf.dtsi"
+/  {
+	aliases {
+		serial0 = &uart1;
+		serial1 = &uart0;
+	};
+
+	chosen {
+		bootargs = "console=ttyPS0,115200 earlycon";
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		
+		all_ports: all_ports@10000000 {
+			reg = <0x10000000 0x08000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+	};
+
+	amba_pl {
+		zdma@0 {
+			compatible = "tuc,zdma";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			pb0: pblock@0 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_0>;
+				transport = <&dma0>;
+			};
+			pb1: pblock@1 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_1>;
+				transport = <&dma1>;
+			};
+			pb2: pblock@2 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_2>;
+				transport = <&dma2>;
+			};
+			pb3: pblock@3 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_3>;
+				transport = <&dma3>;
+			};
+			pb4: pblock@4 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_4>;
+				transport = <&dma4>;
+			};
+			pb5: pblock@5 {
+				compatible = "tuc,pblock";
+				core = <&zcore64_5>;
+				transport = <&dma5>;
+			};
+
+			zone@0 {
+				compatible = "tuc,zone";
+				memory-region = <&all_ports>;
+				readers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				writers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				bandwidth = <100>;
+			};
+
+			dma0: dma-client@0 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_0 0
+					&axi_dma_0 1>;
+				dma-names = "tx", "rx";
+			};
+			dma1: dma-client@1 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_1 0
+					&axi_dma_1 1>;
+				dma-names = "tx", "rx";
+			};
+			dma2: dma-client@2 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_2 0
+					&axi_dma_2 1>;
+				dma-names = "tx", "rx";
+			};
+			dma3: dma-client@3 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_3 0
+					&axi_dma_3 1>;
+				dma-names = "tx", "rx";
+			};
+			dma4: dma-client@4 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_4 0
+					&axi_dma_4 1>;
+				dma-names = "tx", "rx";
+			};
+			dma5: dma-client@5 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_5 0
+					&axi_dma_5 1>;
+				dma-names = "tx", "rx";
+			};
+		};
+	};
+};
+

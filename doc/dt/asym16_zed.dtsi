@@ -1,0 +1,279 @@
+///include/ "system-conf.dtsi"
+/  {
+	aliases {
+		serial0 = &uart1;
+		serial1 = &uart0;
+	};
+
+	chosen {
+		bootargs = "console=ttyPS0,115200 earlycon";
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		hp0: hp0@10000000 {
+			reg = <0x10000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		
+		hp1: hp1@12000000 {
+			reg = <0x12000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		hp2: hp2@14000000 {
+			reg = <0x14000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		hp3: hp3@16000000 {
+			reg = <0x16000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		gp0: gp0@18000000 {
+			reg = <0x18000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};
+		gp1: gp1@1A000000 {
+			reg = <0x1A000000 0x02000000>;
+			compatible = "shared-dma-pool";
+			no-map;
+		};	
+	};
+
+	amba_pl {
+		zdma@0 {
+			compatible = "tuc,zdma";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			pb0: pblock@0 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_0>;
+				transport = <&dma0>;
+			};
+			pb1: pblock@1 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_1>;
+				transport = <&dma1>;
+			};
+			pb2: pblock@2 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_2>;
+				transport = <&dma2>;
+			};
+			pb3: pblock@3 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_3>;
+				transport = <&dma3>;
+			};
+			pb4: pblock@4 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_4>;
+				transport = <&dma4>;
+			};
+			pb5: pblock@5 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_5>;
+				transport = <&dma5>;
+			};
+			pb6: pblock@6 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_6>;
+				transport = <&dma6>;
+			};
+			pb7: pblock@7 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_7>;
+				transport = <&dma7>;
+			};
+			pb8: pblock@8 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_8>;
+				transport = <&dma8>;
+			};
+			pb9: pblock@9 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_9>;
+				transport = <&dma9>;
+			};
+			pb10: pblock@10 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_10>;
+				transport = <&dma10>;
+			};
+			pb11: pblock@11 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_11>;
+				transport = <&dma11>;
+			};
+			pb12: pblock@12 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_12>;
+				transport = <&dma12>;
+			};
+			pb13: pblock@13 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_13>;
+				transport = <&dma13>;
+			};
+			pb14: pblock@14 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_14>;
+				transport = <&dma14>;
+			};
+			pb15: pblock@15 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_15>;
+				transport = <&dma15>;
+			};
+
+			zone@0 {
+				compatible = "tuc,zone";
+				memory-region = <&hp0>;
+				readers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				writers = <>;
+				bandwidth = <100>;
+			};
+			zone@1 {
+				compatible = "tuc,zone";
+				memory-region = <&hp1>;
+				readers = <>;
+				writers = <&pb6 &pb7 &pb8 &pb9 &pb10 &pb11>;
+				bandwidth = <100>;
+			};
+			zone@2 {
+				compatible = "tuc,zone";
+				memory-region = <&hp2>;
+				readers = <>;
+				writers = <&pb0 &pb1 &pb2 &pb3 &pb4 &pb5>;
+				bandwidth = <100>;
+			};
+			zone@3 {
+				compatible = "tuc,zone";
+				memory-region = <&hp3>;
+				readers = <&pb6 &pb7 &pb8 &pb9 &pb10 &pb11>;
+				writers = <>;
+				bandwidth = <100>;
+			};
+			zone@4 {
+				compatible = "tuc,zone";
+				memory-region = <&gp0>;
+				readers = <&pb12 &pb13 &pb14 &pb15>;
+				writers = <>;
+				bandwidth = <75>;
+			};
+			zone@5 {
+				compatible = "tuc,zone";
+				memory-region = <&gp1>;
+				readers = <>;
+				writers = <&pb12 &pb13 &pb14 &pb15>;
+				bandwidth = <75>;
+			};
+
+			dma0: dma-client@0 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_0 0
+					&axi_dma_0 1>;
+				dma-names = "tx", "rx";
+			};
+			dma1: dma-client@1 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_1 0
+					&axi_dma_1 1>;
+				dma-names = "tx", "rx";
+			};
+			dma2: dma-client@2 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_2 0
+					&axi_dma_2 1>;
+				dma-names = "tx", "rx";
+			};
+			dma3: dma-client@3 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_3 0
+					&axi_dma_3 1>;
+				dma-names = "tx", "rx";
+			};
+			dma4: dma-client@4 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_4 0
+					&axi_dma_4 1>;
+				dma-names = "tx", "rx";
+			};
+			dma5: dma-client@5 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_5 0
+					&axi_dma_5 1>;
+				dma-names = "tx", "rx";
+			};
+			dma6: dma-client@6 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_6 0
+					&axi_dma_6 1>;
+				dma-names = "tx", "rx";
+			};
+			dma7: dma-client@7 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_7 0
+					&axi_dma_7 1>;
+				dma-names = "tx", "rx";
+			};
+			dma8: dma-client@8 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_8 0
+					&axi_dma_8 1>;
+				dma-names = "tx", "rx";
+			};
+			dma9: dma-client@9 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_9 0
+					&axi_dma_9 1>;
+				dma-names = "tx", "rx";
+			};
+			dma10: dma-client@10 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_10 0
+					&axi_dma_10 1>;
+				dma-names = "tx", "rx";
+			};
+			dma11: dma-client@11 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_11 0
+					&axi_dma_11 1>;
+				dma-names = "tx", "rx";
+			};
+			dma12: dma-client@12 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_12 0
+					&axi_dma_12 1>;
+				dma-names = "tx", "rx";
+			};
+			dma13: dma-client@13 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_13 0
+					&axi_dma_13 1>;
+				dma-names = "tx", "rx";
+			};
+			dma14: dma-client@14 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_14 0
+					&axi_dma_14 1>;
+				dma-names = "tx", "rx";
+			};
+			dma15: dma-client@15 {
+				compatible = "tuc,dma-client";
+				dmas = <&axi_dma_15 0
+					&axi_dma_15 1>;
+				dma-names = "tx", "rx";
+			};
+		};
+	};
+};
+

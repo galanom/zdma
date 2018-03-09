@@ -3,27 +3,26 @@
 
 #define KERN_DIM 3
 
-int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t contrast)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
 #pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
 #ifdef CLK_AXILITE
 #  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=brightness bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=contrast bundle=control offset=0x14
-#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=contrast bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x38
 #else
 #  pragma HLS INTERFACE s_axilite port=brightness bundle=control offset=0x10
-#  pragma HLS INTERFACE s_axilite port=contrast bundle=control offset=0x14
-#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x1C
+#  pragma HLS INTERFACE s_axilite port=contrast bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x38
 #endif
 #pragma HLS INTERFACE ap_stable port=brightness
 #pragma HLS INTERFACE ap_stable port=contrast
+
 	axi_elem_t data_in, data_out;
 	int ret;
-	int8_t alpha;
-	ap_int<9> beta;
-	int16_t tmp;
-	alpha = ((contrast + 256)<<8)/(256 - contrast);
+	uint8_t alpha, beta;
+	alpha = ((contrast + 256)<<7)/(256 - contrast);
 	beta = brightness + 128;
 
 	union {
@@ -42,7 +41,10 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast
 		pixel.all = data_in.data;
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
-			ap_int<10> val = ((alpha*(pixel.at[px] - 128)) >> 8 ) + beta;
+			int16_t tmp;
+#pragma HLS resource variable=tmp core=Mul_LUT
+			tmp = alpha * (pixel.at[px] - 128);
+			ap_int<10> val = (tmp >> 7 ) + beta;
 			pixel.at[px] = (uint8_t)val;
 			if (val > 255)
 				pixel.at[px] = 255;

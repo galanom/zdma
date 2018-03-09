@@ -1,0 +1,676 @@
+\chapter{Evaluation}
+
+In order to demonstrate and evaluate the proposed system, an example application was created.
+The chosen field was video processing, and a number of common filters were implemented
+in Vivado HLS to be used as accelerators.
+
+Vivado HLS is an attempt from Xilinx to use a software language to describe hardware.
+It accepts a subset of C/C++ and produces Verilog code, that can be synthesized with
+the existing synthesis tools.
+
+The advantage of this approach is that it a allows a very fast production of a working
+prototype, in order to assess the feasibility of an idea. Since the code describes
+an algorithm function and not its implementation, design exploration can be automated.
+
+There is a price to be paid though, that stems from both the core idea of HLS and its
+current incarnation. More on this subject is discussed in the ``Lessons Learned'' chapter.
+
+\section{Accelerator Description}
+
+In image processing, from computational aspect, there are two main categories of filters.
+The first, applies a transformation at pixel level. Using a mathematical formula or a
+look-up table, it maps one pixel value to another irrespectively of any other factor.
+The second category needs spatial awareness -- the new pixel value does not depend only
+on its old value, but also on its neighbors. To quantify this dependency, a ``mask'' or
+``kernel'' is created, which is usually an odd-dimension square (or less often, rectangular)
+matrix whose each value represent the weight of the dependency, with its central value
+representing the current pixel. The kernel will scan the whole image pixel after pixel,
+and for each pixel it will calculate the sum of the products of the kernel's weights
+and the corresponding pixel values. This mathematical procedure is called
+``two-dimensional discrete convolution'' and is symbolized with an asterisk.
+To summarize,
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{.3\linewidth}
+	\[
+		p'(x,y) = f\left[p(x,y) \right]
+	\]
+	\caption{Pixel transformation}
+\end{subfigure}
+~\quad
+\begin{subfigure}[b]{.6\linewidth}
+	\[
+		p'(x,y) = \sum_{m = -M/2}^{M/2}{
+			\sum_{n = -N/2}^{N/2}{
+				{h_{m,n}\cdot p(x - m, y - n)}
+			}
+		}
+	\]
+	\caption{2D Filtering}
+\end{subfigure}
+\end{figure}
+
+Convolution has a very interesting property: It is corresponds to element-wise multiplication
+in the frequency domain. Therefore, we could calculate a discrete fourier
+transform our image and our kernel, after padding the latter to the size of the former,
+multiply the transformed images, and apply the inverse discrete fourier transform
+to return to spatial domain. In simpler words,
+
+\[
+	p' = IDFT\left\{ DFT\{h\} \cdot DFT\{p\} \right\}
+\]
+
+In respect to filter size, the latter method has an $O(1)$ complexity, 
+whereas the former has $O(n\cdot m)$. As crossing the spatial and frequency domains
+has a computational cost, the former method is cheaper for small $m,n$.
+For CPUs, the OpenCV library uses the kernel dimension of $11x11$ as the turning point.
+
+In our work, we use only 3x3 and 5x5 kernels. However, the principal deciding factor
+is that the former method has an obvious implementation in a streaming environment
+with no random memory access, like ours. A line buffer that keeps the last $n$ lines
+is sufficient\footnote{Theoretically, only a $n-1$ line buffer is necessary but the
+implementation would be more complex.}. For a 1080p and a 5x5 kernel, this translates
+to a \gls{bram} usage of around 42kibits or 3 BRAM18 instances, which is perfectly affordable.
+
+It should be noted that this method normally requires some special treatment of the
+border pixels, as the convolution kernel will attempt to access pixels outside the image.
+Several techniques exist, from padding with zeros, mirroring the edges, etc.
+For simplicity shake, we do not take care of this. As a consequence, a thin line 
+of undefined contents will be visible at the upper and the right border.
+
+For pixel transformations, an actual computation was used instead of look-up tables.
+This is because the transformations are either trivial (negative, threshold) or
+user configurable (contrast) and it is impractical to create table entries for every possible
+user choice.
+
+\begin{figure}[tb!]
+\centering
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/loopback.jpg}
+	\caption{loopback}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/contrast.jpg}
+	\caption{contrast (contrast -32, brightness +32)}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/negative.jpg}
+	\caption{negative}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/threshold.jpg}
+	\caption{threshold, th=127}
+\end{subfigure}
+\caption{Pixel Transformations. Test image is in public domain.}
+\label{fig:pixel-transformations}
+\end{figure}
+
+\begin{figure}[tb!]
+\centering
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/gauss.jpg}
+	\caption{gauss}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/sharpen.jpg}
+	\caption{sharpen}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/emboss.jpg}
+	\caption{emboss}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/outline.jpg}
+	\caption{outline}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/sobel.jpg}
+	\caption{sobel (original kernel)}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.49\linewidth}
+	\includegraphics[width=\linewidth]{img/scharr.jpg}
+	\caption{sobel (Scharr kernel)}
+\end{subfigure}
+\caption{Two-dimensional Filtering Kernels}
+\label{fig:2d-filters}
+\end{figure}
+
+\subsection{Trivial Pixel Transformations}
+
+In total, there are three pixel transformation accelerators:
+
+\begin{itemize}
+\item	\textbf{loopback}: $p'(x,y)=p(x,y)$ -- A dummy accelerator that justs returns the input image.
+	It is used for debugging and has no actual use.
+\item	\textbf{negative}: $p'(x,y) = 255 - p(x,y)$ -- It returns the negative of the input image.
+\item	\textbf{threshold}: 
+	$ p'(x,y) = \left\{
+	\begin{array}{ll}
+		255, 	& p(x,y) \geq th\\
+		0,	& p(x,y) < th\\
+	\end{array} 
+	\right. 
+	$ -- It replaces all pixel values above a certain threshold to maximum (255 for 8 bit
+	depth) and all others to minimum (zero). Essentially, it transforms a grayscale
+	image to a black and white.
+\end{itemize}
+None of this accelerators posed any difficulty to implementation.
+
+\subsection{Contrast and Brightness Transformations}
+
+The ``contrast'' accelerator adjusts the contrast and the brightness of the image.
+It uses the following equation:
+\[
+\begin{array}{ll}
+	\alpha	&= 259 \cdot (c + 255) / \left[ 255 \cdot (259 - c) \right] \\
+	\beta	&= b + 128\\
+	p' &= \alpha \cdot ( p - 128) + \beta\\
+\end{array}
+\]
+
+As it can be seen, it uses both multiplication and division. An attempt to implement this
+transform with fixed point arithmetic was fruitless, as the accelerator was not
+placeable. The formula was simplified, with some precision loss, to ease the computation.
+
+\[
+\begin{array}{ll}
+	\alpha &= \left[ 256 \cdot (c+256)  \right] / (256 - c) \\
+	\beta &= b + 128\\
+	p' &= \left[ \alpha \cdot (p - 128) + \beta \right] / 256 + \beta\\
+\end{array}
+\]
+
+This simplification allowed the use of integer arithmetic, while multiplication
+and division by 256 were done with shift operations. This version is placeable,
+however it is very sensitive in routing. 
+Changing the width of $\alpha$ and $\beta$ by a couple of bits
+may render the accelerator from achieving timing closure to fail with unrouted nets.
+Reducing $b$ and $c$ to byte sized operands cause the simplification of the divider
+from 32b to 8b, which reduced core LUT6 utilization by more than 30\%, ensuring
+successful routing and timing closure.
+
+However, despite that a \gls{pblock} LUT6 utilization of only 50\% was achieved
+for the accelerator core count oriented design,
+this core remained very sensitive at routing with respect to the \glspl{pp} selection.
+For this reason, it was chosen to implement the initial configuration,
+despite the presence of much bigger cores, like the Gaussian Blur accelerator
+which reaches an 80\% utilization.
+
+\subsection{The Sharpen, Emboss and Outline Filters}
+
+These three accelerators are grouped together as they all use a 3x3 kernel,
+the computation was quite straightforward and impementation was easy.
+The ``sharpen'' filter, as the name suggests, is used for sharpening the image.
+It is quite often used at low intensity for improving the aesthetic result of
+photographs or for compensating excessive blurrness due to out-of-focus errors,
+albeit with moderate results. 
+The ``emboss'' kernel is used to increase the sense of depth in an image.
+The ``outline'' kernel is a simple method
+of edge detection, used in computer vision applications.
+
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{.3\linewidth}
+	\[
+	\left[
+	\begin{array}{rrr}
+	0  & -1  &  0 \\
+	-1 &  5  & -1 \\
+	0  & -1  &  0 \\
+	\end{array}
+	\right]
+	\]
+	\caption{Sharpen}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.3\linewidth}
+	\[
+	\left[
+	\begin{array}{rrr}
+	-1  & -1  & -1 \\
+	-1  &  8  & -1 \\
+	-1  & -1  & -1 \\
+	\end{array}
+	\right]
+	\]
+	\caption{Outline}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.3\linewidth}
+	\[
+	\left[
+	\begin{array}{rrr}
+	-2  & -1  &  ~~~0 \\
+	-1  &  1  &  ~~~1 \\
+	 0  &  1  &  ~~~2 \\
+	\end{array}
+	\right]
+	\]
+	\caption{Emboss}
+\end{subfigure}
+\end{figure}
+
+\subsection{The Sobel/Scharr Filter}
+
+The Sobel filter is a filter used to emphasize local pixel differences,
+for edge detection in computer vision. The filter uses two 3x3 kernels,
+one for horizontal difference and one for vertical. Essentially,
+there are two 2D convolutions taking place concurrently on the same dataset.
+The two convolution results produced for every pixel are combined to
+form the output pixel. After the original kernel by Sobel and Feldman,
+there were subsequent attempts to optimize its properties. A common variant,
+by Scharr, is also implemented within the same accelerator and is user selectable at run-time.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{.45\linewidth}
+	\[
+	h_x = \left[
+	\begin{array}{rrr}
+	1 & 0 & -1 \\
+	2 & 0 & -2 \\
+	1 & 0 & -1 \\
+	\end{array}
+	\right]
+	\]
+	\caption{Horizontal Difference Filter}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.45\linewidth}
+	\[
+	h_y = \left[
+	\begin{array}{rrr}
+	1 & 2 & 1 \\
+	0 & 0 & 0 \\
+	-1 & -2 & -1\\
+	\end{array}
+	\right]
+	\]
+	\caption{Vertical Difference Filter}
+\end{subfigure}
+\caption{The Sobel kernel}
+\end{figure}
+
+
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{.45\linewidth}
+	\[
+	h_x = \left[
+	\begin{array}{rrr}
+	3  & 0 & -3 \\
+	10 & 0 & -10 \\
+	3  & 0 & -3 \\
+	\end{array}
+	\right]
+	\]
+	\caption{Horizontal Difference Filter}
+\end{subfigure}
+~
+\begin{subfigure}[b]{.45\linewidth}
+	\[
+	h_y = \left[
+	\begin{array}{rrr}
+	3 & 10 & 3 \\
+	0 & 0 & 0 \\
+	-3 & -10 & -3\\
+	\end{array}
+	\right]
+	\]
+	\caption{Vertical Difference Filter}
+\end{subfigure}
+\caption{The Scharr kernel}
+\end{figure}
+
+The final pixel that represents the gradient at that spatial point
+is calculated by combing $p'_x$ and $p'_y$ as:
+
+\[	p' = \sqrt{p_x^{'2} + p_y^{'2}} \approx |p'_x| + |p'_y|  \]
+
+The approximation above is quite frequently used even for software implementations.
+It is also used in this accelerator of course, as the space of 800 LUT6 would not
+permit the implementation of square root calculation. The visual difference is negligible.
+
+The implementation was made possible only by forcing the HLS to use DSP48 tiles
+to perform the multiplication. For this reason, it is compatible only with the 
+``big'' \glspl{rp} of the 16-accelerator design.
+
+\subsection{The Gaussian Blur Filter}
+
+The Gaussian Blur filter is an image smoothing filter.
+It is used for various purposes, mostly for noise suppression.
+The kernel derives from the two-dimensional Gaussian function:
+
+\[ G(x,y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}	\]
+
+The $\sigma$ is the standard deviation of the Gaussian distribution and effectively
+controls the intensity of the blurring. For our accelerator, we attempted to implement
+the following kernel:
+
+\[
+\left[
+\begin{array}{rrrrr}
+1  &   4  &  6  &  4  &  1 \\
+4  &  16  &  24 & 16  &  4 \\
+6  &  24  &  36 & 24  &  6 \\
+4  &  16  &  24 & 16  &  4 \\
+1  &   4  &  6  &  4  &  1 \\
+\end{array}
+\right]
+\]
+
+Note that the sum of all weights are 256, and the final pixel will be divided by this
+value to avoid saturation and maintain image brightness.
+
+As in Sobel, the use of DSP48 tiles were essential in order to fit the accelerator in 800 LUT6s.
+The initial attempts were unsuccessful, until it was discovered by pure chance 
+that the following kernel is implementable to our requirements:
+
+\[
+\left[
+\begin{array}{rrrrr}
+1  &   4  &  6  &  4  &  1 \\
+4  &  16  &  25 & 16  &  4 \\
+6  &  25  &  32 & 25  &  6 \\
+4  &  16  &  25 & 16  &  4 \\
+1  &   4  &  6  &  4  &  1 \\
+\end{array}
+\right]
+\]
+
+Note that the central term was reduced to 32, and the difference of four was spread equally
+to its four perpendicular neighbors. \emph{Without} any other change in source code or
+synthesizer settings, the estimated utilization was reduced by 11\% for \glspl{lut}
+and 9\% for flip-flops.
+
+\subsection{Resource Utilization and Latency}
+
+\begin{figure}[ht!]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cl rrrr rrrrrrr}
+\toprule
+&	& \rotatebox{90}{loopback} & \rotatebox{90}{negative} & \rotatebox{90}{threshold}
+	& \rotatebox{90}{contrast} & \rotatebox{90}{sharpen}  & \rotatebox{90}{emboss}
+	& \rotatebox{90}{outline}  & \rotatebox{90}{gauss}    & \rotatebox{90}{gauss/dsp}
+	& \rotatebox{90}{sobel}    & \rotatebox{90}{sobel/dsp}\\
+\cmidrule(l{.3em}r{.3em}){1-13}
+\multirow{5}{*}{\rotatebox{90}{8 bit}} &
+LUT	& 125 & 110 & 111 & 288 & 300 & 326& 346 & 587 & 466 & 454 & 635 \\
+&FF	& 142 & 114 & 111 & 303 & 290 & 357& 394 & 553 & 502 & 492 & 628 \\
+&DSP	& 0   & 0   & 0   & 0   & 0   & 0  & 0   & 4   & 8   & 0   & 2   \\
+&BRAM	& 0   & 0   & 0   & 0   & 3   & 3  & 3   & 5   & 5   & 3   & 3   \\
+&Latency& 2.07& 2.07& 2.07& 2.07&4.15 &8.29& 8.29& 6.22& 6.22& 4.15& 4.15\\
+\cmidrule(l{.3em}r{.3em}){1-13}
+\multirow{5}{*}{\rotatebox{90}{16 bit}} &
+LUT	& 147 & 122 & 136 & 420 & 423 & 429 & 507 & 887 & 770& 706 & 1048\\
+&FF	& 182 & 154 & 137 & 398 & 386 & 443 & 578 & 942 & 741& 765 & 970 \\
+&DSP	& 0   & 0   & 0   & 0   & 0   & 0   & 0   & 8   & 16 & 0   & 4   \\
+&BRAM	& 0   & 0   & 0   & 0   & 3   & 3   & 3   & 5   & 5  & 3   & 3   \\
+&Latency& 1.04& 1.04& 1.04& 1.04&3.11 & 6.22& 6.22&4.15 &4.15&3.11 &3.11 \\
+\cmidrule(l{.3em}r{.3em}){1-13}
+\multirow{5}{*}{\rotatebox{90}{32 bit}} &
+LUT	& 171 & 146 & 166 & 680 & 598 & 662 & 722 &1600 &1339&1268& 1968 \\
+&FF	& 262 & 234 & 189 & 561 & 620 & 702 & 873 &1658 &1267&1294& 1950 \\
+&DSP	& 0   & 0   & 0   & 0   & 0   & 0   & 0   &12   &28  & 0  & 8    \\
+&BRAM	& 0   & 0   & 0   & 0   & 3   & 3   & 3   &5    & 5  & 3  & 3    \\
+&Latency& 0.52& 0.52& 0.52& 0.52& 2.59& 5.18& 5.18&3.11 &3.11&2.59&2.59  \\
+\cmidrule(l{.3em}r{.3em}){1-13}
+\multirow{5}{*}{\rotatebox{90}{64 bit}} &
+LUT	& 231 & 206 & 238 &1206 & 1057&1235 &1362 &3175 &2541&2291& 3784 \\
+&FF	& 422 & 394 & 293 & 907 & 1099&1342 &1608 &3168 &2585&2413& 3559 \\
+&DSP	& 0   & 0   & 0   & 0   & 0   & 0   & 0   & 20  &52  &0   & 16   \\
+&BRAM	& 0   & 0   & 0   & 0   & 3   & 3   & 3   & 5   & 5  &3   & 3    \\
+&Latency& 0.26& 0.26& 0.26& 0.26& 2.33& 4.66& 4.66& 2.59&2.59&2.33& 2.33 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
+	AXI Interconnect v2.1 vs AXI SmartConnect v1.0, 4 instances of 4 SI / 1 MI, 32 bit crossbar.\\ 
+	Configuration: Outer register and 32 byte FIFO per port.}
+\label{tab:acc-util}
+\end{figure}
+
+
+\section{Accelerator Interface}
+
+Each accelerator connects to the system via two pathways -- one \gls{axistream} that 
+exchanges data with the AXI DMA using two channels, a read for incoming data and
+a write for outgoing, and one \gls{axilite} for status and control.
+As already discussed in section \ref{sec:pr-workflow}, the \gls{rm} must remain
+consistent throughout all implementations. In Vivado HLS this translates to:
+
+\begin{itemize}
+\item	The width of the \gls{axistream} interface must remain consistent throughout \glspl{rm}.
+\item	All \glspl{rm} will have exactly one read and one write channel. 
+\item	The address width of \gls{axilite} interface must remain consistent for all \glspl{rm}.
+\item	The implementation tools excpect the module name to be consistent throughout
+	all \gls{rm} implementations.
+\end{itemize}
+
+The width of the data stream is the most important design choice for the accelerator performance.
+Our system does not care for the value and the kernel driver does not see it; still,
+it must remain consistent throughout all \gls{rm} variants of each \gls{rp}. The \glspl{rp} themselves
+however, do not need to match each other.
+
+In our application, we made the accelerator width a user configurable parameter. 
+The script that builds the \gls{hls} modules (see appendix \ref{apx:script-hls}) 
+will generate a C header file that is included by all \gls{hls} C++ source files
+and contains the appropriate definitions to allow a 8b, 16, 32b or 64b accelerator width.
+Higher widths are possible but will require source modifications.
+
+The accelerator will take advantage of wider stream by loading two, four or eight pixel at once,
+and process them in parallel. Whether the \gls{hls} synthesizer does this efficiently and 
+if performance scales linearly, it will have to be determined by benchmarking.
+
+Regarding the number of channels, it was decided to be two. This was an obvious choice,
+given the exact mapping with AXI DMA channels -- one receive, one trasmit. 
+However, it is still the simplest choice and a lot more sophisticated architectures
+can be built. For a discussion on this, see section \emph{TODO ref για future work}.
+
+As for the \gls{axilite} channel, its width is strictly 32 bits, as defined by the protocol.
+However, the address width is variable and depends on the addressable space of the accelerator.
+This is decided indirectly by the mapping of the accelerator input and output variables.
+
+In order to demonstrate how all this is done, in listing \ref{lst:func-declaration},
+a \gls{rm} function declaration is displayed, among with its \gls{hls} directives.
+
+\begin{figure}[h!]
+\centering
+\begin{lstlisting}[style=basic,language=C]
+int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
+{
+#pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
+#pragma HLS INTERFACE axis port=dst bundle=OUTPUT_STREAM
+#ifdef CLK_AXILITE
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=brightness bundle=control offset=0x10
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=contrast bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite clock=axi_lite_clk port=return bundle=control offset=0x38
+#else
+#  pragma HLS INTERFACE s_axilite port=brightness bundle=control offset=0x10
+#  pragma HLS INTERFACE s_axilite port=contrast bundle=control offset=0x18
+#  pragma HLS INTERFACE s_axilite port=return bundle=control offset=0x38
+#endif
+#pragma HLS INTERFACE ap_stable port=brightness
+#pragma HLS INTERFACE ap_stable port=contrast
+/* module implementation */
+}
+\end{lstlisting}
+\caption{An \gls{hls} \gls{rm} function declaration.}
+\label{lst:func-declaration}
+\end{figure}
+It is an example from the ``\texttt{contrast}'' accelerator. 
+The first thing to notice is that the function name does not 
+mention the \gls{rm}'s variant and it is a generated constant. 
+Its contents are actually related to the ``\texttt{axi\_stream\_t}'' type 
+which is a user defined type. A few lines of code are worth a thousand words of comments:
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=basic,language=C]
+/* generated.h */
+#define CORE_NAME zcore16
+typedef uint16_t axi_data_t;
+/* ... */
+
+/* common.h */
+typedef ap_axiu<sizeof(axi_data_t)*8, 1, 1, 1>  axi_elem_t;
+typedef hls::stream<axi_elem_t> axi_stream_t;
+/* ... */
+\end{lstlisting}
+%\caption{The \gls{rm} data width code.}
+\end{figure}
+
+The file ``\texttt{generated.h}'' is generated by the script shown in appendix \ref{apx:script-hls}.
+The ``\texttt{axi\_data\_t}'' is essentially our accelerator word size, and we see, it is used
+to define ``\texttt{axi\_elem\_t} which describes the full \gls{axistream} signal set.
+From left to right, it defines the effective data (TDATA) width, the user-defined (TUSER)
+width, the master/source identity (TID) and the slave/sink identity (TDEST). All quantities are
+in bits and names in parenthesis express the standard's nomenclature. 
+The ``\texttt{axi\_stream\_t}'' represents the \gls{axi} stream itself 
+and it is a standard C++ IO stream. The implemented accelerator functionality, 
+i.e. the contrast and brightness adjustment, is not represented in the function name as it
+will be the name of the \gls{rm} in design hierarchy, not solely of this variant. All variants
+have to share the same name. However, the word width is represented -- this is to allow the
+system to implement \glspl{rp} of varying sizes. However, no such an implementation was done
+in this work.
+
+Back to our listing, we can now discuss the \gls{axilite} status/control port.
+Every such an input must be mentioned in three places:
+\begin{enumerate}
+\item	At function declaration. If the variable is an output, it must be declared as a pointer.
+\item	At \texttt{HLS INTERFACE s\_axi\_lite} pragma, where each variable is defined
+	as a member of a specific \gls{axilite} interface (``\texttt{port}'' and ``\texttt{bundle}''
+	properties) and is assigned an address (``\texttt{offset}'' property). It is called an
+	offset as its value represents the address of this variable in respect to the start
+	of this \gls{axilite} interface's address space.
+\item	At \texttt{HLS INTERFACE ap\_stable}. This forms an explicit promise on our part
+	that the bus master will not modify the contents of these variables during module execution.
+\end{enumerate}
+
+It is the value of the ``\texttt{offset}'' property that actually defines the address width
+of the \gls{axilite} interface, i.e. the size of \texttt{AWADDR} for the write channel
+and \texttt{ARADDR} for the read channel. Their size will be the minimum sufficient
+to accomodate the maximum offset among all memory mapped registers that represent the variables.
+The compiler will not differentiate between read-only or write-only variables, so a safe way
+to impose the width of both channels is to place the \texttt{return} variable at the end of
+the addressable space. Here, by placing \texttt{return} at 0x38 (variables are aligned at 8 bytes
+boundaries) we are defining a space of 0x00..0x3F, which corresponds to 6 bits of address width.
+Within this address space, the first 16 bytes are reserved by HLS. The first accelerator
+argument is placed at 0x10, and subsequent arguments at 8 bytes distance between them.
+This convention may be altered but a header file (\texttt{param.h}) modification
+of the kernel driver is necessary.
+
+The property ``\texttt{clock}'' was made optional and it allows the \gls{axilite}
+to be clocked by a different source from the input and output streams. 
+This is because generally \gls{axilite} slaves achieve lower frequency than \gls{axistream} ones
+and it might be worthy to explore if higher clock can be achieved by using separate clock domain.
+
+Apart from the explicit memory mapped registers, some implicit are instantiated 
+that form the status and control protocol of the \gls{hls} core, the default signal
+set being the \texttt{ap\_ctrl\_hs}. The programming sequence consists of the steps
+described in the following list, and an example memory map is given in figure \ref{fig:hls-map}.
+
+\begin{enumerate}
+\item	The signal \texttt{ap\_idle} should be asserted, indicating the core is idling.
+\item	All memory mapped registers corresponding to core parameters must be written now.
+\item	The user asserts \texttt{ap\_start}, commencing the execution. In response,
+	the core will de-assert \texttt{ap\_idle}.
+\item	When all input is read, the \texttt{ap\_ready} is asserted, and when all
+	output is written, the \texttt{ap\_done} is also asserted.
+	The return value may now be read.
+\item	The \texttt{ap\_idle} is asserted, indicating that the core has
+	finished execution and is now idle.
+\end{enumerate}
+
+\begin{figure}[tb]
+\scalebox{1.0}{
+\centering
+  \newcommand{\bitlabel}[2]{%
+  \bitbox[]{#1}{%
+    \raisebox{-10pt}[4ex][0pt]{%
+      \turnbox{45}{\fontsize{7}{7}\selectfont#2}%
+    }%
+  }%
+}
+\begin{bytefield}[rightcurly=.,bitwidth=1.1em,endianness=big,bitformatting=\footnotesize\ttfamily,
+	boxformatting={\centering\ttfamily},bitwidth=0.75em]{32}
+\bitlabel{24}{}
+\bitlabel{1}{auto\_restart}
+\bitlabel{1}{reserved}
+\bitlabel{1}{reserved}
+\bitlabel{1}{reserved}
+\bitlabel{1}{ap\_ready}
+\bitlabel{1}{ap\_idle}
+\bitlabel{1}{ap\_done}
+\bitlabel{1}{ap\_start}\\
+\bitheader{8,31}\\
+\begin{leftwordgroup}{\rotatebox{90}{HLS reserved}}
+\begin{rightwordgroup}{0x00}
+\bitbox{24}{ \hspace{7em} Control/Status }
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\bitboxes{1}{~}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0x04}
+\bitbox{31}{ \hspace{1em} Global Interrupt Enable } 
+\bitbox{1}{\tiny G\\I\\E}
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0x08}
+\bitbox{30}{ \hspace{2em} Core Interrupt Enable } 
+\bitbox{1}{\rotatebox{90}{\tiny ready}}
+\bitbox{1}{\rotatebox{90}{\tiny done}}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0x0C}
+\bitbox{30}{ \hspace{2em} Core Interrupt Status } 
+\bitbox{1}{\rotatebox{90}{\tiny ready}}
+\bitbox{1}{\rotatebox{90}{\tiny done}}
+\end{rightwordgroup}
+\end{leftwordgroup}\\
+\begin{rightwordgroup}{0x10}
+\bitbox{24}{ \hspace{7em}\rmfamily\itshape reserved }
+\bitbox{8}{ \bfseries brightness }
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0x14}
+\wordbox{1}{ \rmfamily\itshape reserved }
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0x18}
+\bitbox{24}{ \hspace{6.75em} \rmfamily\itshape reserved }
+\bitbox{8}{ \bfseries contrast }
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0x1C}
+\wordbox{1}{ \rmfamily\itshape reserved }
+\end{rightwordgroup}\\
+\wordbox[lrt]{1}{\rmfamily\itshape unused} \\
+\skippedwords \\
+\wordbox[lrb]{1}{} \\
+\begin{rightwordgroup}{0x38}
+\wordbox{1}{ \bfseries return }
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0x3C}
+\wordbox{1}{ \rmfamily\itshape unused }
+\end{rightwordgroup}
+\end{bytefield}
+}
+\caption{The ``contrast'' accelerator address space.}
+\label{fig:addr-contrast}
+\end{figure}
+
+
+

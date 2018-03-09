@@ -10,10 +10,10 @@ source $tclDir/hd_floorplan_utils.tcl
 ###############################################################
 ### Define Part, Package, Speedgrade 
 ###############################################################
-# For ZedBoard
-#set part "xc7z020clg484-1"
-# For zcu102
-set part "xczu9eg-ffvb1156-2-i"
+set device       "xc7z020"
+set package      "clg484"
+set speed        "-1"
+set part         $device$package$speed
 check_part $part
 
 ###############################################################
@@ -26,8 +26,8 @@ set tclParams [list hd.visual 1 \
 ####flow control
 set run.rmSynth        0
 set run.prImpl         1
-set run.prVerify       0
-set run.writeBitstream 0
+set run.prVerify       1
+set run.writeBitstream 1
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -45,12 +45,18 @@ set srcDir	""
 ### Top Definition
 ###############################################################
 
-set proj_dir	"../base_zcu102_alt"
-set proj_name	"base_zcu102_alt"
-set top		"sym"
+#set proj_dir	"../base_sym_zedboard_2"
+#set proj_name	"base_sym_zedboard"
+#set top		"sym_pb4"
+
+set proj_dir	"../base/"
+set proj_name	"base"
+set top		"zed_asym_cc_alt"
 
 set top_dcp	"${dcpDir}/base/${top}.dcp"
-set top_xdc	[list	"${proj_dir}/${proj_name}.srcs/${top}/new/pblocks.xdc"]
+set top_xdc	[list	"${proj_dir}/${proj_name}.srcs/$top/new/pblocks.xdc" \
+		"${proj_dir}/${proj_name}.srcs/$top/new/io.xdc" ]
+
 
 set static "${top}_static"
 add_module $static
@@ -62,21 +68,17 @@ set_attribute module $static synthCheckpoint $top_dcp
 ### RP Module Definitions
 ####################################################################
 
-set core_basename "zcore32"
+set core_basename "zcore16"
 set core_easiest "loopback"
-set core_hardest "gauss"
-#set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
-set core_list [list "negative" "threshold" "loopback"]
-
-for {set pblock_list [list]; set i 0} {$i < 63} {incr i} {
-	lappend pblock_list $i
-}; #pblock_list will be [0, 1, 2, ... N-1]
-
-set core_big_list $core_list
-##set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
-
-##set pblock_small_list [list 4 5 10 11 14 15]
-set pblock_small_list [list]
+set core_hardest "contrast"
+set cores_with_alt_settings [list]
+set core_list [list "gauss" "sobel" "contrast" "sharpen" "emboss" "outline" "negative" "threshold" "loopback"]
+### 6core ### set core_big_list $core_list
+set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
+### 6core ### set pblock_list [list 0 1 2 3 4 5]
+set pblock_list [list 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]
+set pblock_small_list [list 4 5 10 11 14 15]
+### 6core ### set pblock_small_list [list]
 #   ^leave empty if all pblocks are identical
 
 ####################################################################
@@ -94,12 +96,12 @@ foreach core $core_list {
 
 		# The logic implemented in the aforementioned reconfigurable module
 		set variant "${instance}_${core}"
-
+		
 		# HDL modules created by Vivado have the form of ${design_name}_${module}_n_m,,
 		# usually n=[0,1,2...] and m=0, but if module was copied-pasted in IP-Integrator,
 		# naming is not well predictable and therefore we do not attempt to guess it. 
 		# The prj file has discovered it by parsing top module, therefore it will be correct.
-		set module_name [exec /bin/grep "${core_basename}_[0-9]" ./prj/${variant}.prj | sed s@.*/@@ | sed s/.v$//]
+		set module_name [exec /bin/grep "${instance}_" ./prj/${variant}.prj | sed s@.*/@@ | sed s/.v$//]
 		
 		# Assume two sizes of pblocks. If the logic is ``big'' and the pblock is ``small'',
 		# then use a simple placeholder logic. The generated bitstream will be discarded.
@@ -128,10 +130,14 @@ foreach core $core_list {
 	# and therefore some newer options are recognized or some older may no longer be valid.
 	# Please modify tcl/implementation.tcl if that problem arises.
 	
-	set_param place.closeImportedSites false	
 	set_attribute impl $config opt_directive   "Explore"
-	set_attribute impl $config place_directive "ExtraPostPlacementOpt"
-	set_attribute impl $config phys_directive  "Explore"
+##	if {$core in $cores_with_alt_settings} {
+		set_attribute impl $config place_directive "ExtraPostPlacementOpt"
+		set_attribute impl $config phys_directive  "Explore"
+##	} else {
+##		set_attribute impl $config place_directive "ExtraPostPlacementOpt"
+##		set_attribute impl $config phys_directive  "AlternateFlowWithRetiming"
+##	}
 	set_attribute impl $config route_directive "Explore"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above

@@ -1112,193 +1112,193 @@ CONFIG.NUM_PORTS {32} \
  ] $xlconcat_2
 
   # Create instance: zcore32_0, and set properties
-  set zcore32_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_0 ]
+  set zcore32_0 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_0 ]
 
   # Create instance: zcore32_1, and set properties
-  set zcore32_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_1 ]
+  set zcore32_1 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_1 ]
 
   # Create instance: zcore32_2, and set properties
-  set zcore32_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_2 ]
+  set zcore32_2 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_2 ]
 
   # Create instance: zcore32_3, and set properties
-  set zcore32_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_3 ]
+  set zcore32_3 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_3 ]
 
   # Create instance: zcore32_4, and set properties
-  set zcore32_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_4 ]
+  set zcore32_4 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_4 ]
 
   # Create instance: zcore32_5, and set properties
-  set zcore32_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_5 ]
+  set zcore32_5 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_5 ]
 
   # Create instance: zcore32_6, and set properties
-  set zcore32_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_6 ]
+  set zcore32_6 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_6 ]
 
   # Create instance: zcore32_7, and set properties
-  set zcore32_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_7 ]
+  set zcore32_7 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_7 ]
 
   # Create instance: zcore32_8, and set properties
-  set zcore32_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_8 ]
+  set zcore32_8 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_8 ]
 
   # Create instance: zcore32_9, and set properties
-  set zcore32_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_9 ]
+  set zcore32_9 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_9 ]
 
   # Create instance: zcore32_10, and set properties
-  set zcore32_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_10 ]
+  set zcore32_10 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_10 ]
 
   # Create instance: zcore32_11, and set properties
-  set zcore32_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_11 ]
+  set zcore32_11 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_11 ]
 
   # Create instance: zcore32_12, and set properties
-  set zcore32_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_12 ]
+  set zcore32_12 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_12 ]
 
   # Create instance: zcore32_13, and set properties
-  set zcore32_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_13 ]
+  set zcore32_13 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_13 ]
 
   # Create instance: zcore32_14, and set properties
-  set zcore32_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_14 ]
+  set zcore32_14 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_14 ]
 
   # Create instance: zcore32_15, and set properties
-  set zcore32_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_15 ]
+  set zcore32_15 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_15 ]
 
   # Create instance: zcore32_16, and set properties
-  set zcore32_16 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_16 ]
+  set zcore32_16 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_16 ]
 
   # Create instance: zcore32_17, and set properties
-  set zcore32_17 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_17 ]
+  set zcore32_17 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_17 ]
 
   # Create instance: zcore32_18, and set properties
-  set zcore32_18 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_18 ]
+  set zcore32_18 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_18 ]
 
   # Create instance: zcore32_19, and set properties
-  set zcore32_19 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_19 ]
+  set zcore32_19 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_19 ]
 
   # Create instance: zcore32_20, and set properties
-  set zcore32_20 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_20 ]
+  set zcore32_20 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_20 ]
 
   # Create instance: zcore32_21, and set properties
-  set zcore32_21 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_21 ]
+  set zcore32_21 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_21 ]
 
   # Create instance: zcore32_22, and set properties
-  set zcore32_22 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_22 ]
+  set zcore32_22 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_22 ]
 
   # Create instance: zcore32_23, and set properties
-  set zcore32_23 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_23 ]
+  set zcore32_23 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_23 ]
 
   # Create instance: zcore32_24, and set properties
-  set zcore32_24 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_24 ]
+  set zcore32_24 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_24 ]
 
   # Create instance: zcore32_25, and set properties
-  set zcore32_25 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_25 ]
+  set zcore32_25 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_25 ]
 
   # Create instance: zcore32_26, and set properties
-  set zcore32_26 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_26 ]
+  set zcore32_26 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_26 ]
 
   # Create instance: zcore32_27, and set properties
-  set zcore32_27 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_27 ]
+  set zcore32_27 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_27 ]
 
   # Create instance: zcore32_28, and set properties
-  set zcore32_28 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_28 ]
+  set zcore32_28 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_28 ]
 
   # Create instance: zcore32_29, and set properties
-  set zcore32_29 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_29 ]
+  set zcore32_29 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_29 ]
 
   # Create instance: zcore32_30, and set properties
-  set zcore32_30 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_30 ]
+  set zcore32_30 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_30 ]
 
   # Create instance: zcore32_31, and set properties
-  set zcore32_31 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_31 ]
+  set zcore32_31 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_31 ]
 
   # Create instance: zcore32_32, and set properties
-  set zcore32_32 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_32 ]
+  set zcore32_32 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_32 ]
 
   # Create instance: zcore32_33, and set properties
-  set zcore32_33 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_33 ]
+  set zcore32_33 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_33 ]
 
   # Create instance: zcore32_34, and set properties
-  set zcore32_34 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_34 ]
+  set zcore32_34 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_34 ]
 
   # Create instance: zcore32_35, and set properties
-  set zcore32_35 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_35 ]
+  set zcore32_35 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_35 ]
 
   # Create instance: zcore32_36, and set properties
-  set zcore32_36 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_36 ]
+  set zcore32_36 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_36 ]
 
   # Create instance: zcore32_37, and set properties
-  set zcore32_37 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_37 ]
+  set zcore32_37 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_37 ]
 
   # Create instance: zcore32_38, and set properties
-  set zcore32_38 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_38 ]
+  set zcore32_38 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_38 ]
 
   # Create instance: zcore32_39, and set properties
-  set zcore32_39 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_39 ]
+  set zcore32_39 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_39 ]
 
   # Create instance: zcore32_40, and set properties
-  set zcore32_40 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_40 ]
+  set zcore32_40 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_40 ]
 
   # Create instance: zcore32_41, and set properties
-  set zcore32_41 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_41 ]
+  set zcore32_41 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_41 ]
 
   # Create instance: zcore32_42, and set properties
-  set zcore32_42 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_42 ]
+  set zcore32_42 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_42 ]
 
   # Create instance: zcore32_43, and set properties
-  set zcore32_43 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_43 ]
+  set zcore32_43 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_43 ]
 
   # Create instance: zcore32_44, and set properties
-  set zcore32_44 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_44 ]
+  set zcore32_44 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_44 ]
 
   # Create instance: zcore32_45, and set properties
-  set zcore32_45 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_45 ]
+  set zcore32_45 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_45 ]
 
   # Create instance: zcore32_46, and set properties
-  set zcore32_46 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_46 ]
+  set zcore32_46 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_46 ]
 
   # Create instance: zcore32_47, and set properties
-  set zcore32_47 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_47 ]
+  set zcore32_47 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_47 ]
 
   # Create instance: zcore32_48, and set properties
-  set zcore32_48 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_48 ]
+  set zcore32_48 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_48 ]
 
   # Create instance: zcore32_49, and set properties
-  set zcore32_49 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_49 ]
+  set zcore32_49 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_49 ]
 
   # Create instance: zcore32_50, and set properties
-  set zcore32_50 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_50 ]
+  set zcore32_50 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_50 ]
 
   # Create instance: zcore32_51, and set properties
-  set zcore32_51 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_51 ]
+  set zcore32_51 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_51 ]
 
   # Create instance: zcore32_52, and set properties
-  set zcore32_52 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_52 ]
+  set zcore32_52 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_52 ]
 
   # Create instance: zcore32_53, and set properties
-  set zcore32_53 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_53 ]
+  set zcore32_53 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_53 ]
 
   # Create instance: zcore32_54, and set properties
-  set zcore32_54 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_54 ]
+  set zcore32_54 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_54 ]
 
   # Create instance: zcore32_55, and set properties
-  set zcore32_55 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_55 ]
+  set zcore32_55 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_55 ]
 
   # Create instance: zcore32_56, and set properties
-  set zcore32_56 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_56 ]
+  set zcore32_56 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_56 ]
 
   # Create instance: zcore32_57, and set properties
-  set zcore32_57 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_57 ]
+  set zcore32_57 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_57 ]
 
   # Create instance: zcore32_58, and set properties
-  set zcore32_58 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_58 ]
+  set zcore32_58 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_58 ]
 
   # Create instance: zcore32_59, and set properties
-  set zcore32_59 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_59 ]
+  set zcore32_59 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_59 ]
 
   # Create instance: zcore32_60, and set properties
-  set zcore32_60 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_60 ]
+  set zcore32_60 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_60 ]
 
   # Create instance: zcore32_61, and set properties
-  set zcore32_61 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_61 ]
+  set zcore32_61 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_61 ]
 
   # Create instance: zcore32_62, and set properties
-  set zcore32_62 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.5 zcore32_62 ]
+  set zcore32_62 [ create_bd_cell -type ip -vlnv tuc:hls:zcore32:3.6 zcore32_62 ]
 
   # Create instance: zynq_ultra_ps_e_0, and set properties
   set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.0 zynq_ultra_ps_e_0 ]
@@ -1364,7 +1364,7 @@ CONFIG.PSU__CRL_APB__PCAP_CTRL__SRCSEL {IOPLL} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__DIVISOR0 {15} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {IOPLL} \
-CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {250} \
+CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {240} \
 CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {RPLL} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__FREQMHZ {125} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__SRCSEL {IOPLL} \

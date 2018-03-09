@@ -25,7 +25,7 @@ An ``All Programmable SoC`` in Xilinx terminology or an ``SoC FPGA'' according t
 is a device that combines a ``hard'' (i.e. implemented in silicon, not \gls{softip}) System-on-Chip
 and the \gls{fabric} of an FPGA.
 
-The notion of the ``SoC'' typically encompasses all the basic functional elements of
+The notion of the ``SoC'' typically encompassess all the basic functional elements of
 an embedded computer system capable to run a modern general purpose operating system,
 excluding the main memory and storage. Still, vendors deviate from this definition --
 Microsemi uses a microcontroller grade processing system based on Cortex-M3
@@ -133,16 +133,16 @@ The \gls{axi} itself is essentially a group of protocols that support different 
 as well as feature levels that position themselves differently at the trade-off 
 between performance and functionality versus silicon area.
 However, they all share a fundamental bus concept: 
-a multi-channel non shared-bus architecture that contains separate
+a multi-channel non shared-bus architecture that contains seperate
 channels for each \gls{transaction} type. It can be considered as a complementary
 to \gls{ahb} protocol, also member of \gls{amba} suite, 
 which is a single-channel multiple-master shared-bus architecture. 
-Comparing these two families would give an edge to \gls{axi} in
-throughput performance and clock frequency requirements, while \gls{ahb} would favor
+Compairing these two families would give an edge to \gls{axi} in
+throughtput performance and clock frequency requirements, while \gls{ahb} would favor
 better in terms of latency, wire count and power requirements. 
 \emph{TODO: να βρω αξιόπιστη πηγή}
 
-The \gls{axi} family has several members, but for this system the following three were used:
+Tha \gls{axi} family has several members, but for this system the following three were used:
 \begin{itemize}
 \item	\textbf{\gls{axi}}, was the initial and only member in \gls{amba} 3.0. 
 	With the advent of \gls{amba} 4.0 which introduced
@@ -184,7 +184,7 @@ The \gls{axi} family has several members, but for this system the following thre
 	Data flows from the one endpoint to the other, in one direction, 
 	without the need of any intermediary interconnect.
 	Transmission size is not known in advance; data will flow
-	indefinitely until a control signal (TLAST) is asserted.
+	indefinately until a control signal (TLAST) is asserted.
 
 	\gls{axistream} allows the addition of user defined out-of-band data,
 	typically for synchronization, and it supports sender and receiver IDs, 
@@ -285,7 +285,7 @@ Due to their importance, it is worth to be mentioned separately:
 	to help timing closure and smooth traffic, respectively.
 
 	The AXI Crossbar allows the definition of a connectivity matrix 
-	for sparse crossbar implementation. 
+	for sparce crossbar implementation. 
 	However this feature is not used by AXI Interconnect and if desired,
 	the designer must instantiate the AXI Crossbar and its couplers manually.
 
@@ -379,7 +379,7 @@ there are five options available.
 \item	\textbf{Bridges}: In case the user IP is already developed with an alternative protocol,
 	it may be possible to be bridged to the \gls{axi} interconnect, 
 	if the additional overhead can be tolerated.
-	Xilinx provides only a handful of bridges, mostly of use within the \gls{amba} family, 
+	Xilinx provides only a handful of birdges, mostly of use within the \gls{amba} family, 
 	e.g. for \gls{ahblite} (both slaves and masters) and for \gls{apb} (slaves only). 
 	However, additional bridges may be found at OpenCores or in other open-source libraries. 
 	In the simplest case possible, a designer may even opt for 
@@ -387,7 +387,7 @@ there are five options available.
 
 \item	\textbf{HLS}: If the designer uses the Vivado High-Level Synthesis workflow,
 	the tool is able generate \gls{axi} compliant IP using simple HLS directives. 
-	This is particularly useful to implement the HLS-core control protocol over \gls{axilite}.
+	This is particularily useful to implement the HLS-core control protocol over \gls{axilite}.
 \end{itemize}
 
 \section{The Physical Interconnect}
@@ -499,13 +499,13 @@ Firstly they reach the Slave Interconnect.
 They occupy two of its four slave ports,
 the other being dedicated to the 
 \gls{devc} and the \gls{dap}.
-Note that the former will be heavily used at run-time as it is responsible
+Note that the former will be heavily used at runtime as it is responsible
 for programming the FPGA during partial reconfiguration.
 The Slave Interconnect operates at 222MHz, 
 offering an aggregate bandwidth of 888MB/s per direction.
 Its master port is connected to the Central Interconnect, 
 which operates also at 222MHz but has a width of 64 bits, 
-totaling at 1776MB/s per direction.
+totalling at 1776MB/s per direction.
 
 The Central Interconnect is shared by another two masters:
 The PS DMA controller and the I/O Peripherals
@@ -521,7 +521,7 @@ could become an issue.
 
 \subsubsection{The General Purpose Master Ports}
 
-The GP master ports are the functional opposite of GP slave ports;
+The GP master ports are the funcional opposite of GP slave ports;
 they can connect PL slaves and they route the traffic through the
 Master Interconnect which in turn is a slave to the Central Interconnect.
 It is important to note that they are the only master ports from the PS side.
@@ -634,10 +634,12 @@ the processor's and the peripheral's cache.
 
 The diversity of the physical interconnect creates a number of 
 possible methods for transferring data between PS and PL.
-Each method may benefit a specific transfer pattern or may be more appropriate for an application.
-The temporal characteristics of the transfer, the amount of data to be transmitted, 
-the requirements for latency or throughput, 
-the power consumption and the need of a higher level of determinism,
+Each method may benefit a specific transfer pattern
+or may be more appropriate for an application.
+The temporal characteristics of the transfer,
+the amount of data to be transmitted, 
+tha requirements for latency or thoughput,
+the power consumption and the need of a higer level of determinism,
 all of them will derive the optimal solution for each problem.
 
 \subsection{Programmed I/O from a Processor}
@@ -679,7 +681,7 @@ First it keeps the processor busy issuing the instructions preventing it
 to perform any other useful work. The problem aggravates as the number of slaves increases,
 as obviously there cannot be more parallel transfers than the number of processors executing I/O.
 Secondly, the load / store instructions cannot generate \gls{burst} transfers,
-essentially degenerating a full \gls{axi} to \gls{axilite}. 
+essentially degerating a full \gls{axi} to \gls{axilite}. 
 According to Xilinx (\cite{ug585}, v1.11, pg. 656) one should expect 
 transfer rates of around 25MB/s in Zynq-7000.
 
@@ -698,7 +700,7 @@ OCM Interconnect, and finally, through the Master Interconnect, it may reach the
 using one of the \glspl{mgp} (the coarsely dashed line). 
 
 The UltraScale+ has two DMA controllers, one in the \glsentrylong{fpd} and one
-in the \glsentrylong{lpd}. 
+ine the \glsentrylong{lpd}. 
 The \gls{fpd} DMA controller shares a link with the \gls{hp}3. The link
 is driven to a second switch that gives access to either the DDR memory controller,
 or it is routed to the FPD Main Switch, in turn to the OCM Switch, and finally the \gls{ocm}.
@@ -748,13 +750,13 @@ advantages that this method gives us:
 \item	Both Zynq series feature significantly more 
 	slave ports to the PL than master ones.
 	Their parallel use would increase aggregate bandwidth.
-\item	There is the opportunity to use other interconnect pathways that are not
+\item	There is the oportunity to use other interconnect pathways that are not
 	being used by the usual client peripherals, alleviating the potential
 	issue of an interconnect bottleneck.
 \item	Using a path that does not cross the Central Interconnect and the
 	Master or Slave Interconnect would have the benefit of 
 	reduced and more predictable latency. 
-	In the extreme case, one could dedicate a whole pathway 
+	In the extereme case, one could dedicate a whole pathway 
 	for a specific latency critical accelerator.
 \item	The PS DMA would be freed for use by other services, 
 	especially the network driver.
@@ -768,7 +770,7 @@ advantages that this method gives us:
 	that reads from memory, processes, and writes back.
 	For example, output could be re-routed to 
 	another accelerator or to an external device
-	(ie chip to chip data exchange, data acquisition or data display)
+	(ie chip to chip data exchange, data aquisition or data display)
 	without the need of going back and forth to the main memory.
 \end{itemize}
 
@@ -787,7 +789,7 @@ Furthermore, by having four of them,
 we gain significant flexibility on the AXI interconnect
 that it will need to be implemented at the PL side.
 
-Similarly, in UltraScale+, the four \gls{hp} ports have
+Similarily, in UltraScale+, the four \gls{hp} ports have
 access to three memory ports, after crossing two rows of switches.
 
 The primary drawback of these ports is that they are not cache-coherent.
@@ -807,7 +809,7 @@ will induce a latency penalty.
 
 Eventually, since cache coherency is not important for this implementation,
 the \gls{hp} ports would be preferable. However, despite that \gls{hpc} ports
-incur a small latency, they offer a path to access two further memory controller
+incure a small latency, they offer a path to access two further memory controller
 ports, increasing our potential bandwidth by 66\%. 
 Therefore, they could be used in addition to the \gls{hp} ports, albeit with
 cache coherency disabled.
@@ -818,7 +820,7 @@ The \gls{acp} port is an interesting addition not only due to its \glslink{IO Co
 nature, but also due to its proximity with the processor. 
 The \gls{acp} port would be ideal in an access pattern where the processor and the PL accelerator
 work together, exchanging small pieces of data or cooperatively working in the same dataset.
-Essentially, the ``accelerator'' would be more of a ``co-processor''.
+Essentially, the ``accelerator'' would be more of a ``coprocessor''.
 In this access pattern, the data generated from the processor would stay in cache, from where
 the \gls{acp}-connected accelerator will retrieve it, without accessing the DDR memory at all.
 This would have a huge benefit to memory throughput and
@@ -853,7 +855,7 @@ It is a complex path that comprises crossing both the Slave Interconnect and the
 Interconnect. That cancels out a couple of our initial arguments for the use of the slave ports.
 Further discouraging is the fact that we will compete 
 with the \gls{devc} which controls the single \gls{pcap}
-port used to reconfigure the FPGA.
+port thay may reconfigure the FPGA.
 
 Still, the \gls{sgp} will open us access to one more port to the DDR controller.
 For this very reason, it is worth to experiment using it.
@@ -871,7 +873,7 @@ a key characteristic of its real-time nature.
 Therefore, there is not much incentive to use it, since we already access the
 memory ports of the \gls{cci} via the \glspl{hpc}.
 
-\section{Design Components}
+\section{Implementation}
 
 \subsection{The DMA controller}
 \label{sec:axidma}
@@ -900,7 +902,7 @@ The AXI DMA IP core has a few operating modes that are worthy of mentioning.
 	by writing the control, source and destination registers.
 	The processor can query the status register for completion, 
 	either by polling or by interrupt notification.
-	Operation queuing is not supported, therefore there will be a time gap 
+	Operation queueing is not supported, therefore there will be a time gap 
 	between completion and re-programming with next operation.
 	This operation trades performance for resource utilization.
 \item	\textbf{Scatter-Gather}:
@@ -972,7 +974,7 @@ In table \ref{tab:dma-modes} the resource cost of each operating mode is display
 \end{figure}
 
 As a final note, it should be mentioned that each AXI DMA core outputs two reset signals,
-one for the MM2S and one for the S2MM channel, that are asserted when the corresponding channel is also rest.
+one for the MM2S and one for the S2MM channel, that are asserted when the correspoding channel is also rest.
 It also outputs two interrupt signals, again, one for each channel. 
 The Zynq-7 has an interrupt input of 16 bits and Zynq UltraScale+ has two 8-bit inputs.
 The maximum number of AXI DMA that could be directly connected would be 8, which is very restrictive.
@@ -1015,7 +1017,7 @@ Note that Xilinx does offer very detailed mathematical formulas
 for estimating resource utilization of each component of AXI Interconnect 
 in 7-series FPGAs (see \cite{pg059}, pp 35-52).
 
-\subsubsection{A Naive Solution and Basic Configuration}
+\subsubsection{A Naïve Solution and Basic Configuration}
 
 Let us begin with using a single AXI Interconnect v2.1
 with 16 slave interfaces (SI) and 1 master interface (MI), 
@@ -1132,7 +1134,7 @@ or 128-bit port (UltraScale+ default).
 
 A special case that arose during the development of the UltraScale+ port,
 is the \gls{axilite} peripheral control interconnect. 
-If the IP core is automatically placed by Vivado Block Automation,
+If the ip core is automatically placed by Vivado Block Automation,
 it is instantiated with a data width converter on its single slave interface
 and the crossbar hierarchy is implemented in 32 bits.
 However, if it is manually placed, the data width converter will be placed
@@ -1166,17 +1168,17 @@ full \gls{axi} ports of AXI DMA.
 
 Since both Zynq families offer multiple PS-PL ports that lead to 
 multiple memory ports of the memory controller,
-it is an opportunity for access parallelization.
+it is an oportunity for access parallellization.
 
 However, in section \ref{sect:zynq7000-hp} 
 \emph{[TODO να βρω την ταχυτητα της θυρας DDR του US+]} 
 we saw that, regarding Zynq-7000,
 the aggregate throughput of just two \gls{hp} ports
-is sufficient to saturate the memory controller, 
+is suffucient to saturate the memory controller, 
 even if we do not take into account its other potential users, 
 e.g. the processor or the I/O peripherals.
 Given the comparatively low throughput of the Zynq-7000 memory subsystem,
-one may wonder if there is sufficient motivation for even attempting parallelization.
+one may wonder if there is sufficient motivation for even attempting parallellization.
 There are two arguments in favor of doing it -- and virtually none against.
 
 Firstly, the maximum theoretical throughput of 2400MB/s that Xilinx asserts (\cite{ug585}, pg 652)
@@ -1198,7 +1200,7 @@ Breaking down a single big interconnect to several smaller will allow a far bett
 	}
 maximum clock.
 
-Therefore, the parallelization is worth of exploring, the only question is
+Therefore, the parallellization is worth of exploring, the only question is
 which is the best architecture for our purpose.
 
 Intuition would command us to increase the number of AXI Interconnect
@@ -1211,7 +1213,7 @@ since a peripheral must be able to reach a processor address using
 exactly one possible route. 
 This could be solved by segmenting the processor memory
 and offsetting the burden of access parallelization to the software,
-in the sense that if software chooses the memory buffers properly
+in the sense that if software choses the memory buffers properly
 it can balance the \gls{transaction} rates between all ports.
 
 What cannot be solved however, is the hardware cost that arises of the increased
@@ -1236,9 +1238,9 @@ complexity, as it is shown in table \ref{tab:int-mmi}.
 \end{figure}
 
 The resource increase is significant but not prohibitive. 
-However one could see a source of redundancy: Even if the problem
+However one could see a source of redudancy: Even if the problem
 of accessing a memory address by multiple routes can be solved by segmentation,
-it would be better if the redundant paths were not available at all.
+it would be better if the redandant paths were not available at all.
 This would not only simplify software, but most importantly we would expect
 a simplification of the interconnect.
 
@@ -1273,7 +1275,7 @@ Split equally 		& 3060	&6290	&2044 	\\
 Split by interface type	& 2787	&6006	& 2044	\\
 \bottomrule
 \end{tabular}
-\caption{The effect of SI type homogeneity on AXI Interconnect resource utilization and routability.\\
+\caption{The effect of SI type homogeniety on AXI Interconnect resource utilization and routability.\\
 	Configuration: AXI Interconnect v2.1, 2x 8 SI / 1 MI, 32 bit crossbar, 
 	outer register and 32 byte FIFO per port.}
 \label{tab:int-mixed}
@@ -1334,7 +1336,6 @@ AXI Interconnect and the SmartConnect, in both Zynq-7000 and UltraScale+ devices
 
 \begin{figure}[ht!]
 \centering
-\resizebox{\textwidth}{!}{%
 \begin{tabular}{ccl rrr c rrr}
 \toprule
 &&				& \multicolumn{3}{c}{Zynq 7000} & ~ & \multicolumn{3}{c}{Zynq UltraScale+}\\
@@ -1359,7 +1360,6 @@ AXI Interconnect and the SmartConnect, in both Zynq-7000 and UltraScale+ devices
 &&SmartConnect v1.0		& 15046	& 12154	&2652	&& 14404& 11608 & 2732\\
 \bottomrule
 \end{tabular}
-}
 \caption{Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
 	AXI Interconnect v2.1 vs AXI SmartConnect v1.0, 4 instances of 4 SI / 1 MI, 32 bit crossbar.\\ 
 	Configuration: Outer register and 32 byte FIFO per port.}
@@ -1382,7 +1382,8 @@ Therefore, its use may not be recommended in the following cases:
 
 \section{The Implemented Designs}
 
-Taking into account all these observations, an architecture had to be designed.
+At the end of the day, taking into account all these observations,
+an architecture had to be designed.
 Firstly, the design objectives must be stated:
 
 \begin{itemize}
@@ -1393,23 +1394,23 @@ Firstly, the design objectives must be stated:
 \item	\textbf{Flexibility}: 
 	The software (i.e. the kernel driver) shall support,
 	without recompilation or additional user intervention,
-	any possible interconnect architecture and memory topology
+	any possible interconnect architecture and memory topology.
 	as long as it is properly described in the \gls{dt}.
 	An accelerator may have a restricted view of the addressable memory space
 	or might be given exclusive access to a certain region.
 	The memory space itself might be a collection of different memory resources
 	with unequal proximity to the programmable logic. 
-	The designer must be able to explicitly express a relative preference 
+	The designer must be able to express a relative preference 
 	to one resource against another.
 \item	\textbf{Performance}:
 	The design will implement an efficient interconnect that enables 
-	parallel memory access for the accelerators. 
+	parallell memory access for the accelerators. 
 	Its architecture must permit sufficiently high clock speeds.
 	Finally the final system will show the performance of partial reconfiguration
 	as well as the flexibility of the accelerator scheduler.
 	However, we will not explore the optimal architecture for solving any specific problem.
 \item	\textbf{Portability}:
-	A constant effort throughout both hardware and software design was that they should be
+	A constant effort throught both hardware and software design was that they should be
 	as decoupled as possible. The software shall use standardized operating system
 	interfaces to ensure that porting the system to a different would be done with
 	least effort possible.
@@ -1421,8 +1422,8 @@ In order to pursue these objectives, three designs were developed.
 
 The first design is geared to accelerator performance, featuring
 accelerators with wider interconnect that allow
-greater data processing parallelization.
-It has homogeneous reconfigurable partitions with
+greater data processing parallellization.
+It has homogenous reconfigurable partitions with
 full memory view of uniform access on the accelerator side, 
 allowing total freedom of accelerator placement that
 maximizes the scheduler's decision options.
@@ -1578,8 +1579,7 @@ maximizes the scheduler's decision options.
 \label{dia:arch-1}
 \end{figure}
 
-The design was floorplanned and implemented with moderate difficulty.
-It was made possible to include 6 \glspl{rp} of 64b data width,
+The design was floorplanned and implemented with moderate difficulty, 
 achieving a clock speed of 143MHz.
 
 
@@ -1602,19 +1602,26 @@ More specifically, the following compromises have been made:
 \item	The alternative pathway of \gls{sgp} ports was also used, forming a secondary
 	group of accelerators with inferior connectivity to memory of higher latency
 	and less predictability. 
-	It still offers a throughput increase as long as the central interconnect is not
+	It still offers a throutput increase as long as the central interconnect is not
 	saturated by other peripheral traffic.
 
 \item	Two accelerator sizes are defined. 
 	Both sizes consist of the same number of \glspl{lut},
 	however the ``big'' one contains BRAM and DSP slices. This was decided as the
 	Zedboard's FPGA is rather poor in BRAM slices, a resource that AXI DMA also needs,
-	and the reconfiguration technology of 7-series FPGAs make it almost impossible
-	for a single column of BRAM slices to be shared by static and reconfigurable 
-	design parts (see section \ref{sec:pr-phys}).
+	and the reconfiguration technology
+	\footnote{In 7-series, a reconfigurable frame extends vertically to the extreme ends of a 
+	clock region wherever a reconfigurable partition exists. Any dynamic logic that resides
+	in the reconfigurable frame will be reset during reconfiguration even if it does not
+	belong in the reconfigurable partition. Despite that it would be possible to tolerate
+	this by assigning the pair of accelerator and its DMA controller at the same BRAM column,
+	the Xilinx placer tool will not allow this location constraint. In UltraScale+ this
+	restriction does not apply.}
+	of 7-series FPGAs make it almost impossible
+	for a single column of BRAM slices to be shared by static and reconfigurable design parts.
 	To ease the pressure on BRAM, a ``small'' accelerator size with no memory capability was
-	introduced. In our application, it translates to an accelerator that can do
-	pixel stream transformations but cannot perform a 2D convolution.
+	introduced. In our application, it translates to an accelerator that can transform
+	a pixel stream but cannot execute a 2D convolution.
 
 \item	Memory view is segmented. Each Zynq port is assigned an exclusive memory region
 	where the accelerator can read and another that can write. 
@@ -1623,7 +1630,7 @@ More specifically, the following compromises have been made:
 	a scenario of heterogeneous memory resources as well as the possibility of exclusive region access.
 	Additionally, it allowed the implementation of allocator bias towards a memory resource over another.
 	This feature was indeed activated to discourage the use of high-latency and 
-	congestion-prone \gls{sgp} ports over the lower latency \glspl{hp} that have a more direct access
+	congenstion-prone \gls{sgp} ports over the lower latency \glspl{hp} that have a more direct access
 	to the memory controller.
 \end{itemize}
 
@@ -1852,8 +1859,7 @@ More specifically, the following compromises have been made:
 \end{figure}
 
 The floorplanning of this design proved to be very challenging in order to achieve a clock of 133MHz.
-However it could be implemented at 125MHz with relative ease. A total of 10 ``big'' \gls{rp} and
-6 ``small'' ones were included.
+However it could be implemented at 125MHz with relative ease. 
 
 More importantly however, this design led to a complete rewrite of the kernel driver's special memory allocator
 to enable memory segmentation awareness. Furthermore, the scheduler needed to be revised in order to understand
@@ -1868,7 +1874,7 @@ The accelerator complexity is midway between the two other designs.
 The newer platform's increased capacity, routing capabilities 
 and more relaxed partial reconfiguration restrictions
 allowed the packing of several times more accelerator instances
-operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
+operating at much higher frequency.
 
 
 \begin{figure}[ht!]
@@ -2130,18 +2136,20 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
 \end{tikzpicture}
 
-\caption{The UltraScale+ port block diagram.}
+\caption{The accelerator core count oriented design's block diagram.}
 \label{dia:arch-3}
 \end{figure}
 
-In total, 40 homogeneous \glspl{rp} of 32b data width were included,
-with a clock running at 250MHz.
+This was not as nearly optimized as the previous one. Furthermore technical difficulties with
+UltraScale+ support maturity in Vivado 2017.2 PR flow, induced a moderate result. Still, oweing to UltraScale+'s
+silicon superiority to Zedboard's Z-7020 a PR-enabled design of 40 
+32-bit accelerator cores running at 250MHz was made possible.
 
 \section{Partial Reconfiguration}
 
 The test application of this system includes 8 types of accelerators, and the three designs offer
 6, 16 and 48 accelerator slots respectively. 
-Our system needs to change its accelerators on-demand at run-time, 
+Our system needs to change its accelerators on-demand at runtime, 
 and therefore the FPGA programming state has to continuously change.
 We need to consider the technical difficulties of implementing such a system.
 
@@ -2160,11 +2168,11 @@ There are three points to consider here: If a pause in operation would be accept
 can be tolerated by the external circuitry,
 and finally, how much would be the overall performance degradation due to the pauses.
 The latter should be expected, as programming a big FPGA with 48-accelerators plus static logic 
-would definitely incur a huge overhead, if what we needed to change was just a single accelerator instance.
+would definately incur a huge overhead, if what we needed to change was just a single accelerator instance.
 
 At the other extreme, let us consider a hypothetical single big computation task
 that can be broken down to several stages, each of them able to fit in our FPGA.
-In order to accommodate all stages in an FPGA, We would need a high-end model of prohibitive cost.
+In order to accomodate all stages in an FPGA, We would need a high-end model of prohibitive cost.
 Alternatively, we could compute the stages sequentially in a small and inexpensive FPGA.
 In this scenario, we would have to use an external microcontroller with sufficient storage 
 to hold the computation state while the FPGA is being re-programmed. 
@@ -2178,18 +2186,17 @@ In summary, partial reconfiguration:
 
 \begin{itemize}
 \item	Allows continuous operation while part of the FPGA is being updated, eliminating system downtime.
-\item	Reduces silicon requirements by making it easier to time-share the FPGA resources. 
-\item	Reduces bitstream storage demand as partial bitstream are a fraction of the full bitstream in size
-	and there are no redundant copies of the same accelerator in multiple configurations.
+\item	Reduces silicon demand by making it easier to time-share the FPGA resources. 
+\item	Reduces bitstream storage demand as partial bitstream are a fraction of the full bitstream in size.
 \item	Reduces configuration time as a result of smaller bitstreams.
-\item	Reduces static power consumption by enabling the use of smaller FPGAs and smaller bitstream memory.
+\item	Reduces static power consumption by using smaller FPGAs and smaller bitstream memory.
 \end{itemize}
 
 These effects combined allow the implementation of architectures that further improve cost or power consumption.
 For example, a machine vision system may add a low-power core version for object recognition
 and enable it when in low alertness level. 
 This could not have been done with full bitstream programming as the other
-sensors need to remain online, or the frequency of swapping could harm responsiveness or performance degradation.
+sensors need to remain online, or the frequency of swapping could harm resposiveness or performance degradation.
 
 However, partial reconfiguration has its own disadvantages:
 
@@ -2205,31 +2212,30 @@ However, partial reconfiguration has its own disadvantages:
 \end{itemize}
 
 \subsection{The Partial Reconfiguration Workflow}
-\label{sec:pr-workflow}
 
 The Partial Reconfiguration workflow is a bottom-up hierarchical approach.
 All logic that consists a functional unit we wish to be dynamically reconfigurable,
-the so called \gls{rm}, has to be synthesized independently of the design.
+the so called \gls{rm}, has to be synthesised independently of the design.
 Xilinx calls this technique as ``\gls{ooc}'' and is required to prevent
 cross-boundary optimizations between the dynamic and static parts of the design.
-The \gls{ooc} will produce a netlist, saved as a ``\gls{dcp}'', for each \gls{rm} variant
+The \gls{ooc} will produce a netlist (a ``\gls{dcp}'') for each \gls{rm} version
 that will later be applied to the static design to form a valid configuration, 
 from which the partial bitstreams will be generated.
 
-All \gls{rm} variants will be implemented in a certain physical region of the FPGA
+All \gls{rm} versions will be implemented in a certain physical region of the FPGA
 (a \gls{pblock}) that we will need to define. A dynamically reconfigurable \gls{pblock} 
 is called ``\gls{rp}''.
 
-There can be as many \gls{rm} variants implemented for a specific \gls{rp},
+There can be as many \gls{rm} versions implemented for a specific \gls{rp},
 provided we possess the means to store and deliver the bitstreams in the embedded system.
-Each \gls{rm} variant may implement any logic but the physical and logical interface
-to the static design must remain consistent -- in case that the \gls{rl} of any \gls{rm} variant
+Each \gls{rm} version may implement any logic but the physical and logical interface
+to the static design must remain consistent -- in case that the \gls{rl} of any \gls{rm} version
 requires different interconnect, 
 a superset of all interface signals must be defined as the common \gls{rm} interface.
 
-Likewise, there is no maximum number of \glspl{rp} defined. However, as the implementation
+Likewise, there is no maximum number of \gls{rp} defined. However, as the implementation
 of a \gls{rp} imposes physical constraints that reduce resource utilization efficiency and decrease
-routability, there would be practical limits that vary depending the FPGA architecture.
+routeability, there would be practical limits that vary depending the FPGA architecture.
 
 If a module needs to instantiated more than once in different \glspl{rp}, it has to be
 implemented separately and different bitstreams will be generated. 
@@ -2244,11 +2250,11 @@ The P.R. workflow defines these steps:
 \item	Synthesis
 	\begin{enumerate}
 	\item	Initially, a static design that incorporates any set of the possible 
-		\gls{rm} variant is synthesized.
+		reconfigurable module versions is synthesized.
 	\item	The synthesized design must be floorplanned to define the \glspl{pblock} that
 		will constitute the \glspl{rp}. A \gls{rp} must encompass all the logic that is required
-		to implement any \gls{rm} variant, usually with an added overhead of the order of 20\%
-		depending the regularity of the \gls{rm} variants.
+		to implement any \gls{rm} version, usually with an added overhead of the order of 20\%
+		depending the regularity of the \gls{rm} versions.
 	\item	After floorplanning, all \glspl{rm} must be converted to black-boxes, 
 		rendering all the \glspl{rp} empty. The produced (incomplete) synthesized design,
 		the so-called ``static design'', is saved as a \gls{dcp}.
@@ -2267,11 +2273,11 @@ The P.R. workflow defines these steps:
 			intermediate register in the static part.
 			This technique is not recommended but it can be done. 
 			However, static timing analysis must be performed for every possible
-			source and sink \gls{rm} variants.
+			source and sink \gls{rm} versions.
 			Therefore, these combinations must be represented in the defined configurations.
 		}.
 		It is sufficient to define as many configurations are needed so that
-		every \gls{rm} variant is present in every desired \gls{rp}.
+		every \gls{rm} version is present in every desired \gls{rp}.
 	\item	One configuration will be chosen as the initial one.
 		This will lead to the implementation of the top-level,
 		static part of the design that will be saved and later reused.
@@ -2280,29 +2286,27 @@ The P.R. workflow defines these steps:
 		reconfigurable domains. These sites will be locked and all subsequent 
 		\gls{rm} implementations will be constrained to respect them.
 		Therefore the initial configuration must be chosen carefully,
-		as a bad choice may render some \gls{rm} variants unroutable for some \glspl{rp}.
+		as a bad choice may render some \gls{rm} versions unroutable for some \gls{rp}.
 		It is recommended to begin with the configuration that contains the
-		most difficult to route \gls{rm} variant of each \gls{rp}.
-		In order to find a \gls{pp} set that permits the routing of all module variants,
+		most difficult to route \gls{rm} version of each \gls{rp}.
+		In order to find a \gls{pp} set that perimts the routing of all module versions,
 		some trial and error is unavoidable.
 	\item	All subsequent configurations import the static part of previous step
-		and implement their \gls{rm} variants within its context.
+		and implement their \gls{rm} versions within its context.
 	\end{enumerate}
 \item	Bitstream Generation
 	\begin{enumerate}
 	\item	After all configurations are implemented, they will be verified for compatibility
 		to ensure the consistency of \glspl{pp}.
-	\item	For each implemented configuration a full bitstream will be generated.
-		From this bitstream, a partial bitstream will be extracted for each \gls{rm}
+	\item	For each implemented configuration a bitstream will be generated.
+		Using this bitstream, a partial bitstream will be extracted for each \gls{rm}
 		that was implemented with that configuration.
-		It is possible that a specific module variant for a specific \gls{rp}
-		to be extracted from more than one configuration, 
-		but should be functionally equivalent.
+		It is possible that a specific module version for a specific \gls{rp}
+		to be extracted from more than one configuration; they will all be identical.
 	\end{enumerate}
 \end{itemize}
 
 \subsection{Physical Constraints}
-\label{sec:pr-phys}
 
 The Partial Reconfiguration workflow is subject to several physical constraints that
 arise from the FPGA architecture. These affect which hardware resources are reconfigurable,
@@ -2313,15 +2317,15 @@ and are usually architecture dependent.
 Between the Xilinx 7-series and UltraScale+ there has been a significant improvement
 in partial reconfiguration capability. In 7-series, only the CLB, the BRAM and the DSP tiles
 were partially reconfigurable. In UltraScale+, the clocking resources, the I/O and the
-\glspl{mgt} are also reconfigurable, albeit with coarser granularity. 
-It is worth to note that in UltraScale+ the need of ``clearing bitstreams'' that
-was imposed in UltraScale devices is now removed.
+\glspl{mgt} are also reconfigurable, albeit coarser granularity. 
+It is worth to note that in UltraScale+ there are no ``clearing bitstreams'' as
+were first introduced in UltraScale devices.
 
 However, what really matters to our work is the flexibility in the physical layout.
-This is because in this work we have several rather small accelerators.
+This is because in this work, we have several rather small accelerators.
 The shape and placement of their container \gls{pblock} is much more critical 
 to the system performance compared to, for example, a design with a single huge
-\gls{rp} that spawns across multiple clock regions.
+\gls{rp} that spawns multiple clock regions.
 
 It is in this respect that the architectural differences are more important.
 In 7-series there are several physical constraints that lead to a rather
@@ -2329,34 +2333,34 @@ coarse \gls{rp} placement.
 A reconfigurable frame is a clock region tall. 
 A \gls{rp} is allowed to be shorter than this, 
 however it will lose its automatic post-reconfiguration initialization to a known state.
-Even worse, as we will see in the following example, 
+Even worse, as we will see at the following example, 
 the vertical space between the \gls{rp} and the clock region border would be of less usability,
 as no memory resource can be placed there.
 On the horizontal axis the \gls{rp} is allowed to end at any column. 
-In this architecture, each resource column has an interconnect column placed next to it.
+In this architecture, each resource colum has an interconnect column placed next to it.
 The pairs of resource plus interconnect columns are placed sequentially but with mirrored orientation,
 that is, two resource columns facing each other, two interconnect columns connected back to back,
 and so on.
 Though it is legal that a \gls{rp} ends between two interconnect columns, 
 this would cause the splitting of a clock distribution resource. 
-In order to avoid any disturbance, the tools will not place logic in any affected resource,
-causing a significant utilization efficiency drop. Therefore, a \gls{rp}
-will almost always end at a resource column border. Effectively, the minimum \gls{rp}
+In order to avoid any distrubance, the tools will not place logic in any affected resource,
+causing a significant utilization efficiency drop. Therefore, almost always a \gls{rp}
+will end at a resource column border. Effectively, the minimum \gls{rp}
 size would be a clock region tall by two resource and their interconnect columns wide.
 
 In UltraScale and UltraScale+ however, this has changed radically. A \gls{rp}
 can be as small as a pair of \glspl{clb} or a single \gls{bram}/\gls{dsp} with
-its five neighboring \glspl{clb}. Xilinx actually recommends \emph{against} having
-clock region tall partitions, as this is restrictive to the router.
+its 5 neighboring \glspl{clb}. Xilinx actually recommends \emph{against} having
+clock region tall blocks, as this is restrictive to the router.
 This fine-grained \gls{rp} definition allows
 a far better FPGA utilization in the case of many small \glspl{rp}.
 It also makes easier to define non-rectangular \glspl{rp}, 
-though routing difficulty at the \gls{pblock} corners will still be a limiting factor. 
-It must be note that the \gls{rf} is still one clock region tall and all logic in
-that column will be reprogrammed. However, in contrast to 7-series, in UltraScale+
+though routing difficulty at the corners will still be a limiting factor. 
+Note that the \gls{rf} is still one clock region tall and all logic in
+that column will be reprogrammed. However, in constrast to 7-series,
 consistency is guaranteed for any resource that is placed between the \gls{rp} 
 and the horizontal clock region border, including memory resources.
-Still, a \gls{rf} may be controlled by one \gls{rp} at most. Therefore,
+However, a \gls{rf} may be controlled by one \gls{rp} at most. Therefore,
 it is still prohibited for two \glspl{rp} to be vertically stacked within a clock region.
 
 To illustrate this, let us discuss the development of the two Zynq-7000 designs.
@@ -2384,7 +2388,7 @@ Since we anyways reset the corresponding AXI DMA after the accelerator reconfigu
 it seemed a viable solution. 
 
 However, the placer would fail, declaring such a placement illegal.
-Eventually, it was made clear that all logic within a \gls{rf}
+After contacting Xilinx, it was made clear that all logic within a \gls{rf}
 is reconfigured, even if it is \emph{not} included in the \gls{rp}.
 The hardware guarantees consistency for any combinatorial logic,
 but any sequential element (flip-flop, LUTRAM, \gls{bram}) would be initialized,
@@ -2401,9 +2405,9 @@ to two targets, one of high accelerator count where some of the instances would 
 and one of high performance with no compromise in resource utilization.
 
 As this physical constraint does not exist in UltraScale+,
-our design was implemented using rows of shorter than a clock region \glspl{rp},
+our design was implemented mostly using rows of half clock region tall \glspl{rp},
 which additionally could be placed more tightly in the horizontal axis 
-as routing could pass from the bottom part of the clock region.
+as routing could pass from the bottom half of the clock region.
 
 %Despite the architectural differences, 
 %there are three basic physical rules that always apply to partial reconfiguration:
@@ -2425,7 +2429,7 @@ that will implement the \glspl{rp}.
 The physical constraints of the Partial Reconfiguration technology 
 in the respective FPGA architecture have to be respected. 
 Furthermore, certain restrictions are derived from the implementation tools
--- most notably, \gls{rp} nesting, overlapping or vertical stacking is not supported.
+-- most notably, \gls{rp} nesting or partial overlapping is not supported.
 
 Apart from these, floorplanning in partial reconfiguration workflow is no different
 than in static design; only that problems are more pronounced and
@@ -2452,30 +2456,24 @@ A reasonable workflow could involve these steps:
 	by the number of clock-region tall resource columns in the device.
 	In 7-series, if the resource is the \gls{bram}, this upper bound is
 	further reduced because of the AXI DMA instances; 
-	ideally, five 32b or three 64b AXI DMA instances may be accommodated by
+	ideally, five 32b or three 64b AXI DMA instances may be accomodated by
 	a single clock region \gls{bram} (see table \ref{tab:dma-modes}), 
 	but this packing may not be possible in actual design.
-
-\item	\Glspl{pblock} are defined and accelerator instances are assigned
-	to them. \Glspl{pblock} are placed as sparsely as possible
+\item	\glspl{pblock} are defined and accelerator instances are assigned
+	to them. \glspl{pblock} are places as sparsely as possible
 	and their size should target an 80\% utilization.
 	While a utilization of 85\% to 90\% may be possible to implement,
-	it might be better left as an optimization after getting
+	it might be better to be left as an optimization after getting
 	a first working P.R. implementation. If at this step the
-	design is unroutable or it misses the clock target by far,
-	the initial floorplanning may be fundamentally flawed.
-
+	design is unrouteable or it misses the clock target by far,
+	the initial floorplanning may be fundamentally bad.
 \item	The constraints of partial reconfiguration should be applied.
 	Setting the \texttt{HD.RECONFIGURABLE} property will enable
 	all the related constraints. 
 	It is possible to gradually import the P.R. constraints by
 	initially using \texttt{EXCLUSIVE\_PLACEMENT}, that pushes all
 	static logic outside of the \glspl{pblock}, and \texttt{CONTAIN\_ROUTING},
-	which will force all \gls{rm} routing to be contained within the \gls{pblock}
-	\footnote{In UltraScale+ this definition is relaxed to allow the \gls{rm} routing
-	and \gls{pp} to expand outside the \gls{rp}'s \gls{pblock} borders, but no further
-	than clock region boundaries. This is to facilitate routing but as more \glspl{rf}
-	are involved, it incurs a cost at the size of the partial bitstreams.}
+	which will force all \gls{rm} routing to be contained within the \gls{pblock}.
 
 	\gls{drc} for partial reconfiguration
 	should be done now. Additionally, a good set of implementation settings
@@ -2485,30 +2483,24 @@ A reasonable workflow could involve these steps:
 
 \item	If implementation has failed despite \gls{drc} was successful, 
 	the first step to try would be the placer parameters.
-	Also, it must be ensured that \gls{pblock} utilization is below 90\%.
-
-\item	In UltraScale+, if the initial \gls{rm} configuration succeeds placement and routing but 
-	the subsequent fails at placement due to unavailable 
-	\gls{bram} or \gls{dsp} tiles,
+	Also, it must be ensured that \gls{pblock} utilization is well below 90\%.
+\item	In UltraScale+, if the initial \gls{rm} configuration succeeds but 
+	all subsequent fail at placement due to all \gls{bram} or \gls{dsp} tiles being reserved,
 	a change of placer directive to \texttt{ExtraPlacementOpt} 
-	and \gls{pblock} reshaping will resolve the issue.
-
+	and \gls{pblock} reshaping will likely resolve the issue.
 \item	If the initial configuration achieves timing closure while some of the others do not,
 	the choice of initial configuration was incorrect and must be changed.
 	If a configuration whose \glspl{pp} would satisfy all other configurations
 	cannot be found, floorplanning must be revised.
-
 \item	If the target clock was missed by a wide margin, e.g. a \gls{tns}
 	of more than 10ns, a different floorplan may be required or the clock
 	may be needed to be stepped down.
-
 \item	If the target clock was missed by a moderate amount, e.g. a \gls{tns} of 1ns,
 	the implemented design must be examined in order to identify congestions
 	that were caused by too dense \gls{pblock} placement.
 	A \gls{pblock} may be moved to the next column pair (7-series)
 	or have its aspect ratio changed (UltraScale+).
 	It is useful to group the \glspl{pblock} by the interconnect IP their \glspl{rm} use.
-
 \item	If timing closure is near, the specific settings of an implementation
 	strategy can be tweaked. The most sensitive tool appears to be the placer.
 	A P.R. workflow may be attempted -- oddly enough,
@@ -2519,7 +2511,7 @@ A reasonable workflow could involve these steps:
 The final implementation of the three example designs is presented 
 in table \ref{tab:impl-comp} and the floorplanning of a static workflow 
 implementation is shown in figure \ref{fig:floorplanning-perf} for
-performance oriented design and figure \ref{fig:floorplanning-cc} 
+performance oritented design and figure \ref{fig:floorplanning-cc} 
 for the accelerator count oriented.
 Finally, figure \ref{fig:floorplanning-usp} displays the UltraScale+ port implementation.
 
@@ -2563,24 +2555,24 @@ contains \gls{bram} and \gls{dsp} tiles while the small does not. With respect t
 LUT6 capacity, they are equivalent.
 Two out of the nine accelerator types (``gauss'' and ``sobel'') 
 did not fit in the 800 LUT6 instances, and the HLS synthesizer was forced to use DSP48
-resources instead of \glspl{clb} for implementing integer multiplication 
+resources instead of common logic for implementing integer multiplication 
 in order to reduce the pressure on LUT6 resources.
 The same accelerators required alternative tool settings.
 While the initial configuration and all other accelerators were implemented with
 the placer directive \texttt{ExtraPostPlacementOpt} and physical optimizer directive \texttt{Explore},
 these accelerators required \texttt{ExtraTimingOpt} and \texttt{AlternateFlowWithRetiming}
-in order to achieve timing closure.
+in order to achieve timing closure. \emph{TODO μήπως καλύτερα να μην τα αναφέρω αυτά εδώ;}.
 
 Both other designs were homogeneous. The variation of \gls{pblock} size in first design
 was used to help timing and there is no functionality difference.
 The UltraScale+ port required some tweaking in the \gls{pblock} shape, size and placement
 in order to avoid an unexplained placer behavior of locking the specialized resources
 of initial configuration and causing subsequent ones to fail. 
-This caused a variation in resource capacity, utilization and partial bitstream size, 
+This caused a variation in resouce capacity, utilization and partial bitstream size, 
 none of which has no further effect and will not be visible at the system level.
 
-\footnotetext[1]{Utilization of the biggest module variant in the smallest \gls{rp}.}
-\footnotetext[2]{The former is for the most difficult to route variant,
+\footnotetext[1]{Utilization of the biggest module version in the smallest \gls{rp}.}
+\footnotetext[2]{The former is for the most difficult to route version,
 	the latter is for the most resource demanding.}
 
 \begin{figure}[tb!]
@@ -2593,17 +2585,11 @@ none of which has no further effect and will not be visible at the system level.
 
 \begin{figure}[htb!]
 \centering
-\begin{subfigure}[h]{\textwidth}
-	\centering
-	\includegraphics[scale=.41]{img/floorplanning-cc-pr.pdf}
-	\caption{Successful timing closure in PR workflow but not in static.}
-\end{subfigure}
+\subfloat[Successful timing closure in PR workflow but not in static.]%
+	{\includegraphics[scale=.41]{img/floorplanning-cc-pr.pdf}}
 \\
-\begin{subfigure}[h]{\textwidth}
-	\centering
-	\includegraphics[scale=.41]{img/floorplanning-cc-static.pdf}
-	\caption{Successful timing closure in static workflow but not in PR.}
-\end{subfigure}
+\subfloat[Successful timing closure in static workflow but not in PR.]%
+	{\includegraphics[scale=.41]{img/floorplanning-cc-static.pdf}}
 \caption{Floorplan of accelerator count oriented design.}
 \label{fig:floorplanning-cc}
 \end{figure}
@@ -2621,14 +2607,13 @@ It is shown that the choice of having two types of \glspl{rp} in the
 Accelerator Core Count oriented design was initially driven by necessity, 
 imposed by the available hardware.
 
-It was considered a valid design decision.
-A system may require accelerators that
+However it was a rational decision. A system may require accelerators that
 vary significantly in complexity or demand very specialized resources,
 like the \glspl{mgt} that were made reconfigurable in UltraScale+.
 In a different scenario, the same computation may be required in different
 degrees of intensity and power consumption.
 
-At some point, using homogeneous \glspl{rp} will essentially sacrifice both
+At some point, using homogenuous \glspl{rp} will essentially sacrifice both
 area efficiency, power efficiency, and functionality offered.
 
 In this design, a simple two-level approach was used. If an module variant
@@ -2658,13 +2643,12 @@ A sophisticated approach was used in \cite{charitopoulos}, where the researchers
 micro-reconfiguration, a technology of dynamically altering the configuration of an
 FPGA element without creating any additional bitstream. 
 The principal use of micro-reconfiguration is for \gls{seu} mitigation in space applications,
-for correcting bit flips in the configuration SRAM caused by high energy particles
-penetrating the silicon.
+for correcting bit-flips in the configuration SRAM due to radiation.
 When used in our context, it has the advantage of being able to configure an
 accelerator in any way possible without using any additional routing resources.
 
 In this work, a simpler approach was used. Taking into advantage the low footprint of
-\gls{axilite} (it was tested to cost about 100 \glspl{lut} for a slave port),
+\gls{axilite} (it was tested to cost about 100 LUT6 for a slave),
 a configuration port was implemented in all accelerators. This defines
 an address space within the accelerator, where the host may read or write any value.
 The wire count can be made constant by defining the address bus width -- in this work
@@ -2677,7 +2661,7 @@ directives. The accelerator memory is mapped to the processor address space
 so communication is made through simple load/store instructions.
 
 Nonetheless, long after its implementation, despite that it was proven to work reliably,
-there were doubts cast regarding the efficiency of this solution. 
+some doubts were cast for the efficiency of this solution. 
 More on this will be discussed in ``Future Work'' section. \emph{TODO: να βαλω ref}.
 
 \subsection{Decoupling the Reconfigurable Logic}
@@ -2689,8 +2673,8 @@ supports the AXI bus. Additionally, the other parts of the system must be aware 
 It is important not to generate any AXI traffic to any of the interfaces of the module that is
 being reconfigured or the bus may hang.
 
-The \gls{gsr} signal keeps the logic in quiescence during the programming procedure.
-However, in Series-7 devices, this can be disabled by not using the ``\texttt{RESET\_AFTER\_RECONFIG}''
+The \gls{gsr} signal keeps the logic in quiescence during the programming proceedure.
+However, in series-7 devices, this can be disabled by not using the \texttt{RESET\_AFTER\_RECONFIG}
 \gls{pblock} property and is always disabled if the \gls{rp} 
 does not extend vertically to clock region boundaries.
 In this case, even inputs and clocks have to be decoupled as spurious interrupts or memory writes
@@ -2711,7 +2695,7 @@ which in turn causes the Xilinx DMA driver to re-initialize all AXI DMA instance
 This phenomenon was never understood. However it was discovered by chance that
 if we soft-reset the AXI DMA and re-enable its interrupts, the issue went away.
 Since this solution costs no FPGA fabric and it does not disrupt normal operation,
-no other decoupling measure was used.
+no other decoupling strategy was used.
 
 \section{Describing the Hardware to the Operating System}
 
@@ -2725,7 +2709,7 @@ of embedded platforms increased drastically, this technique proved incapable to 
 The kernel development had to be decoupled from any vendor specific configuration
 and a generic means of describing the hardware had to be invented.
 
-The \glsentryfirst{dt} was proposed as a solution to this problem. Originating from Sun's OpenFirmware,
+The \gls{dt} was proposed as a solution to this problem. Originating from Sun's OpenFirmware,
 \gls{dt} is a hierarchical data structure that describes a hardware platform.
 It is handed over to the Linux kernel by the second stage bootloader during system boot
 and can be dynamically altered while the kernel is running.
@@ -2747,7 +2731,7 @@ that in turn is input to the SDK or the HSM/HSI command line tools, that are abl
 to generate the \gls{dt}.
 
 The last part, the one that describes the configuration and parameters of the implemented hardware,
-has to be written manually, as it describes the intended functional role and not a hardware instantiation.
+has to be written manually, as it describes the intended functional role and not a hardware instatiation.
 For example, an instance of the AXI DMA IP core will be included automatically at the third part.
 However, our intention to make it available to the Linux DMA Engine API has to be explicitly declared. 
 The physical memory geometry description can be generated;
@@ -2770,7 +2754,7 @@ To begin, we will declare the memory segments at the top level block ``\texttt{r
 
 \begin{figure}[ht!]
 \centering
-\begin{lstlisting}[style=basic]
+\begin{lstlisting}[style=my-dt]
         reserved-memory {
                 #address-cells = <1>;
                 #size-cells = <1>;
@@ -2801,7 +2785,7 @@ Inside our system's sub-tree (the ``\texttt{zdma@0}'' node) we will define our s
 
 \begin{figure}[ht!]
 \centering
-\begin{lstlisting}[style=basic]
+\begin{lstlisting}[style=my-dt]
 	amba_pl {
 		zdma@0 {
 			compatible = "tuc,zdma";
@@ -2843,7 +2827,7 @@ In our system, it is a reconfigurable partition where an accelerator is instanti
 
 \begin{figure}[ht!]
 \centering
-\begin{lstlisting}[style=basic]
+\begin{lstlisting}[style=my-dt]
 		pb0: pblock@0 {
 				compatible = "tuc,pblock";
 				core = <&zcore16_0>;
@@ -2881,7 +2865,7 @@ The ``\texttt{dma-names}'' property is just a textual description of the DMA cha
 
 \begin{figure}[ht!]
 \centering
-\begin{lstlisting}[style=basic]
+\begin{lstlisting}[style=my-dt]
 		dma0: dma-client@0 {
 			compatible = "tuc,dma-client";
 			dmas = <&axi_dma_0 0
@@ -2914,7 +2898,7 @@ the MM2S side (keyword in bold-italics).
 
 \begin{figure}[ht!]
 \centering
-\begin{lstlisting}[style=basic]
+\begin{lstlisting}[style=my-dt]
         amba_pl: amba_pl {
                 #address-cells = <1>;
                 #size-cells = <1>;

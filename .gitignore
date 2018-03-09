@@ -13,6 +13,6 @@ feh*
 octave-workspace
 image/
 
-yocto
+yocto/
 !yocto/meta-local
 

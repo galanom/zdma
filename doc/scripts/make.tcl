@@ -1,6 +1,5 @@
 #!/opt/Xilinx/Vivado_HLS/2017.2/bin/vivado_hls
-set cores [list sobel]
-#gauss sobel emboss outline sharpen contrast threshold loopback negative]
+set cores [list gauss sobel emboss outline sharpen contrast threshold loopback negative]
 set sizes [list 16 64]
 
 foreach core $cores {
@@ -24,9 +23,8 @@ foreach core $cores {
 		export_design -rtl verilog -format ip_catalog	\
 			-description "ZDMA Core $core/${size}"	\
 			-vendor "tuc"				\
-			-version "3.7"				\
+			-version "3.6"				\
 			-display_name "ZDMA Core $core/${size}"
-
 		close_project
 	}
 }

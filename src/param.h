@@ -9,8 +9,8 @@
 #define CORE_IER	0x08
 #define CORE_ISR	0x0c
 #define CORE_PARAM_BASE	0x10
-#define CORE_PARAM_STEP	0x04
-#define CORE_PARAM_RET	0x1C
+#define CORE_PARAM_STEP	0x08
+#define CORE_PARAM_RET	0x38
 
 #define CORE_DIRECTORY	"/lib/firmware/zdma/"
 

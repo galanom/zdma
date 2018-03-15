@@ -25,7 +25,7 @@ int main (int argc, char* argv[]) {
 		src << x;
 	}
 
-	int ret = CORE_NAME(src, dst, 960);
+	int ret = CORE_NAME(src, dst, 960, 0);
 	cout << "return " << ret << endl;
 
 	int err = 0;

@@ -35,7 +35,7 @@ set verbose      1
 set dcpLevel     1
 
 ####Output Directories
-set synthDir	"./synth"
+set synthDir	"./synth_333"
 set implDir	"./impl"
 set dcpDir	"./dcp"
 set bitDir	"./bit"
@@ -45,8 +45,8 @@ set srcDir	""
 ### Top Definition
 ###############################################################
 
-set proj_dir	"../base_zcu102_alt"
-set proj_name	"base_zcu102_alt"
+set proj_dir	"../base_zcu102"
+set proj_name	"base_zcu102"
 set top		"sym"
 
 set top_dcp	"${dcpDir}/base/${top}.dcp"
@@ -65,8 +65,7 @@ set_attribute module $static synthCheckpoint $top_dcp
 set core_basename "zcore32"
 set core_easiest "loopback"
 set core_hardest "gauss"
-#set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
-set core_list [list "negative" "threshold" "loopback"]
+set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
 
 for {set pblock_list [list]; set i 0} {$i < 63} {incr i} {
 	lappend pblock_list $i

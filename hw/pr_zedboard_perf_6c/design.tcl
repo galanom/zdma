@@ -24,7 +24,7 @@ set tclParams [list hd.visual 1 \
               ]
 
 ####flow control
-set run.rmSynth        1
+set run.rmSynth        0
 set run.prImpl         1
 set run.prVerify       1
 set run.writeBitstream 1

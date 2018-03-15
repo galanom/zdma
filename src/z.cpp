@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
 	zdma_core_register("sobel", 1, 0xf0f0);
 	zdma_core_register("gauss", 1, 0x0f0f);
-	zdma_core_register("outline", 1, 0xaa00);
+	zdma_core_register("outline", 1, 0xff);
 	zdma_core_register("sharpen", 1, 0xffff);
 	zdma_core_register("emboss", 1, 0x9999);
 

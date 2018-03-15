@@ -22,7 +22,13 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t co
 	axi_elem_t data_in, data_out;
 	int ret;
 	uint8_t alpha, beta;
-	alpha = ((contrast + 256)<<7)/(256 - contrast);
+	uint16_t u;
+	uint8_t d;
+	u = ((contrast + 256)<<7);
+	d = (256 - contrast);
+#pragma HLS RESOURCE variable=alpha core=DivnS
+	alpha = u/d;
+	//alpha = ((contrast + 256)<<7)/(256 - contrast);
 	beta = brightness + 128;
 
 	union {

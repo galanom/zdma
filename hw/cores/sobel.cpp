@@ -23,7 +23,6 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, ap_uint<LINE_WIDTH_BITS> lin
 	ap_uint<LINE_WIDTH_BITS> col;
 	int ret;
 	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
-	hls::Window<KERN_DIM, KERN_DIM, ap_int<10> > win_x, win_y;
 	ap_int<10> acc_x[AXI_TDATA_NBYTES], acc_y[AXI_TDATA_NBYTES];
 	uint8_t pixel_tmp;
 	union {
@@ -69,32 +68,17 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, ap_uint<LINE_WIDTH_BITS> lin
 
 			linebuf.shift_up(col+px);
 			linebuf.insert_top(pixel.at[px], col+px);
+			acc_x[px] = 0;
+			acc_y[px] = 0;
 
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					pixel_tmp = linebuf.getval(i, j+col+px);
-					uint16_t tmp_x, tmp_y;
-#ifdef FORCE_DSP48
-// apparently, dsp48 makes things worse!
-//#pragma HLS resource variable=tmp_x core=DSP48
-//#pragma HLS resource variable=tmp_y core=DSP48
-#endif
-					tmp_x = kern_x[func][i][j] * pixel_tmp;
-					tmp_y = kern_y[func][i][j] * pixel_tmp;
-					win_x.insert(tmp_x, i, j);
-					win_y.insert(tmp_y, i, j);
+					acc_x[px] += kern_x[func][i][j] * pixel_tmp;
+					acc_y[px] += kern_y[func][i][j] * pixel_tmp;
 				}
 			}
-
-			acc_x[px] = 0;
-			acc_y[px] = 0;
-			for (int i = 0; i < KERN_DIM; i++) {
-				for (int j = 0; j < KERN_DIM; j++) {
-					// |Gx| + |Gy| is a crude approximation of sqrt(Gx^2 + Gy^2)
-					acc_x[px] += win_x.getval(i, j);
-					acc_y[px] += win_y.getval(i, j);
-				}
-			}
+			// |Gx| + |Gy| is a crude approximation of sqrt(Gx^2 + Gy^2)
 			ap_int<10> val = abs(acc_x[px]) + abs(acc_y[px]);
 			pixel.at[px] = val;
 			if (val > 255)

@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
 cd ~/work/zdma/doc
+
 latexmk --shell-escape -lualatex -outdir=build main.tex
-#lualatex --shell-escape -output-directory=build main.tex
-#2>& 1 | grep -v "/usr/share" | grep -v texmf
+
+for f in build/*.gnuplot
+do
+	gnuplot $f
+done
+#echo >> main.tex
+#latexmk --shell-escape -lualatex -outdir=build main.tex
+
 cd -
 

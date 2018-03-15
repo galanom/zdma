@@ -244,8 +244,8 @@ CONFIG.intr_width {6} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
-CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {ARM PLL} \
-CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {150} \
+CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
+CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {145} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_USE_DEFAULT_ACP_USER_VAL {0} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
@@ -289,7 +289,7 @@ CONFIG.S00_HAS_REGSLICE {1} \
   # Create instance: sc_port0_mm2s, and set properties
   set sc_port0_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port0_mm2s ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AR_SIZE 0 R_SIZE 0 } S01_Buffer { AR_SIZE 0 R_SIZE 0 } S02_Buffer { AR_SIZE 0 R_SIZE 0 } M00_Buffer { AR_SIZE 0 R_SIZE 0 } } }     } \
+CONFIG.ADVANCED_PROPERTIES {       __view__ { }      } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -298,7 +298,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port0_s2mm, and set properties
   set sc_port0_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port0_s2mm ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S01_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S02_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } M00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } } }     } \
+CONFIG.ADVANCED_PROPERTIES {       __view__ { }      } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -307,7 +307,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port1_mm2s, and set properties
   set sc_port1_mm2s [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port1_mm2s ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AR_SIZE 0 R_SIZE 0 } S01_Buffer { AR_SIZE 0 R_SIZE 0 } S02_Buffer { AR_SIZE 0 R_SIZE 0 } M00_Buffer { AR_SIZE 0 R_SIZE 0 } } }     } \
+CONFIG.ADVANCED_PROPERTIES {       __view__ { }      } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -316,7 +316,7 @@ CONFIG.NUM_SI {3} \
   # Create instance: sc_port1_s2mm, and set properties
   set sc_port1_s2mm [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 sc_port1_s2mm ]
   set_property -dict [ list \
-CONFIG.ADVANCED_PROPERTIES {      __view__ { functional { S00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S01_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } S02_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } M00_Buffer { AW_SIZE 0 B_SIZE 0 W_SIZE 0 } } }     } \
+CONFIG.ADVANCED_PROPERTIES {       __view__ { }      } \
 CONFIG.HAS_ARESETN {0} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {3} \
@@ -431,12 +431,12 @@ CONFIG.NUM_PORTS {12} \
   create_bd_addr_seg -range 0x00010000 -offset 0x40430000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_3/S_AXI_LITE/Reg] SEG_axi_dma_3_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x40440000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_4/S_AXI_LITE/Reg] SEG_axi_dma_4_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x40450000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_5/S_AXI_LITE/Reg] SEG_axi_dma_5_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_0/s_axi_control/Reg] SEG_zcore64_0_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_1/s_axi_control/Reg] SEG_zcore64_1_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C30000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_2/s_axi_control/Reg] SEG_zcore64_2_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C40000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_3/s_axi_control/Reg] SEG_zcore64_3_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C50000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_4/s_axi_control/Reg] SEG_zcore64_4_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C60000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_5/s_axi_control/Reg] SEG_zcore64_5_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_0/s_axi_control/Reg] SEG_zcore64_0_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_1/s_axi_control/Reg] SEG_zcore64_1_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_2/s_axi_control/Reg] SEG_zcore64_2_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C30000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_3/s_axi_control/Reg] SEG_zcore64_3_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C40000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_4/s_axi_control/Reg] SEG_zcore64_4_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C50000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs zcore64_5/s_axi_control/Reg] SEG_zcore64_5_Reg
 
 
   # Restore current instance

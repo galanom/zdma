@@ -1,7 +1,3 @@
 base*
-zed*
-zcu*
-sym_nclk
-pipeline
 hd_visual
 vivado*

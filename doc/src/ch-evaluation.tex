@@ -1,7 +1,7 @@
-\chapter{Evaluation}
+\chapter{Application and Evaluation}
 
 In order to demonstrate and evaluate the proposed system, an example application was created.
-The chosen field was video processing, and a number of common filters were implemented
+The chosen field was digital image processing, and a number of common filters were implemented
 in Vivado HLS to be used as accelerators.
 
 Vivado HLS is an attempt from Xilinx to use a software language to describe hardware.
@@ -52,9 +52,9 @@ To summarize,
 \end{figure}
 
 Convolution has a very interesting property: It is corresponds to element-wise multiplication
-in the frequency domain. Therefore, we could calculate a discrete fourier
+in the frequency domain. Therefore, we could calculate a discrete Fourier
 transform our image and our kernel, after padding the latter to the size of the former,
-multiply the transformed images, and apply the inverse discrete fourier transform
+multiply the transformed images, and apply the inverse discrete Fourier transform
 to return to spatial domain. In simpler words,
 
 \[
@@ -68,7 +68,7 @@ For CPUs, the OpenCV library uses the kernel dimension of $11x11$ as the turning
 
 In our work, we use only 3x3 and 5x5 kernels. However, the principal deciding factor
 is that the former method has an obvious implementation in a streaming environment
-with no random memory access, like ours. A line buffer that keeps the last $n$ lines
+with no random memory access capability like ours. A line buffer that keeps the last $n$ lines
 is sufficient\footnote{Theoretically, only a $n-1$ line buffer is necessary but the
 implementation would be more complex.}. For a 1080p and a 5x5 kernel, this translates
 to a \gls{bram} usage of around 42kibits or 3 BRAM18 instances, which is perfectly affordable.
@@ -160,7 +160,7 @@ In total, there are three pixel transformation accelerators:
 	\end{array} 
 	\right. 
 	$ -- It replaces all pixel values above a certain threshold to maximum (255 for 8 bit
-	depth) and all others to minimum (zero). Essentially, it transforms a grayscale
+	depth) and all others to minimum (zero). Essentially, it transforms a greyscale
 	image to a black and white.
 \end{itemize}
 None of this accelerators posed any difficulty to implementation.
@@ -208,7 +208,7 @@ which reaches an 80\% utilization.
 \subsection{The Sharpen, Emboss and Outline Filters}
 
 These three accelerators are grouped together as they all use a 3x3 kernel,
-the computation was quite straightforward and impementation was easy.
+the computation was quite straightforward and implementation was easy.
 The ``sharpen'' filter, as the name suggests, is used for sharpening the image.
 It is quite often used at low intensity for improving the aesthetic result of
 photographs or for compensating excessive blurrness due to out-of-focus errors,
@@ -390,13 +390,25 @@ that the following kernel is implementable to our requirements:
 \]
 
 Note that the central term was reduced to 32, and the difference of four was spread equally
-to its four perpendicular neighbors. \emph{Without} any other change in source code or
+to its four perpendicular neighbors. Without any other change in source code or
 synthesizer settings, the estimated utilization was reduced by 11\% for \glspl{lut}
-and 9\% for flip-flops.
+and 9\% for flip-flops, most probably due to increased symmetry.
 
 \subsection{Resource Utilization and Latency}
 
-\begin{figure}[ht!]
+An effort is made to quantify the resource utilization of the acceleration cores,
+as well as to obtain a primary performance indicator. In table \ref{tab:acc-util}
+we can see the results coming from two sources: The latency is an estimation
+which is provided after compiling the HLS code to HDL. The resource utilization
+may be also provided post-compilation, however it appears the estimation
+is highly inaccurate and a post-synthesis result is presented, after exporting the core
+to a .dcp file. A comparison between resource utilization and expected latency
+is displayed in figure \ref{fig:acc-eff}. As we see, accelerator size increases
+almost linearly with data width whereas latency gain is linear only at pixel transformations.
+On accelerators performing 2D convolution the gain decreases with the increase of width.
+This can be attributed to a sub-optimal BRAM access by the code HLS generates.
+
+\begin{figure}[htb!]
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{cl rrrr rrrrrrr}
@@ -436,12 +448,70 @@ LUT	& 231 & 206 & 238 &1206 & 1057&1235 &1362 &3175 &2541&2291& 3784 \\
 \bottomrule
 \end{tabular}
 }
-\caption{Comparison of AXI Interconnect and AXI SmartConnect, on 7000 and UltraScale+.\\
-	AXI Interconnect v2.1 vs AXI SmartConnect v1.0, 4 instances of 4 SI / 1 MI, 32 bit crossbar.\\ 
-	Configuration: Outer register and 32 byte FIFO per port.}
+\caption{Accelerator Resource Utilization (post-synthesis) and Latency (HLS estimation).\\
+Target FPGA was Z-7020 at 7.5ns. BRAM is in 18k units and latency is measured in millions of cycles.\\
+The ``/dsp'' suffix denotes that the integer multiplication was assigned manually to a DSP48 core.}
 \label{tab:acc-util}
 \end{figure}
 
+\begin{figure}[htb!]
+\begin{gnuplot}[terminal=pdf,terminaloptions=color]
+set grid
+set key inside top left
+set xlabel 'Accelerator Data Width'
+#set xtics rotate by -25 offset -1.2,-0.2
+set ylabel 'LUT utilization'
+set y2label 'Core Latency'
+set xrange [-0.5:3.5]
+set yrange [0:4000]
+set y2range [0:9]
+
+set style line 1 lc rgb '#f0f0f0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 2 lc rgb '#e0e0e0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 3 lc rgb '#d0d0d0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 4 lc rgb '#c0c0c0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 5 lc rgb '#b0b0b0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 6 lc rgb '#a0a0a0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 7 lc rgb '#909090' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 8 lc rgb '#808080' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 9 lc rgb '#707070' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set pointintervalbox 1
+
+set style line 11 lc rgb '#ffffff' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 12 lc rgb '#e8e8e8' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 13 lc rgb '#d0d0d0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 14 lc rgb '#c0c0c0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 15 lc rgb '#b0b0b0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 16 lc rgb '#a0a0a0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 17 lc rgb '#909090' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 18 lc rgb '#808080' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 19 lc rgb '#707070' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+
+
+set style data linespoints
+
+plot "data/acc-util.plot" using 2:xtic(1) title "loopback" ls 1,\
+			"" using 3 title "negative" ls 2,	\
+			"" using 4 title "threshold" ls 3,	\
+			"" using 5 title "contrast" ls 4,	\
+			"" using 6 title "sharpen" ls 5,	\
+			"" using 7 title "emboss" ls 6,		\
+			"" using 8 title "outline" ls 7,	\
+			"" using 9 title "gauss" ls 8,		\
+			"" using 11 title "sobel" ls 9,		\
+	"data/acc-perf.plot" using 2:xtic(1) notitle ls 11 axes x1y2,	\
+			"" using 3 notitle ls 12 axes x1y2, \
+			"" using 4 notitle ls 13 axes x1y2, \
+			"" using 5 notitle ls 14 axes x1y2, \
+			"" using 6 notitle ls 15 axes x1y2, \
+			"" using 7 notitle ls 16 axes x1y2, \
+			"" using 8 notitle ls 17 axes x1y2, \
+			"" using 9 notitle ls 18 axes x1y2, \
+			"" using 11 notitle ls 19 axes x1y2
+\end{gnuplot}
+\caption{Resource Utilization vs. Core Latency}
+\label{fig:acc-eff}
+\end{figure}
 
 \section{Accelerator Interface}
 
@@ -455,7 +525,7 @@ consistent throughout all implementations. In Vivado HLS this translates to:
 \item	The width of the \gls{axistream} interface must remain consistent throughout \glspl{rm}.
 \item	All \glspl{rm} will have exactly one read and one write channel. 
 \item	The address width of \gls{axilite} interface must remain consistent for all \glspl{rm}.
-\item	The implementation tools excpect the module name to be consistent throughout
+\item	The implementation tools expect the module name to be consistent throughout
 	all \gls{rm} implementations.
 \end{itemize}
 
@@ -485,8 +555,9 @@ This is decided indirectly by the mapping of the accelerator input and output va
 
 In order to demonstrate how all this is done, in listing \ref{lst:func-declaration},
 a \gls{rm} function declaration is displayed, among with its \gls{hls} directives.
-
-\begin{figure}[h!]
+\vspace*{\fill}
+\pagebreak
+\begin{figure}[H]
 \centering
 \begin{lstlisting}[style=basic,language=C]
 int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
@@ -562,7 +633,7 @@ Every such an input must be mentioned in three places:
 It is the value of the ``\texttt{offset}'' property that actually defines the address width
 of the \gls{axilite} interface, i.e. the size of \texttt{AWADDR} for the write channel
 and \texttt{ARADDR} for the read channel. Their size will be the minimum sufficient
-to accomodate the maximum offset among all memory mapped registers that represent the variables.
+to accommodate the maximum offset among all memory mapped registers that represent the variables.
 The compiler will not differentiate between read-only or write-only variables, so a safe way
 to impose the width of both channels is to place the \texttt{return} variable at the end of
 the addressable space. Here, by placing \texttt{return} at 0x38 (variables are aligned at 8 bytes
@@ -669,7 +740,7 @@ described in the following list, and an example memory map is given in figure \r
 \end{bytefield}
 }
 \caption{The ``contrast'' accelerator address space.}
-\label{fig:addr-contrast}
+\label{fig:hls-map}
 \end{figure}
 
 

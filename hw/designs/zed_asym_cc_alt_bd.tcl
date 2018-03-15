@@ -503,7 +503,7 @@ CONFIG.M31_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {16} \
 CONFIG.S00_HAS_DATA_FIFO {0} \
 CONFIG.S00_HAS_REGSLICE {1} \
-CONFIG.STRATEGY {1} \
+CONFIG.STRATEGY {0} \
  ] $ps7_0_axi_periph_0
 
   # Create instance: ps7_0_axi_periph_1, and set properties
@@ -545,7 +545,7 @@ CONFIG.M31_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {16} \
 CONFIG.S00_HAS_DATA_FIFO {0} \
 CONFIG.S00_HAS_REGSLICE {1} \
-CONFIG.STRATEGY {1} \
+CONFIG.STRATEGY {0} \
  ] $ps7_0_axi_periph_1
 
   # Create instance: rst_ps7_0_100M, and set properties

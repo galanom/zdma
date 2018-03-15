@@ -41,6 +41,7 @@ set phys_directives  [list Explore                \
 set route_directives [list Explore                \
                            NoTimingRelaxation     \
                            MoreGlobalIterations   \
+			   AlternateCLBRouting    \
                            HigherDelayCost        \
                            AdvancedSkewModeling   \
                            RuntimeOptimized       \

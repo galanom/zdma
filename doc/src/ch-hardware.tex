@@ -1633,7 +1633,7 @@ More specifically, the following compromises have been made:
 \begin{tikzpicture}
 
 	% Border
-	\draw[dotted] (-40mm,0) -- node[above left = 0mm and 50mm]{PL} node[below left = 0mm and 50mm]{PS} (80mm,0);
+	\draw[dotted] (-30mm,0) -- node[above left = 0mm and 57mm]{PL} node[below left = 0mm and 57mm]{PS} (105mm,0);
 	
 	% The PS-PL ports
 	\node[port] (hp0) at (-16mm,0) {\ttfamily HP0};
@@ -1877,8 +1877,9 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 \begin{tikzpicture}
 
 	% Border
-	\draw[dotted] (-40mm,0) -- node[above left = 0mm and 50mm]{PL} node[below left = 0mm and 50mm]{PS} (80mm,0);
-	
+	\draw[dotted] (-30mm,0) --	node[above left = 0mm and 64.5mm]{PL} 
+					node[below left = -1mm and 65mm]{PS} (120mm,0);
+
 	% The PS-PL ports
 	\node[port] (hp0) at (-16mm,0) {\ttfamily HP0};
 	\node[port] (hp3) at ($(hp0) + (32mm,0mm)$) {\ttfamily HP3};
@@ -1892,6 +1893,7 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	
 	\node[port] (hpc0) at ($(hpm1) + (25mm,0mm)$) {\ttfamily HPC0};
 	\node[port] (hpc1) at ($(hpc0) + (12mm,0mm)$) {\ttfamily HPC1};
+	\node[port] (slpd) at ($(hpc1) + (20mm,0mm)$) {\ttfamily S\_LPD};
 
 	% HP port switches
 	\node[interconnect, below=8mm of hp0] (sw-l1-a) {};
@@ -1903,12 +1905,12 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\node[interconnect, below=8mm of sw-l1-c] (sw-l2-c) {};
 
 	% Memory controller and DDR box
-	\node[block, minimum width=50mm,minimum height=12mm,
+	\node[block, minimum width=40mm,minimum height=12mm,
 		align=left,text width=29mm, below=12mm of sw-l2-b] 
-		(mem-controller) {Memory\\Controller};
-	\node[block, minimum width=8mm, minimum height=7mm,right=-15mm of mem-controller] (ps-ddr) {DDR3};
-	\draw[raxi128] ([xshift=2mm]mem-controller.north west) 
-		|- node[above left=-1mm and 0mm]{\ttfamily\scriptsize RPU switch} +(-8mm, 5mm);
+		(mem-controller) {\hspace{-2mm}Memory\\\hspace{-2mm}Controller};
+	\node[block, minimum width=7mm, minimum height=7mm,right=-17mm of mem-controller] (ps-ddr) {DDR4};
+	\draw[raxi128] ([yshift=-2mm]mem-controller.north west) 
+		-| node[above right=0mm and -1mm]{\rotatebox{90}{\ttfamily\scriptsize RPU switch}} +(-5mm, 8mm);
 
 
 	% HP to Memory
@@ -1918,7 +1920,7 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\draw[axi128] (hp3) -- (sw-l1-c);
 
 	\draw[raxi128] ($(sw-l1-a.north west)!0.2!(sw-l1-a.north east)$) 
-		|- node[above left=-1mm and 3mm]{\ttfamily\scriptsize DP} +(-8mm, 5mm);
+		|- node[below left=-1mm and 3mm]{\ttfamily\scriptsize DP} +(-8mm, 5mm);
 	\draw[raxi128] ($(sw-l1-c.north west)!0.8!(sw-l1-c.north east)$) 
 		|- node[above right=-1mm and 0mm]{\ttfamily\scriptsize FPD DMA} +(8mm, 5mm);
 
@@ -1937,64 +1939,90 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\node[interconnect] (int1) at ($(hp1) + (0, 20mm)$) {};
 	\node[interconnect] (int2) at ($(hp2) + (0, 20mm)$) {};
 	\node[interconnect] (int3) at ($(hp3) + (0, 20mm)$) {};
-	\node[interconnect] (int4) at ($(sgp0) + (0, 20mm)$) {};
-	\node[interconnect] (int5) at ($(sgp1) + (0, 20mm)$) {};
+	\node[interconnect] (int4) at ($(hpc0) + (0, 20mm)$) {};
+	\node[interconnect] (int5) at ($(hpc1) + (0, 20mm)$) {};
+	\node[interconnect] (int6a) at ($(slpd) + (-1mm, 16mm)$) {};
+	\node[interconnect] (int6b) at ($(int6a) + (-6mm, 18mm)$) {};
+	\node[interconnect] (int6c) at ($(int6a) + ( 6mm, 18mm)$) {};
 	
-	\draw[axi32] (int0) -- (int0 |- hp0.north);
-	\draw[axi32] (int1) -- (int1 |- hp1.north);
-	\draw[axi32] (int2) -- (int2 |- hp2.north);
-	\draw[axi32] (int3) -- (int3 |- hp3.north);
-	\draw[axi32] (int4) -- (int4 |- sgp0.north);
-	\draw[axi32] (int5) -- (int5 |- sgp1.north);
+	
+	\draw[axi128] (int0) -- (int0 |- hp0.north);
+	\draw[axi128] (int1) -- (int1 |- hp1.north);
+	\draw[axi128] (int2) -- (int2 |- hp2.north);
+	\draw[axi128] (int3) -- (int3 |- hp3.north);
+	\draw[axi128] (int4) -- (int4 |- hpc0.north);
+	\draw[axi128] (int5) -- (int5 |- hpc1.north);
+	\draw[axi128] (int6b) |-| ($(int6a.north west)!0.33!(int6a.north east)$);
+	\draw[axi128] (int6c) |-| ($(int6a.north west)!0.66!(int6a.north east)$);
+	\draw[axi128] (int6a) -- (int6a |- slpd.north);
 	
 	\node[emptyblock, gray, very densely dashed, anchor=north west, 
-		minimum width=48mm, minimum height=28mm]
-		(axi-int) at ($(int0.north west) + (-4mm, 13mm)$) {};
-	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]
+		minimum width=45mm, minimum height=28mm]
+		(axi-int) at ($(int0.north west) + (-2mm, 13mm)$) {};
+	\node[textonly, left of=axi-int, yshift=4mm, xshift=-15mm, rotate=90]
 		{\footnotesize 32b Full AXI Interconnects};
 
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
-		minimum width=30mm, minimum height=28mm]
-		(axi-int-alt) at ($(int4.north west) + (-4mm, 13mm)$) {};
-	\node[textonly, right of=axi-int-alt, xshift=9mm, rotate=90]
-		{\footnotesize 32b Full AXI Interconnects};
+		minimum width=50mm, minimum height=37mm]
+		(axi-int-alt) at ($(int4.north west) + (-2mm, 20mm)$) {};
+	\node[textonly, above of=axi-int-alt, yshift=13mm, xshift=-5mm]
+		{\footnotesize 32b Full AXI\\\footnotesize Interconnects};
 
 
 	% The AXI DMA multi-block
-	\node[mblock, minimum width = 45mm, minimum height = 16mm] 
-		(axidma) at ($(int0)!0.5!(int3) + (0, 40mm)$) {32 bit AXI DMA};
+	\node[mblock, minimum width = 30mm, minimum height = 16mm] 
+		(axidma) at ($(int0)!0.5!(int3) + (0, 60mm)$) {32 bit AXI DMA};
 	\node at ($(axidma.north east) + (2mm,2mm)$) {\ttfamily x32};
 
-	\node[mblock, minimum width = 45mm, minimum height = 16mm]
-		(axidma-alt) at ($(int4)!0.5!(int5) + (0, 40mm)$) {32 bit AXI DMA};
-	\node at ($(axidma-alt.north east) + (2mm,2mm)$) {\ttfamily x8};
+	\node[mblock, minimum width = 30mm, minimum height = 16mm]
+		(axidma-alt) at ($(per-int0)!0.5!(per-int1) + (5mm, 60mm)$) {32 bit AXI DMA};
+	\node at ($(axidma-alt.north east) + (2mm,2mm)$) {\ttfamily x16};
+
+	\node[mblock, minimum width = 30mm, minimum height = 16mm]
+		(axidma-2) at ($(int5) + (15mm, 60mm)$) {32 bit AXI DMA};
+	\node at ($(axidma-2.north east) + (2mm,2mm)$) {\ttfamily x15};
+
 
 
 	% Connection of AXI DMA to AXI Interconnect blocks
-	\draw[maxi64] (int0 |- axidma.south) 
-		node[above]{\texttt{MM2S}}
+	\draw[maxi64] (int1 |- axidma.south) 
+		node[above]{\texttt{\small MM2S}}
+		-- +(0, -20mm)
+		-| node[above left,rotate=90]{\texttt{\small 0..15}} (int0);
+	
+	\draw[maxi64] (int1 |- axidma.south)  
 		node[above left,rotate=90]{\texttt{\small 0..31}} 
 		-- 
-		node[below left,rotate=90]{\texttt{\small 0..15}} (int0);
-	\draw[maxi64] (int0 |- axidma.south) -- +(0,-8mm)  
-		-| node[above left=-5.5mm and -5mm,rotate=90]{\texttt{\small 16..31}} (int1);
+		node[above left=4mm and 0mm,rotate=90]{\texttt{\small 16..31}} (int1);
+	
 	\draw[maxi64] (int2 |- axidma.south)
-		node[above]{\texttt{S2MM}}
+		node[above]{\texttt{\small S2MM}}
 		node[above left,rotate=90]{\texttt{\small 0..31}}
-		-- node[below left=0mm and 0mm,rotate=90]{\texttt{\small 16..31}} (int2);
-	\draw[maxi64] (int2 |- axidma.south) -- +(0,-8mm) 
-		-| node[below left=6mm and 0mm,rotate=90]{\texttt{\small 0..15}} (int3);
+		-- node[above left=4mm and 0mm,rotate=90]{\texttt{\small 16..31}} (int2);
+	\draw[maxi64] (int2 |- axidma.south) -- +(0,-20mm) 
+		-| node[above left,rotate=90]{\texttt{\small 0..15}} (int3);
 
-	\draw[maxi64] (int4 |- axidma-alt.south)
-		node[above]{\texttt{MM2S}}
-		-- node[below,rotate=90]{\texttt{\small 12..15}} (int4);
-	\draw[maxi64] (int5 |- axidma-alt.south)
-		node[above]{\texttt{S2MM}}
-		-- node[below,rotate=90]{\texttt{\small 12..15}} (int5);
-
+	\draw[maxi64] ($(axidma-alt.south east)!0.33!(axidma-alt.north east)$)
+		node[above right]{\texttt{\small MM2S}}
+		to[-|=.55] 
+		node[left=2mm,rotate=90]{\texttt{\small 32..47}}
+		(int4);
+	
+	\draw[maxi64] ($(axidma-alt.south east)!0.67!(axidma-alt.north east)$)
+		node[above right]{\ttfamily\small S2MM}
+		-- ++(13mm, 0mm) 
+		node[below right=15mm and 0mm,rotate=90]{\texttt{\small 32..47}} 
+		-- +(0mm, -45mm) --
+		(int5 |- int6b)
+		--
+		(int5);
+	\draw[maxi64] (int6b |- axidma-2.south) node[above]{\texttt{\small MM2S}} 
+		node[left=2mm,rotate=90]{\texttt{48..62}} -- (int6b);
+	\draw[maxi64] (int6c |- axidma-2.south) node[above]{\texttt{\small S2MM}} 
+		node[left=2mm,rotate=90]{\texttt{48..62}} -- (int6c);
 
 	% The Accelerators
-	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma] 
+	\node[mblock, minimum width = 30mm, minimum height = 16mm, above=16mm of axidma] 
 		(acc) {32 bit Accelerator};
 	\node at ($(acc.north east) + (2mm,2mm)$) {\ttfamily x32};
 
@@ -2005,9 +2033,9 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 		node[above]{\texttt{OUT}}
 		--($(axidma.north west)!0.75!(axidma.north east)$);
 
-	\node[mblock, minimum width = 45mm, minimum height = 16mm, above=16mm of axidma-alt]
+	\node[mblock, minimum width = 30mm, minimum height = 16mm, above=16mm of axidma-alt]
 		(acc-alt) {32 bit Accelerator};
-	\node at ($(acc-alt.north east) + (2mm,2mm)$) {\ttfamily x8};
+	\node at ($(acc-alt.north east) + (2mm,2mm)$) {\ttfamily x16};
 
 	\draw[raxis64] ($(acc-alt.south west)!0.25!(acc-alt.south east)$) 
 		node[above]{\texttt{IN}}
@@ -2015,6 +2043,17 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\draw[axis64] ($(acc-alt.south west)!0.75!(acc-alt.south east)$)
 		node[above]{\texttt{OUT}}
 		--($(axidma-alt.north west)!0.75!(axidma-alt.north east)$);
+
+	\node[mblock, minimum width = 30mm, minimum height = 16mm, above=16mm of axidma-2]
+		(acc-2) {32 bit Accelerator};
+	\node at ($(acc-2.north east) + (2mm,2mm)$) {\ttfamily x15};
+
+	\draw[raxis64] ($(acc-2.south west)!0.25!(acc-2.south east)$) 
+		node[above]{\texttt{IN}}
+		--($(axidma-2.north west)!0.25!(axidma-2.north east)$);
+	\draw[axis64] ($(acc-2.south west)!0.75!(acc-2.south east)$)
+		node[above]{\texttt{OUT}}
+		--($(axidma-2.north west)!0.75!(axidma-2.north east)$);
 
 
 	% The HPC ports
@@ -2029,7 +2068,7 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 		|- node[above left=-1mm and 0]{\ttfamily\scriptsize SMMU} +(-8mm, 5mm);
 	
 	% CCI
-	\node[block, minimum width = 25mm, below=5mm of $(sw-s-b.south west)!0.5!(sw-s-a.south east)$]
+	\node[block, minimum width = 25mm, xshift=1mm,below=5mm of $(sw-s-b.south west)!0.33!(sw-s-a.south east)$]
 		(cci) {Cache Coherent\\Interconnect};
 	\draw[axi128] (sw-s-b) -- (sw-s-b |- cci.north);
 	\draw[axi128] ($(cci.south west) + (0,6mm)$) -- ++(-18mm,-22mm) -- +(-27mm,0mm);
@@ -2040,19 +2079,34 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\draw[raxi128] ($(cci.north east)!0.4!(cci.south east)$) 
 		node[below right=0mm and 2mm,rotate=90]
 		{\ttfamily\scriptsize Peripherals sw} -| +(6mm, 12mm);
-	\draw[axi128] ($(cci.north east)!0.6!(cci.south east)$) 
-		node[below left=0mm and -2mm,rotate=90]
-		{\ttfamily\scriptsize LPD main sw} -| +(6mm, -12mm);
 	\draw[axi128] ($(cci.north east)!0.8!(cci.south east)$) 
 		node[below left=0mm and 1mm,rotate=90]
 		{\ttfamily\scriptsize SMMU} -| +(3mm, -12mm);
+	\draw[raxi128] ($(cci.north east)!0.6!(cci.south east)$) -- +(8mm,0);
+
+	% The LPD Main Switch
+	\node[block, minimum width = 15mm, right=8mm of cci] (lpd-switch) {LPD\\Switch};
+	\draw[axi128] (slpd) -- (slpd |- lpd-switch.north);
+	\draw[raxi128] ($(lpd-switch.north west)!0.8!(lpd-switch.north east)$) 
+		node[below right=1mm and -1mm,rotate=90]
+		{\ttfamily\scriptsize IOP outbound} -- +(0mm, 12mm);
+	\draw[axi128] ($(lpd-switch.south west)!0.33!(lpd-switch.south east)$) 
+		node[below left=1mm and 1mm,rotate=90]
+		{\ttfamily\scriptsize OCM switch} -- +(0mm, -12mm);
+	\draw[axi128] ($(lpd-switch.south west)!0.67!(lpd-switch.south east)$) 
+		node[below left=1mm and 1mm,rotate=90]
+		{\ttfamily\scriptsize HPM0\_LPD} -- +(0mm, -12mm);
+
+
+
+
 
 	% The FPD Main Switch
-	\node[interconnect, below=8mm of $(mgp0.south)!0.5!(mgp1.south)$] (sw-m) {};
+	\node[interconnect, below=8mm of $(hpm0.south)!0.5!(hpm1.south)$] (sw-m) {};
 	\draw[raxi128] (mgp0) |-| ($(sw-m.north west)!0.33!(sw-m.north east)$ |- sw-m.north east);
 	\draw[raxi128] (mgp1) |-| ($(sw-m.north west)!0.66!(sw-m.north east)$ |- sw-m.north east);
-	\node[block, minimum width = 25mm, below=5mm of sw-m] (main-switch) {FPD Main Switch};
-	\draw[axi128] (main-switch) -- (sw-m);
+	\node[block, minimum width = 25mm, below=5mm of sw-m,xshift=-2mm] (main-switch) {FPD Main Switch};
+	\draw[axi128] (sw-m |- main-switch.north) -- (sw-m.south);
 	\draw[axi128] ($(sw-l2-c.south west)!0.75!(sw-l2-c.south east)$) 
 		-- +(0mm, -3mm) -| ($(main-switch.south west)!0.1!(main-switch.south east)$);
 	\draw[axi128] ($(sw-l2-b.south west)!0.75!(sw-l2-b.south east)$) 
@@ -2063,7 +2117,7 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 		-- node[above right = -5mm and 0.6mm,rotate=90]
 		{\ttfamily\scriptsize OCM switch} +(0, 12mm);
 	\draw[axi128] ($(main-switch.north west) + (6mm,0)$)
-		-- node[above right = -5mm and 0.6mm,rotate=90]
+		-- node[above right = -5mm and 1mm,rotate=90]
 		{\ttfamily\scriptsize LPD inbound} +(0, 12mm);
 
 	% APU
@@ -2081,12 +2135,12 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 		at ($(per-int1)!0.5!(int4) + (0mm,10mm) $) {INTC};
 
 	\draw[-,postaction={decorate}] ([xshift=-2mm]axidma.south east) 
-		node[below left = 3.5mm and -1mm]{\ttfamily\scriptsize 32}
-		node[below right]{\ttfamily\scriptsize S2MM int}
+		node[below right = 4mm and -1mm]{\ttfamily\scriptsize 32}
+		node[below left]{\rotatebox{90}{\ttfamily\scriptsize S2MM intr}}
 		|-| (intc-0);
-	\draw[-,postaction={decorate}] (intc-1 |- axidma-alt.south west) 
-		node[below right = 3.5mm and -1mm]{\ttfamily\scriptsize 8}
-		node[below left]{\ttfamily\scriptsize S2MM int}
+	\draw[-,postaction={decorate}] (intc-1 |- axidma-alt.south) 
+		node[below right = 4mm and -1mm]{\ttfamily\scriptsize 16}
+		node[below left]{\rotatebox{90}{\ttfamily\scriptsize S2MM intr}}
 		-- (intc-1);
 	\draw[-] ([xshift=-5mm]plint)
 		|- ($(apu.north west)!0.33!(apu.south west)$);
@@ -2095,38 +2149,50 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 
 
 	% Peripheral Interconnect
-	\node[interconnect] (per-int0) at ($(mgp0) + (0, 20mm)$) {};
-	\node[interconnect] (per-int1) at ($(mgp1) + (0, 20mm)$) {};
+	\node[interconnect] (per-int0) at ($(hpm0) + (0, 20mm)$) {};
+	\node[interconnect] (per-int1) at ($(hpm1) + (0, 20mm)$) {};
 	\draw[raxi32] (per-int0) -- (per-int0 |- mgp0.north);
 	\draw[raxi32] (per-int1) -- (per-int1 |- mgp1.north);
-	\draw[maxil] (per-int0) 
-		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..41}}
-		|- 
-		node[above left = 0mm and 2mm]{\ttfamily \textcolor{black}{0..31}}
-		node[above right = 0mm and 4mm]{\ttfamily \textcolor{black}{32..39}}
-		node[above left = -1mm and 16mm]{
-		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma);
-	\draw[maxil] (per-int1) 
-		node[above right, rotate=90]{\ttfamily \textcolor{black}{~~0..39}}
-		|- 
-		node[above left = 0mm and 13mm]{\ttfamily \textcolor{black}{0..31}}
-		node[above right = 0mm and -7mm]{\ttfamily \textcolor{black}{32..39}}
-		node[above left = -1mm and 28mm]{
-		\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc);
-	\draw[maxil] (per-int0)
-		|- node[above right = -1mm and 20mm]
-		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (axidma-alt);
-	\draw[maxil] (per-int1) 
-		|- node[above right = -1mm and 8mm]
-		{\ttfamily\footnotesize\textcolor{black}{CTL/ST}} (acc-alt);
+	\draw[maxil-headless,name path=A] (per-int0) 
+		-- ++(0mm, 30mm) -- 
+		++(-18mm, 20mm) 
+		-- 
+		node[below,rotate=90]{\ttfamily \textcolor{black}{0..62}}
+		++(0mm, 24mm);
+	\draw[maxil, from end of path=A] -| 
+%		node[below left=5mm and -4mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(axidma.north east) + (-3mm,0mm)$);
+	\draw[maxil, from end of path=A] -| 
+%		node[below left=5mm and -7mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(axidma-alt.north west) + (3mm,0mm)$);
+	\draw[maxil, from end of path=A] -| 
+%		node[below left=5mm and -7mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(axidma-2.north west) + (3mm,0mm)$);
+
+	\draw[maxil-headless,name path=B] (per-int1) 
+		-- ++(0mm, 30mm) -- ++(-23mm, 25mm) 
+		node[below right=10mm and -2mm]{\ttfamily\textcolor{black}{CONTROL}}
+		-- 
+		node[below,rotate=90]{\ttfamily \textcolor{black}{0..62}}
+		++(0mm, 23mm);
+	\draw[maxil, from end of path=B] -| 
+%		node[below left=5mm and -4mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(acc.south east) + (-3mm,0mm)$);
+	\draw[maxil, from end of path=B] -| 
+%		node[below left=5mm and -7mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(acc-alt.south west) + (3mm,0mm)$);
+	\draw[maxil, from end of path=B] -| 
+%		node[below left=5mm and -7mm]{\ttfamily\footnotesize\textcolor{black}{CTRL}}
+		($(acc-2.south west) + (3mm,0mm)$);
+
 	\draw[raxil] ([xshift=-2mm]intc-0.south east) 
-		|- node[above right=0mm and 2mm]{\ttfamily\textcolor{black}{40}} +(10.7mm,7.9mm);
+		|- node[above right=0mm and 2mm]{\ttfamily\textcolor{black}{63}} +(10.7mm,7.9mm);
 	\draw[raxil] ([xshift=-4mm]intc-1.south east) 
-		|- node[above left=0mm and 14mm]{\ttfamily\textcolor{black}{41}} +(-23.5mm,7.9mm);
+		|- node[above left=0mm and 0mm]{\ttfamily\textcolor{black}{63}} +(-11mm,7.9mm);
 
 	\node[emptyblock, gray, very densely dashed, anchor=north west, 
-		minimum width=28mm, minimum height=28mm]
-		(axilite-int) at ($(per-int0.north west) + (-3mm, 13mm)$) {};
+		minimum width=25mm, minimum height=28mm]
+		(axilite-int) at ($(per-int0.north west) + (-2mm, 13mm)$) {};
 	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
 \end{tikzpicture}
 
@@ -2134,19 +2200,18 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 \label{dia:arch-3}
 \end{figure}
 
-In total, 40 homogeneous \glspl{rp} of 32b data width were included,
-with a clock running at 250MHz.
+In total, 63 homogeneous \glspl{rp} of 32b data width were implemented, running at 270MHz.
 
 \section{Partial Reconfiguration}
 
-The test application of this system includes 8 types of accelerators, and the three designs offer
-6, 16 and 48 accelerator slots respectively. 
+The test application of this system includes 9 types of accelerators, and the three designs offer
+6, 16 and 63 accelerator slots respectively. 
 Our system needs to change its accelerators on-demand at run-time, 
 and therefore the FPGA programming state has to continuously change.
 We need to consider the technical difficulties of implementing such a system.
 
 It would be an impossibility to create a bitstream for every possible configuration. In the UltraScale+ design,
-it would mean $8^{48}$ configurations; the computational effort would exceed our lifetime even if we used
+it would mean $9^{63}$ configurations; the computational effort would exceed our lifetime even if we used
 a mid-sized computer cluster. Even then, the bitstream storage medium would be impractical for an embedded system.
 
 If we opt for the most useful configurations, the implementation would be doable but the system would
@@ -2713,7 +2778,34 @@ if we soft-reset the AXI DMA and re-enable its interrupts, the issue went away.
 Since this solution costs no FPGA fabric and it does not disrupt normal operation,
 no other decoupling measure was used.
 
-\section{Describing the Hardware to the Operating System}
+\section{Debugging}
+
+There can be several approaches at debugging the system. In its most basic form,
+the Linux kernel ring buffer can be used to post messages that can be later retrieved
+or be printed directly to the console. This method can offer extensive information
+about the system state and therefore is useful to analyze how the code entered an
+erroneous state of execution. However it is rather slow, prohibiting its use as
+real-time perforamance indicator.
+
+An alternative path was to use the Zedboard's OLED screen. An IP was taken from \cite{zedboard-oled}.
+As the author offered only bare-metal software, a Linux kernel driver was developed,
+making the OLED accessible from both within the kernel and from userspace as a character device.
+This solution proved to be much faster, but it still interferes with system performance.
+As it takes up significant space on the FPGA, it was used only during the first stages of development.
+
+An FPGA-only solution had to be found. Thus, a simple IP core written in Verilog was implemented.
+This core accepts a configurable number of input events and blinks the corresponding outputs
+at an also selectable rate, appropriate for the human eye. The ``events'' were usually the
+DMA interrupts and the outputs were driven to the eight Zedboard user LEDs. When the input events
+are more than 8, the Zedboard toggle switches are used to select a group.
+A GUI for the IP Integrator was created.
+
+Despite the minimal information than can be displayed, this is done at real time and without
+any perfomance impact. The IP core is quite small and was used even at the rather congested 16-core design.
+Using this core, one may discover possible scheduler inefficiencies in a heterogeneous design,
+revealing which \glspl{rp} were under-utilized.
+
+\section{Describing the Hardware to the Linux kernel}
 
 A general purpose operating system must gain knowledge of the platform it executes on.
 There exist computer buses that allow the automatic discovery of their peripherals, 
@@ -2902,7 +2994,7 @@ The kernel driver should not need any modification.
 
 As it was mentioned in section \ref{sec:axidma}, we only use the S2MM interrupt output of AXI DMA.
 The MM2S is not connected and the DTS generation naturally will not produce any description for it.
-However, the Xilinx DMA driver requires it. As a workaround for this issue, we lie about its presence,
+However, the Xilinx DMA driver requires it. As a workaround for this issue, we ``lie'' about its presence,
 assigning to it the interrupt line of the S2MM channel. This is done by modifying the generated .dts files
 that describe the PL part.
 

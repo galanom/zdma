@@ -166,6 +166,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -179,6 +180,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -192,6 +194,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -205,6 +208,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -218,6 +222,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -231,6 +236,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -244,6 +250,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -257,6 +264,7 @@ CONFIG.c_single_interface {0} \
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {32} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -269,6 +277,7 @@ CONFIG.c_single_interface {0} \
   set axi_dma_8 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_8 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -280,6 +289,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_9 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_9 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -291,6 +301,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_10 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_10 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -302,6 +313,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_11 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_11 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -313,6 +325,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_12 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_12 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -324,6 +337,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_13 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_13 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -335,6 +349,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_14 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_14 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -346,6 +361,7 @@ CONFIG.c_sg_length_width {23} \
   set axi_dma_15 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_15 ]
   set_property -dict [ list \
 CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {32} \
 CONFIG.c_m_axis_mm2s_tdata_width {16} \
 CONFIG.c_mm2s_burst_size {16} \
 CONFIG.c_s2mm_burst_size {16} \
@@ -356,6 +372,7 @@ CONFIG.c_sg_length_width {23} \
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {6} \
@@ -365,11 +382,13 @@ CONFIG.S02_HAS_REGSLICE {1} \
 CONFIG.S03_HAS_REGSLICE {1} \
 CONFIG.S04_HAS_REGSLICE {1} \
 CONFIG.S05_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_0
 
   # Create instance: axi_interconnect_1, and set properties
   set axi_interconnect_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_1 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {6} \
@@ -379,11 +398,13 @@ CONFIG.S02_HAS_REGSLICE {1} \
 CONFIG.S03_HAS_REGSLICE {1} \
 CONFIG.S04_HAS_REGSLICE {1} \
 CONFIG.S05_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_1
 
   # Create instance: axi_interconnect_2, and set properties
   set axi_interconnect_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_2 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {6} \
@@ -393,11 +414,13 @@ CONFIG.S02_HAS_REGSLICE {1} \
 CONFIG.S03_HAS_REGSLICE {1} \
 CONFIG.S04_HAS_REGSLICE {1} \
 CONFIG.S05_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_2
 
   # Create instance: axi_interconnect_3, and set properties
   set axi_interconnect_3 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_3 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {6} \
@@ -407,11 +430,13 @@ CONFIG.S02_HAS_REGSLICE {1} \
 CONFIG.S03_HAS_REGSLICE {1} \
 CONFIG.S04_HAS_REGSLICE {1} \
 CONFIG.S05_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_3
 
   # Create instance: axi_interconnect_4, and set properties
   set axi_interconnect_4 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_4 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {4} \
@@ -426,6 +451,7 @@ CONFIG.S05_HAS_REGSLICE {1} \
   # Create instance: axi_interconnect_5, and set properties
   set axi_interconnect_5 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_5 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {4} \
@@ -443,14 +469,14 @@ CONFIG.S05_HAS_REGSLICE {1} \
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
-CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {ARM PLL} \
-CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {133} \
+CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
+CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
 CONFIG.PCW_IRQ_F2P_INTR {1} \
 CONFIG.PCW_QSPI_GRP_SINGLE_SS_ENABLE {1} \
-CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {32} \
-CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {32} \
-CONFIG.PCW_S_AXI_HP2_DATA_WIDTH {32} \
-CONFIG.PCW_S_AXI_HP3_DATA_WIDTH {32} \
+CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {64} \
+CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {64} \
+CONFIG.PCW_S_AXI_HP2_DATA_WIDTH {64} \
+CONFIG.PCW_S_AXI_HP3_DATA_WIDTH {64} \
 CONFIG.PCW_UIPARAM_DDR_ENABLE {1} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
 CONFIG.PCW_USE_HIGH_OCM {0} \

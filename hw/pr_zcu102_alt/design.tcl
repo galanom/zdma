@@ -24,10 +24,10 @@ set tclParams [list hd.visual 1 \
               ]
 
 ####flow control
-set run.rmSynth        1
-set run.prImpl         1
+set run.rmSynth        0
+set run.prImpl         0
 set run.prVerify       0
-set run.writeBitstream 0
+set run.writeBitstream 1
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -35,8 +35,8 @@ set verbose      1
 set dcpLevel     1
 
 ####Output Directories
-#set synthDir	"../pr_zcu102/synth_333"
-set synthDir	"./synth"
+set synthDir	"../pr_zcu102/synth_333"
+#set synthDir	"./synth"
 set implDir	"./impl"
 set dcpDir	"./dcp"
 set bitDir	"./bit"
@@ -66,8 +66,8 @@ set_attribute module $static synthCheckpoint $top_dcp
 set core_basename "zcore32"
 set core_easiest "loopback"
 set core_hardest "gauss"
-set core_list [list "contrast"]
 #set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
+set core_list [list "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
 
 for {set pblock_list [list]; set i 0} {$i < 63} {incr i} {
 	lappend pblock_list $i
@@ -133,7 +133,7 @@ foreach core $core_list {
 	set_attribute impl $config opt_directive   "Explore"
 	set_attribute impl $config place_directive "ExtraPostPlacementOpt"
 	set_attribute impl $config phys_directive  "Explore"
-	set_attribute impl $config route_directive "Explore"
+	set_attribute impl $config route_directive "MoreGlobalIterations"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above
 	set_attribute impl $config pr.impl	1

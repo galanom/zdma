@@ -1,8 +1,6 @@
 #include "common.h"
 #include "ap_int.h"
 
-#define KERN_DIM 3
-
 int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t contrast)
 {
 #pragma HLS INTERFACE axis port=src bundle=INPUT_STREAM
@@ -22,13 +20,7 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t co
 	axi_elem_t data_in, data_out;
 	int ret;
 	uint8_t alpha, beta;
-	uint16_t u;
-	uint8_t d;
-	u = ((contrast + 256)<<7);
-	d = (256 - contrast);
-#pragma HLS RESOURCE variable=alpha core=DivnS
-	alpha = u/d;
-	//alpha = ((contrast + 256)<<7)/(256 - contrast);
+	alpha = ((contrast + 256)<<7)/(256 - contrast);
 	beta = brightness + 128;
 
 	union {
@@ -48,7 +40,7 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t co
 
 		for (int px = 0; px < AXI_TDATA_NBYTES; px++) {
 			int16_t tmp;
-#pragma HLS resource variable=tmp core=Mul_LUT
+//#pragma HLS resource variable=tmp core=Mul_LUT
 			tmp = alpha * (pixel.at[px] - 128);
 			ap_int<10> val = (tmp >> 7 ) + beta;
 			pixel.at[px] = (uint8_t)val;

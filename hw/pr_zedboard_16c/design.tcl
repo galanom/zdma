@@ -26,8 +26,8 @@ set tclParams [list hd.visual 1 \
 ####flow control
 set run.rmSynth        0
 set run.prImpl         1
-set run.prVerify       0
-set run.writeBitstream 0
+set run.prVerify       1
+set run.writeBitstream 1
 set run.flatImpl       0
 
 ####Report and DCP controls - values: 0-required min; 1-few extra; 2-all
@@ -70,8 +70,9 @@ set_attribute module $static synthCheckpoint $top_dcp
 
 set core_basename "zcore16"
 set core_easiest "loopback"
-set core_hardest "gauss"
-set cores_with_alt_settings [list]
+set core_hardest "contrast"
+set cores_with_alt_settings [list "gauss" "sobel"]
+#set core_list [list "gauss" "sobel" "contrast" "sharpen" "emboss" "outline" "negative" "threshold" "loopback"]
 set core_list [list "gauss" "sobel" "contrast" "sharpen" "emboss" "outline" "negative" "threshold" "loopback"]
 ### 6core ### set core_big_list $core_list
 set core_big_list [list "gauss" "sobel" "sharpen" "emboss" "outline"]
@@ -131,13 +132,13 @@ foreach core $core_list {
 	# Please modify tcl/implementation.tcl if that problem arises.
 	
 	set_attribute impl $config opt_directive   "Explore"
-#	if {$core in $cores_with_alt_settings} {
-#		set_attribute impl $config place_directive "ExtraTimingOpt"
-#		set_attribute impl $config phys_directive  "Explore"
-#	} else {
+	if {$core in $cores_with_alt_settings} {
+		set_attribute impl $config place_directive "ExtraTimingOpt"
+		set_attribute impl $config phys_directive  "AlternateFlowWithRetiming"
+	} else {
 		set_attribute impl $config place_directive "ExtraPostPlacementOpt"
 		set_attribute impl $config phys_directive  "AlternateReplication"
-#	}
+	}
 	set_attribute impl $config route_directive "Explore"
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above

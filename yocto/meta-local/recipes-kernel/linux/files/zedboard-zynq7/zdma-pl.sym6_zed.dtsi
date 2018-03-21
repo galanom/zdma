@@ -155,39 +155,39 @@
 				xlnx,device-id = <0x5>;
 			};
 		};
-		zcore64_0: zcore64@43c10000 {
+		zcore64_0: zcore64@43c00000 {
+			compatible = "xlnx,zcore64-3.5";
+			reg = <0x43c00000 0x10000>;
+			xlnx,s-axi-control-addr-width = <0x6>;
+			xlnx,s-axi-control-data-width = <0x20>;
+		};
+		zcore64_1: zcore64@43c10000 {
 			compatible = "xlnx,zcore64-3.5";
 			reg = <0x43c10000 0x10000>;
 			xlnx,s-axi-control-addr-width = <0x6>;
 			xlnx,s-axi-control-data-width = <0x20>;
 		};
-		zcore64_1: zcore64@43c20000 {
+		zcore64_2: zcore64@43c20000 {
 			compatible = "xlnx,zcore64-3.5";
 			reg = <0x43c20000 0x10000>;
 			xlnx,s-axi-control-addr-width = <0x6>;
 			xlnx,s-axi-control-data-width = <0x20>;
 		};
-		zcore64_2: zcore64@43c30000 {
+		zcore64_3: zcore64@43c30000 {
 			compatible = "xlnx,zcore64-3.5";
 			reg = <0x43c30000 0x10000>;
 			xlnx,s-axi-control-addr-width = <0x6>;
 			xlnx,s-axi-control-data-width = <0x20>;
 		};
-		zcore64_3: zcore64@43c40000 {
+		zcore64_4: zcore64@43c40000 {
 			compatible = "xlnx,zcore64-3.5";
 			reg = <0x43c40000 0x10000>;
 			xlnx,s-axi-control-addr-width = <0x6>;
 			xlnx,s-axi-control-data-width = <0x20>;
 		};
-		zcore64_4: zcore64@43c50000 {
+		zcore64_5: zcore64@43c50000 {
 			compatible = "xlnx,zcore64-3.5";
 			reg = <0x43c50000 0x10000>;
-			xlnx,s-axi-control-addr-width = <0x6>;
-			xlnx,s-axi-control-data-width = <0x20>;
-		};
-		zcore64_5: zcore64@43c60000 {
-			compatible = "xlnx,zcore64-3.5";
-			reg = <0x43c60000 0x10000>;
 			xlnx,s-axi-control-addr-width = <0x6>;
 			xlnx,s-axi-control-data-width = <0x20>;
 		};

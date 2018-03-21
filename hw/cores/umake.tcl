@@ -1,7 +1,7 @@
 #!/opt/Xilinx/Vivado_HLS/2017.2/bin/vivado_hls
 #set cores [list gauss sobel emboss outline sharpen contrast threshold loopback negative]
-set cores [list sobel]
-set sizes [list 16]
+set cores [list contrast]
+set sizes [list 32]
 
 foreach core $cores {
 	foreach size $sizes {
@@ -15,10 +15,9 @@ foreach core $cores {
 		add_files -tb sample.jpg
 		add_files -tb csim/build/out.jpg
 		
-		open_solution -reset "solution_${size}"
-		set_part {xc7z020clg484-1}
-		#set_part {xczu9eg-ffvb1156-2-i}
-		create_clock -period 7.5 -name default
+		open_solution -reset "solution_${size}u"
+		set_part {xczu9eg-ffvb1156-2-i}
+		create_clock -period 2 -name default
 
 		csynth_design
 		export_design -rtl verilog -format ip_catalog	\

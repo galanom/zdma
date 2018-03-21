@@ -739,6 +739,7 @@ CONFIG.C_IRQ_CONNECTION {1} \
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -758,11 +759,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_0
 
   # Create instance: axi_interconnect_1, and set properties
   set axi_interconnect_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_1 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -782,11 +785,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_1
 
   # Create instance: axi_interconnect_2, and set properties
   set axi_interconnect_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_2 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -806,11 +811,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_2
 
   # Create instance: axi_interconnect_3, and set properties
   set axi_interconnect_3 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_3 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -830,11 +837,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_3
 
   # Create instance: axi_interconnect_4, and set properties
   set axi_interconnect_4 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_4 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -854,11 +863,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_4
 
   # Create instance: axi_interconnect_5, and set properties
   set axi_interconnect_5 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_5 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {16} \
@@ -878,11 +889,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_5
 
   # Create instance: axi_interconnect_6, and set properties
   set axi_interconnect_6 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_6 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {15} \
@@ -902,11 +915,13 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_6
 
   # Create instance: axi_interconnect_7, and set properties
   set axi_interconnect_7 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_7 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {15} \
@@ -926,22 +941,25 @@ CONFIG.S12_HAS_REGSLICE {1} \
 CONFIG.S13_HAS_REGSLICE {1} \
 CONFIG.S14_HAS_REGSLICE {1} \
 CONFIG.S15_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_7
 
   # Create instance: axi_interconnect_8, and set properties
   set axi_interconnect_8 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_8 ]
   set_property -dict [ list \
-CONFIG.ENABLE_ADVANCED_OPTIONS {0} \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.NUM_MI {1} \
 CONFIG.NUM_SI {2} \
 CONFIG.S00_HAS_REGSLICE {1} \
 CONFIG.S01_HAS_REGSLICE {1} \
+CONFIG.XBAR_DATA_WIDTH {32} \
  ] $axi_interconnect_8
 
   # Create instance: ps8_0_axi_periph_0, and set properties
   set ps8_0_axi_periph_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph_0 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.M01_HAS_REGSLICE {1} \
 CONFIG.M02_HAS_REGSLICE {1} \
@@ -1016,6 +1034,7 @@ CONFIG.S01_HAS_REGSLICE {1} \
   # Create instance: ps8_0_axi_periph_1, and set properties
   set ps8_0_axi_periph_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph_1 ]
   set_property -dict [ list \
+CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.M00_HAS_REGSLICE {1} \
 CONFIG.M01_HAS_REGSLICE {1} \
 CONFIG.M02_HAS_REGSLICE {1} \
@@ -1364,7 +1383,7 @@ CONFIG.PSU__CRL_APB__PCAP_CTRL__SRCSEL {IOPLL} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__DIVISOR0 {15} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} \
 CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {IOPLL} \
-CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {267} \
+CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {270} \
 CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {RPLL} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__FREQMHZ {125} \
 CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__SRCSEL {IOPLL} \
@@ -1445,8 +1464,8 @@ CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC0_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC1_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC2_SEL {APB} \
 CONFIG.PSU__IOU_SLCR__IOU_TTC_APB_CLK__TTC3_SEL {APB} \
-CONFIG.PSU__MAXIGP0__DATA_WIDTH {32} \
-CONFIG.PSU__MAXIGP1__DATA_WIDTH {32} \
+CONFIG.PSU__MAXIGP0__DATA_WIDTH {128} \
+CONFIG.PSU__MAXIGP1__DATA_WIDTH {128} \
 CONFIG.PSU__OVERRIDE__BASIC_CLOCK {0} \
 CONFIG.PSU__PCIE__BAR0_ENABLE {0} \
 CONFIG.PSU__PCIE__CLASS_CODE_BASE {0x06} \
@@ -1480,13 +1499,13 @@ CONFIG.PSU__SATA__LANE1__IO {GT Lane3} \
 CONFIG.PSU__SATA__PERIPHERAL__ENABLE {1} \
 CONFIG.PSU__SATA__REF_CLK_FREQ {125} \
 CONFIG.PSU__SATA__REF_CLK_SEL {Ref Clk1} \
-CONFIG.PSU__SAXIGP0__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP1__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP2__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP3__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP4__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP5__DATA_WIDTH {32} \
-CONFIG.PSU__SAXIGP6__DATA_WIDTH {32} \
+CONFIG.PSU__SAXIGP0__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP1__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP3__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP4__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP5__DATA_WIDTH {128} \
+CONFIG.PSU__SAXIGP6__DATA_WIDTH {128} \
 CONFIG.PSU__SD1__DATA_TRANSFER_MODE {8Bit} \
 CONFIG.PSU__SD1__GRP_CD__ENABLE {1} \
 CONFIG.PSU__SD1__GRP_CD__IO {MIO 45} \

@@ -1,2 +1,83 @@
-\chapter{Software Architecture}
+\chapter{Software Framework}
+
+One of the primary goals of this work is to offer an abstraction layer that hides
+all the hardware details from the end user. The software framework acts as an intermediary
+that on the one end orchestrates all control and communication of the FPGA part, while
+on the other end offers a simple software API ready to be used by a programmer that needs not
+to have any understanding of the underlying hardware.
+
+The software framework consists of two parts. The major work is done by a kernel driver.
+It is responsible of the coordination of all system elements from receiving the command
+to process data to the delivery of the results. However, the kernel driver communicates
+to the userspace with the means of system calls and I/O control commands, which is not
+an appropriate interface for the end user. A separate system library was implemented,
+which is mostly used either as a wrapper, or to perform tasks that cannot (or should not)
+be done in kernel mode, namely the file operations to read the partial bitstreams.
+
+\section{Communicating with the Hardware}
+
+One of the most frequent reasons for implementing something in kernel space,
+is the need to communicate directly to the hardware. In processor architectures
+that support hierarchical protection domains, the hardware is exposed only to
+code running in a privileged mode, typically the operating system.
+If the user application requires access to a device, it has to call the operating
+system to execute on its behalf. This way, the system enforces security policies
+and offers hardware abstraction. 
+
+Since for our work we do need to manipulate hardware directly, we have to do it from
+within the kernel. Programming the kernel however, is a challenging feat.
+It is a completely different enviornment, lacking all the tools and libraries any
+user is familiar with -- including the standard C library. Many everyday operations
+that are taken for granted, like file I/O or floating point arithmetic,
+are not allowed or at least greatly discouraged. Debugging is much more restricted
+and complicated while many of the system safety nets are not present -- a programming
+error is not isolated at the running process and its resources, but may affect the whole system.
+Last but not least, modifying kernel code is not as direct as it is in the userspace.
+
+A naive workaround at these apparent difficulties is offered though the \texttt{/dev/mem} Linux device. 
+It consists a direct interface to the machine's physical address space and it can be mapped to a user virtual space. 
+Its primary use is for debugging the system and is always disabled in production systems, but many hardware engineers
+find it convenient since it allows them to program a Linux based FPGA SoC as if it was a bare-metal environment,
+with the only restriction that interrupts cannot be detected. 
+Nonetheless, this solution was not considered, as it negates the operating system's raison d'être --
+security and hardware abstraction.
+
+A much more ``clean'' solution is given by the Linux Userspace I/O system. Written with industrial I/O cards
+in mind, this system allows the control of an interrupt and memory capable device using only
+a minimal device driver that only declares the device's hardware resources. All control and data processing
+can be done at the userspace using the tools and libraries the programmer is familiar with. 
+The device memory resources can be mapped to the virtual address space
+and its interrupts may be detected with the use of blocking \texttt{read} or the \texttt{select} system call.
+This solution can be made even more attractive from the fact that Vivado HLS is able to generate
+the aforementioned minimal device driver automatically during IP packaging.
+However, UIO may be ideal for simple I/O devices but it is too restrictive and inflexible for anything more complicated.
+Since the control logic is written in userspace, the programmer loses all access to kernel facilities
+and data structures that are usually necessary for more complex tasks involving other kernel subsystems.
+
+At the end, we opted for implementing our core system entirely in-kernel.
+
+\subsection{Using the AXI DMA cores}
+
+In a bare-metal environment one would program a PL peripheral by manipulating its control / status register.
+This is also entirely possible in an operating system, and some times it might be the only way.
+However it has two major downsides. The first is that it sacrifices portability, 
+as the programming sequence of an IP core is fundamentally dependent on the specific hardware.
+A newer core revision, a different core configuration, 
+a different host platform, or even worse, an IP core from a different
+provider, may have significantly different programming interface. For the designer, this means that
+they have to learn the low-level programming details of the IP core, and in case it needs to be
+updated or replaced, they must put a significant effort to port the software to the new version.
+The other downside is that direct manipulation of hardware control registers bypasses all OS
+subsystems that may offer useful support functionality and integration with other kernel services.
+
+The Linux kernel supports myriads of DMA controllers on the several computing platforms it is ported.
+Likewise, there are several kernel subsystems that wish to use these DMA controllers.
+In order to offer abstraction, the ``Linux DMA API'' is offered. It is a stable API that provides
+functions 
+
+
+
+
+
+
 

@@ -65,6 +65,7 @@ set_attribute module $static synthCheckpoint $top_dcp
 set core_basename "zcore32"
 set core_easiest "loopback"
 set core_hardest "gauss"
+set cores_with_alt_settings [list "contrast" "sharpen"]
 set core_list [list "gauss" "sobel" "sharpen" "emboss" "outline" "contrast" "negative" "threshold" "loopback"]
 
 for {set pblock_list [list]; set i 0} {$i < 63} {incr i} {
@@ -131,7 +132,11 @@ foreach core $core_list {
 	set_attribute impl $config opt_directive   "Explore"
 	set_attribute impl $config place_directive "ExtraPostPlacementOpt"
 	set_attribute impl $config phys_directive  "Explore"
-	set_attribute impl $config route_directive "Explore"
+	if {$core ni $cores_with_alt_settings} {
+		set_attribute impl $config route_directive "Explore"
+	} else {
+		set_attribute impl $config route_directive "MoreGlobalIterations"
+	}
 
 	# Xilinx PR script parameters. The user-configurable ones (ie run.*) are defined above
 	set_attribute impl $config pr.impl	1

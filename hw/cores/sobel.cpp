@@ -23,7 +23,7 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, ap_uint<LINE_WIDTH_BITS> lin
 	ap_uint<LINE_WIDTH_BITS> col;
 	int ret;
 	hls::LineBuffer<KERN_DIM, MAX_LINE_WIDTH+KERN_DIM, uint8_t> linebuf;
-	ap_int<10> acc_x[AXI_TDATA_NBYTES], acc_y[AXI_TDATA_NBYTES];
+	ap_int<10> acc_x, acc_y;
 	uint8_t pixel_tmp;
 	union {
 		axi_data_t all;
@@ -68,18 +68,21 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, ap_uint<LINE_WIDTH_BITS> lin
 
 			linebuf.shift_up(col+px);
 			linebuf.insert_top(pixel.at[px], col+px);
-			acc_x[px] = 0;
-			acc_y[px] = 0;
+			acc_x = 0;
+			acc_y = 0;
 
 			for (int i = 0; i < KERN_DIM; i++) {
 				for (int j = 0; j < KERN_DIM; j++) {
 					pixel_tmp = linebuf.getval(i, j+col+px);
-					acc_x[px] += kern_x[func][i][j] * pixel_tmp;
-					acc_y[px] += kern_y[func][i][j] * pixel_tmp;
+					uint16_t tmp_x, tmp_y;
+					tmp_x = kern_x[func][i][j] * pixel_tmp;
+					tmp_y = kern_y[func][i][j] * pixel_tmp;
+					acc_x += tmp_x;
+					acc_y += tmp_y;
 				}
 			}
-			// |Gx| + |Gy| is a crude approximation of sqrt(Gx^2 + Gy^2)
-			ap_int<10> val = abs(acc_x[px]) + abs(acc_y[px]);
+			// |Gx| + |Gy| is an approximation of sqrt(Gx^2 + Gy^2)
+			ap_int<10> val = abs(acc_x) + abs(acc_y);
 			pixel.at[px] = val;
 			if (val > 255)
 				pixel.at[px] = 255;

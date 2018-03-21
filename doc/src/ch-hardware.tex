@@ -8,15 +8,13 @@ as they were a pivotal point for this system's design.
 Afterwards, the most significant system components will be presented.
 There will be a discussion on their operation modes, 
 the possible configurations, and the design trade-offs involved in their implementation.
+We will present the final hardware designs that were implemented,
+describing the reasoning behind the design choices.
 
-The discussion will conclude with the presentation of the final hardware designs
-that were chosen for implementation, describing the reasoning behind the
-design choices.
-
-%The point of focus will be how data will be transfered between
-%the memory and the accelerator and vice versa.
-%%Essentially, this covers the communication protocol 
-%and its underlying physical interconnect,
+The discussion will conclude with the application of partial reconfiguration technology
+on this work. We will look into its physical aspects that affected our design,
+the challenges of the floorplanning, and finally, the details of loading and configuring
+a new accelerator.
 
 \section{The Hardware Platform}
 
@@ -2229,7 +2227,7 @@ would definitely incur a huge overhead, if what we needed to change was just a s
 
 At the other extreme, let us consider a hypothetical single big computation task
 that can be broken down to several stages, each of them able to fit in our FPGA.
-In order to accommodate all stages in an FPGA, We would need a high-end model of prohibitive cost.
+In order to accommodate all stages in an FPGA, we would need a high-end model of prohibitive cost.
 Alternatively, we could compute the stages sequentially in a small and inexpensive FPGA.
 In this scenario, we would have to use an external microcontroller with sufficient storage 
 to hold the computation state while the FPGA is being re-programmed. 
@@ -2542,26 +2540,31 @@ A reasonable workflow could involve these steps:
 	than clock region boundaries. This is to facilitate routing but as more \glspl{rf}
 	are involved, it incurs a cost at the size of the partial bitstreams.}
 
-	\gls{drc} for partial reconfiguration
-	should be done now. Additionally, a good set of implementation settings
+	\gls{drc} for partial reconfiguration should be done now. 
+	Additionally, a good set of implementation settings
 	must be determined -- for our \gls{pblock} arrangement it was
 	usually a choice between the \texttt{ExtraTimingOpt}
 	and \texttt{RefinePlacement} strategies.
 
 \item	If implementation has failed despite \gls{drc} was successful, 
 	the first step to try would be the placer parameters.
-	Also, it must be ensured that \gls{pblock} utilization is below 90\%.
+	Also, it must be ensured that \gls{pblock} utilization is below 90\%
+	and all \glspl{rp} contain the required special resources of their module variants.
 
 \item	In UltraScale+, if the initial \gls{rm} configuration succeeds placement and routing but 
-	the subsequent fails at placement due to unavailable 
-	\gls{bram} or \gls{dsp} tiles,
+	the subsequent fails at placement due to unavailable \gls{bram} or \gls{dsp} tiles,
 	a change of placer directive to \texttt{ExtraPlacementOpt} 
 	and \gls{pblock} reshaping will resolve the issue.
 
 \item	If the initial configuration achieves timing closure while some of the others do not,
 	the choice of initial configuration was incorrect and must be changed.
 	If a configuration whose \glspl{pp} would satisfy all other configurations
-	cannot be found, floorplanning must be revised.
+	cannot be found, re-floorplanning may be required.
+
+\item	If all but one or two configurations succeed, the designer may try
+	to re-synthesize the offending variant using an HLS output of lower target clock period.
+	If this increases utilization too much or if timing closure is very near,
+	the designer may attempt to tweak implementation settings of the specific variant only.
 
 \item	If the target clock was missed by a wide margin, e.g. a \gls{tns}
 	of more than 10ns, a different floorplan may be required or the clock
@@ -2589,35 +2592,42 @@ for the accelerator count oriented.
 Finally, figure \ref{fig:floorplanning-usp} displays the UltraScale+ port implementation.
 
 \begin{figure}[ht!]
-\resizebox{\textwidth}{!}{%
+\hspace{-10mm}\scalebox{0.8}{%
+\rowcolors{2}{gray!25}{white}
 \begin{tabular}{lccc}
 \toprule
 			& Accelerator Performance& Accelerator Count 	& UltraScale+ Port\\
 \midrule
-Accelerator Count	& 6			& 10 big / 6 small	& 63		\\
-Accelerator Data Width	& 64b			& 16b			& 32b		\\
-Clock Frequency	(MHz)	& 143			& 133			& 250		\\
-LUT6 capacity		& 3600-4000 		& 800			& 1920-2160	\\
-LUT6 utilization\footnotemark (\%)& 87.7		& 74-83.5\footnotemark	& 74.3		\\
-BRAM36 capacity		& 10			& 10 / 0 		& 6-10		\\
-BRAM36 utilization (\%)	& 25			& 25 / -		& 41.7		\\
-DSP48 capacity		& 20-40			& 20 / 0 		& 16-24		\\
-DSP48 utilization (\%)	& 100			& 80 / -		& 75		\\
-Bitstream size (kiB)	& 516-666		& 294 / 148		& 341-637	\\
-AXI DMA Data Width	& 64b			& 32b			& 32b		\\
-AXI Crossbar Width	& 64b			& 32b			& 32b		\\
+Accelerator Count	& 6			& 10 big ~/~ 6 small	& 63		\\
+Accelerator Data Width	& 64			& 16			& 32		\\
+Clock Frequency	(MHz)	& 143			& 125			& 250		\\
+LUT6 capacity		& 3600 - 4000 		& 800			& 1680 - 1800	\\
+LUT6 utilization\footnotemark[1] (\%)& 87.61	& 46.25 - 89.62\footnotemark[2]	& 76.67 - 89.05\footnotemark[2]\\
+BRAM36 capacity		& 10			& ~10 ~/~ ~0~ 	& 6 - 10		\\
+BRAM36 utilization (\%)	& 25			& ~25 ~/~ -~~	& 41.7		\\
+DSP48 capacity		& 20 - 40		& ~20 ~/~ ~0~	& 16 - 24		\\
+DSP48 utilization (\%)	& 100			& ~80 ~/~ -~~	& 75		\\
+Bitstream size (kiB)	& 516 - 666		& 294 ~/~ 148	& 341 - 637	\\
+AXI DMA Data Width	& 64			& 32			& 32		\\
+AXI Crossbar Width	& 64			& 32			& 32		\\
 Interconnect buffering	& yes (32)		& no			& no		\\
-Interconnect IP		& AXI Interconnect	& SmartConnect 		& AXI Interconnect\\
+Interconnect IP		& Smartconnect		& AXI Interconnect	& AXI Interconnect\\
 \midrule
+Initial Config		& \texttt{gauss}	& \texttt{contrast}	& \texttt{gauss}\\
+HLS Target Clock (ns)	& 6.67			& 6.67,~ 7.5\textsuperscript{c} 	& 3.33,~ 2.0\textsuperscript{c}\\ 
 Logic Optimizer		& Explore		& Explore		& Explore	\\
-Placer 			& ExtraTimingOpt	& ExtraPostPlacementOpt	& ExtraPostPlacementOpt\\
-			&			& ExtraTimingOpt	& \\
-Physical Optimizer	& Explore		& Explore		& Explore\\
-			&			& AlternateFlowWithRetiming &\\
-Router			& Explore		& Explore		& Explore\\
+Placer 			& ExtraTimingOpt	& ExtraPostPlacementOpt\textsuperscript{\mathsection}& ExtraPostPlacementOpt	\\\rowcolor{gray!25}
+			&			& ExtraTimingOpt\textsuperscript{g,s}	&	\\\rowcolor{white}
+Physical Optimizer	& Explore		& Explore		& Explore		\\\rowcolor{white}
+			&			& \small{AlternateFlowWithRetiming}\textsuperscript{g,s} &\\\rowcolor{gray!25}
+Router			& Explore		& Explore		& Explore	\\\rowcolor{gray!25}
+			&			&			& MoreGlobalIterations\textsuperscript{c,h}\\
 \bottomrule
 \end{tabular}}
-\caption{Design parameters of the example designs.}
+\caption{Design parameters and implementation settings of each design.\\
+\textsuperscript{s}: \texttt{sobel},~ \textsuperscript{g}: \texttt{gauss},~
+\textsuperscript{c}: \texttt{contrast},~ \textsuperscript{h}: \texttt{sharpen}.\\ 
+\textsuperscript{\mathsection}: \texttt{gauss} is only placeable by forcing the use of DSP48.}
 \label{tab:impl-comp}
 \end{figure}
 
@@ -2626,15 +2636,6 @@ it was the second one that proved to be the most challenging. The two \gls{rp} t
 ``big'' and ``small'' refer to the specialized resource capacity. The ``big''
 contains \gls{bram} and \gls{dsp} tiles while the small does not. With respect to
 LUT6 capacity, they are equivalent.
-Two out of the nine accelerator types (``gauss'' and ``sobel'') 
-did not fit in the 800 LUT6 instances, and the HLS synthesizer was forced to use DSP48
-resources instead of \glspl{clb} for implementing integer multiplication 
-in order to reduce the pressure on LUT6 resources.
-The same accelerators required alternative tool settings.
-While the initial configuration and all other accelerators were implemented with
-the placer directive \texttt{ExtraPostPlacementOpt} and physical optimizer directive \texttt{Explore},
-these accelerators required \texttt{ExtraTimingOpt} and \texttt{AlternateFlowWithRetiming}
-in order to achieve timing closure.
 
 Both other designs were homogeneous. The variation of \gls{pblock} size in first design
 was used to help timing and there is no functionality difference.
@@ -2648,7 +2649,7 @@ none of which has no further effect and will not be visible at the system level.
 \footnotetext[2]{The former is for the most difficult to route variant,
 	the latter is for the most resource demanding.}
 
-\begin{figure}[tb!]
+\begin{figure}[htb!]
 \centering
 	\includegraphics[scale=.41]{img/floorplanning-perf.pdf}
 \caption{Floorplan of accelerator performance oriented design.}

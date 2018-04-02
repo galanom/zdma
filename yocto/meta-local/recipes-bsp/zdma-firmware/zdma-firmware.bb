@@ -8,7 +8,7 @@ SRC_URI = "file://*.xz"
 FILES_${PN} += "${base_libdir}/firmware/zdma/*.xz"
 
 S = "${WORKDIR}"
-PR = "r50"
+PR = "r54"
 
 do_install() {
 	     install -d ${D}/${base_libdir}/firmware/zdma

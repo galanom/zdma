@@ -73,6 +73,20 @@
 \tikzstyle{raxis64}=[Latex-,black,very densely dashed]
 \tikzstyle{custom}=[black, thick]
 
+% Flowchart symbols
+\usetikzlibrary{arrows, chains, quotes, positioning, shapes.symbols}
+\tikzset{
+	node distance = 6mm and 12mm,
+	start chain = going below,% <-- new
+	base/.style = {draw, minimum height=1cm, minimum width=4.5em, align=flush center, outer sep=0pt, on chain},% <-- new
+	startstop/.style = {rectangle, rounded corners, base, fill=red!30},
+	io/.style = {trapezium, trapezium left angle=70, trapezium right angle=110, base, fill=blue!30},
+	process/.style = {rectangle, base, fill=orange!30},
+	decision/.style = {signal, signal to=west and east, base, fill=green!30},
+	arrow/.style = {thick,->,>=stealth},
+	every join/.style = {arrow},
+}
+
 % continue from saved path
 \tikzset{%
   from end of path/.style={

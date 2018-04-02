@@ -7,7 +7,7 @@ SRC_URI += "file://0001-devicetree-for-zdma.patch \
             file://zdma-pl.dtsi;subdir=git/arch/${ARCH}/boot/dts \
 	    file://zdma-user.dtsi;subdir=git/arch/${ARCH}/boot/dts \
             "
-PR = "r45"
+PR = "r46"
 
 PACKAGE_ARCH = "zedboard-zynq7"
 

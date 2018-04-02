@@ -3,7 +3,7 @@
 #define CPU_FREQ 667
 // maximum partial bitstream size
 // zed 16c: 310k, zed 6c: ~780k?
-#define PARTIAL_SIZE_MAX (310000)
+#define PARTIAL_SIZE_MAX (780000)
 
 // Core register offset from base
 #define CORE_CSR	0x00

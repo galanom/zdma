@@ -14,6 +14,156 @@ an appropriate interface for the end user. A separate system library was impleme
 which is mostly used either as a wrapper, or to perform tasks that cannot (or should not)
 be done in kernel mode, namely the file operations to read the partial bitstreams.
 
+The development was initially done in Xilinx PetaLinux, but later the work was
+ported to the Yocto Project framework, which is officially supported by Xilinx.
+
+\section{The System Library}
+
+The system library which functions as the interface to the user
+is implemented as a dynamically linked shared library.
+The library offers a user-friendly API to the end user. The API is comprised
+of two parts: The functions that affect the system as a whole and the functions
+that affect the work of the caller. The kernel may be configured to restrict the access
+to the first part at the root user only.
+
+%Below is the system-wide API.
+
+\subsection{The System-Wide API}
+
+The system-wide API is comprised of the following functions:
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=basic,language=C]
+int zdma_core_register(const char *name, signed char priority, unsigned long affinity);
+int zdma_core_unregister(const char *name, unsigned long affinity);
+int zdma_barrier();
+int zdma_config(enum config arg);
+int zdma_debug();
+\end{lstlisting}
+\caption{System-wide API functions.}
+\label{lst:api-system}
+\end{figure}
+
+The first function is called to load an accelerator core to the system, while
+the second un-loads it.
+All bitstreams are expected to be at \texttt{/lib/firmware/zdma/} directory,
+and the naming convention would be \texttt{<CORE\_NAME>.<RP\_IDX>.bin.xz},
+where \texttt{<CORE\_NAME>} is the accelerator core name (i.e. ``sobel'')
+and \texttt{<RP\_IDX>} is the \gls{rp} index, an integer that matches
+the \texttt{zcore{16,32,64}\_i} naming in the \gls{dt} (see section \ref{sec:dt}).
+All bitstream naming and compression is done by the P.R. scripts (see appendix section \ref{sec:scripts-install}),
+while the decompression is done inside the kernel. There is no user intervention.
+
+In both functions, the \texttt{name} parameter is the accelerator core name and 
+\texttt{affinity} is an OR-mask of the \gls{rp} indices that the core is permitted to execute on.
+The library will search for all bitstreams that match the aforementioned pattern for 
+\gls{rp} index range of 0 to \texttt{8*sizeof(affinity)-1} (31 for Zedboard, 63 for zcu102),
+omitting the ones that are i) excluded by \texttt{affinity} ii) not physically present,
+either by purpose (e.g. to reduce storage requirements) or due to core variant unavailability for
+the specific \gls{rp} in a heterogeneous design. The \texttt{priority} parameter affects
+the scheduler decisions and will be discussed in section \ref{sec:scheduler}.
+
+The \texttt{zdma\_barrier()} flushes the work queue of all tasks of all users.
+It blocks until all tasks have finished. However, it does not block or wait for any
+tasks that may have been queued after its call, potentially by another user/thread.
+
+The \texttt{zdma\_config()} is used to configure the system-wide operational parameters.
+It may be used for experimentation or in case a specific access patern is expected. 
+In figure \ref{fig:config} a list of possible configuration commands is presented.
+As most of the commands affect the behavior of the memory allocator and the scheduler,
+in order to understand their function
+one should first consult the respecive sections.
+%, \ref{sec:allocator} and \ref{sec:scheduler} resoectively.
+
+\begin{figure}[htb!]
+\begin{itemize}
+\item	\texttt{CONFIG\_ALLOC\_BITMAP\_\{FIRST,BEST\}\_FIT}\\
+	Set the allocation algorithm from within a specific memory resource.
+	Implemented aglorithms are first-fit and best-fit.
+
+\item	\texttt{CONFIG\_ALLOC\_ZONE\_DEFAULT}\\
+	Set the memory resource selection algorithm.
+	Currently only the default algorithm is available.
+
+\item	\texttt{CONFIG\_SECURITY\_IOCTL\_\{ALLOW,BLOCK\}\_USER}\\
+	Allow / Block unprivileged users to issue system-wide commands.
+
+\item	\texttt{CONFIG\_SECURITY\_BUFFER\_\{KEEP,CLEAR\}}\\
+	Keep / Clear the contents of the task buffers between executions.
+
+\item	\texttt{CONFIG\_SCHED\_OPT\_PRIORITY\_\{ENABLE,DISABLE\}}\\
+	Enable / Disable the priority option for scheduler.
+
+\item	\texttt{CONFIG\_SCHED\_OPT\_FITNESS\_\{ENABLE,DISABLE\}}\\
+	Enable / Disable the fitness criterion option for scheduler.
+
+\item	\texttt{CONFIG\_SCHED\_VICTIM\_\{FIRST\_FREE,LRP,LRU\}}\\
+	Set the victim \gls{rp} selection algorithm.
+	Possible choices: first free / least recently programmed / least recently used.
+\end{itemize}
+\caption{Valid configuration commands.}
+\label{fig:config}
+\end{figure}
+
+Finally, the \texttt{zdma\_debug()} function is used to output the state of the system.
+It is useful only during development.
+
+\subsection{The Task-Specific API}
+
+Here is the task-specific API. Note that despite the system registers the user
+that creates a task, in its present form it does not affect its decisions.
+Therefore there are no user-related actions, all functions affect the task.
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=basic,language=C]
+int zdma_task_init(struct zdma_task *task);
+int zdma_task_configure(struct zdma_task *task, const char *core_name,
+	unsigned long affinity, int tx_size, int rx_size, int argc, ...);
+int zdma_task_enqueue(struct zdma_task *task);
+int zdma_task_enqueue_nb(struct zdma_task *task);
+int zdma_task_waitfor(struct zdma_task *task);
+void zdma_task_destroy(struct zdma_task *task);
+\end{lstlisting}
+\caption{User task API functions.}
+\label{lst:api-user}
+\end{figure}
+
+A task's lifetime begins with the \texttt{init()}. The library opens
+a file descriptor with the driver's \texttt{/dev} entry, which
+simply registers the task. No resource allocation happens at this time
+except for the task control structures.
+
+The \texttt{configure()} is when all reservations take place and therefore
+it can easily fail. The \texttt{core\_name} parameter is self-explanatory,
+but it should be noted that the core must be already registered using
+\texttt{zdma\_core\_register()}. The \texttt{affinity} parameter is
+similar to the one of core's registeration, the only difference is
+that now it is enforced in per-task basis. A user may define a
+task affinity that allows execution on an accelerator slot where
+the core is disallowed to be placed. However, if the combined affinities,
+further restricted by bitstream availability, lead to a void slot set,
+the request will fail. The \texttt{tx\_size} and \texttt{rx\_size},
+the transmit and receive buffer respectively, must be fulfillable by at least
+one memory zone. Finally, \texttt{argc} is the number of accelerator variant 
+configuration parameters. If non-zero, the parameter arguments must follow \texttt{argc}.
+If the number of supplied arguments do not match with \texttt{argc},
+a software undefined behavior will occur. If the list is valid but not legal
+for the specific core, a hardware undefined behavior will occur. 
+Specifically for our application, if the user does not specify a legal value
+for line width, it will default to 1080.
+
+The \texttt{enqueue()} and \texttt{enqueue\_nb()} will place the configured
+task to the execution queue. Their difference is that in case the previous
+execution of the same task is not yet complete, the former will block
+whereas the latter will return an error. Neither will block for the
+current task execution -- one should use \texttt{waitfor()} for this.
+
+Finally, the \texttt{destroy()} will release the task resources.
+It implicitly calls \texttt{waitfor()} to terminate the task gracefully.
+
+
 \section{Communicating with the Hardware}
 
 One of the most frequent reasons for implementing something in kernel space,
@@ -39,7 +189,7 @@ It consists a direct interface to the machine's physical address space and it ca
 Its primary use is for debugging the system and is always disabled in production systems, but many hardware engineers
 find it convenient since it allows them to program a Linux based FPGA SoC as if it was a bare-metal environment,
 with the only restriction that interrupts cannot be detected. 
-Nonetheless, this solution was not considered, as it negates the operating system's raison d'être --
+Nonetheless, this solution was rejected on principle, as it negates the operating system's raison d'être --
 security and hardware abstraction.
 
 A much more ``clean'' solution is given by the Linux Userspace I/O system. Written with industrial I/O cards
@@ -53,10 +203,10 @@ the aforementioned minimal device driver automatically during IP packaging.
 However, UIO may be ideal for simple I/O devices but it is too restrictive and inflexible for anything more complicated.
 Since the control logic is written in userspace, the programmer loses all access to kernel facilities
 and data structures that are usually necessary for more complex tasks involving other kernel subsystems.
+A degree of uncertainty on whether UIO is a feasible and efficient solution led to the decision
+of implementing the core system entirely in-kernel.
 
-At the end, we opted for implementing our core system entirely in-kernel.
-
-\subsection{Using the AXI DMA cores}
+\section{Performing DMA from the kernel}
 
 In a bare-metal environment one would program a PL peripheral by manipulating its control / status register.
 This is also entirely possible in an operating system, and some times it might be the only way.
@@ -72,12 +222,399 @@ subsystems that may offer useful support functionality and integration with othe
 
 The Linux kernel supports myriads of DMA controllers on the several computing platforms it is ported.
 Likewise, there are several kernel subsystems that wish to use these DMA controllers.
-In order to offer abstraction, the ``Linux DMA API'' is offered. It is a stable API that provides
-functions 
+In order to offer abstraction, the ``DMA Engine API'' is offered. The API has a
+``memory-to-memory'' part as well as a ``Slave DMA'' one.
+The Slave API provides hooks where the DMA controller vendor may register their backend driver 
+specific to their hardware. Following this approach, Xilinx
+has written a backend driver for AXI DMA, CDMA and VDMA drivers, called ``\texttt{xilinx\_dma}''.
+When an API client attempts to reserve a DMA controller channel, it specifies explicitly
+which hardware resource it needs, through the use of \gls{dt}, 
+so the kernel knows how to pair the client with the correct backend driver.
+
+Essentially, the steps to program the AXI DMA core are the following:
+
+\begin{enumerate}
+\item	Allocate DMA'able memory.
+\item	Request both the MM2S and the S2MM channel of an AXI DMA instance using \texttt{dma\_request\_channel()}.
+\item	Create a transaction and get a descriptor from both channels using \texttt{dmaengine\_prep\_slave\_single()}.
+\item	Submit the descriptor to the driver queue with \texttt{dmaengine\_submit()}.
+\item	Force queue processing with \texttt{dmaengine\_issue\_pending()}.
+\item	Wait for transaction completion.
+\end{enumerate}
+
+Now, some questions may come naturally: What is DMA'able memory and how is it allocated? 
+How can one chose which DMA controller and channel to request?
+How can one know when a transaction is complete?
+We will discuss these questions one by one.
+
+\subsection{Allocating DMA'able Memory}
+\label{sec:allocating-memory}
+
+A ``DMA'able memory'' is a memory region where a slave DMA controller may perform DMA transfers.
+There are two criterial that must be fulfilled:
+
+Firstly, the DMA controller and the system bus that connects it, must be able to generate
+addresses for the buffers. The AXI DMA IP by default generates 32 bit addresses and the AMBA bus
+is able to support them. So, for the Zedboard which features 32-bit ARM cores we do not need to do anything.
+For UltraScale+ which is capable of 40-bit addressing, if one desires to take advantage of it they must
+configure AXI DMA accordingly and also use the \texttt{dma\_set\_mask*()} family to set up the proper
+DMA address mask, as it defaults to 32 bits.
+
+Secondly, the region must be physically contiguous. A user-space allocation with \texttt{malloc()} is not,
+as is the case with it's kernel counterpart, \texttt{vmalloc()}. A special case is \texttt{kmalloc()}.
+This function returns physically contiguous memory mapped at a linear address
+\footnote{The linear address is the kernel's mapping of the physical address space
+to a virtual address space whose address is a constant offset from the physical.}.
+However, the maximum allocation is currently limited to 4MiB
+\footnote{The maximum allocation order, \texttt{KMALLOC\_SHIFT\_HIGH}, is defined
+at \texttt{linux/slab.h} as \texttt{min(25, MAX\_ORDER+PAGE\_SHIFT-1)},
+where \texttt{1ul<<PAGE\_SHIFT} is the page size, defined at \texttt{asm/page.h},
+and \texttt{MAX\_ORDER} is the maximum allocation order of the \gls{buddy}, 
+defined at \texttt{linux/mmzone.h}.}
+for ARM. This a significant limiting factor, as even for a single DMA transaction, the AXI DMA is
+capable of moving 8Mi-4 bytes.
+
+As this was a long-standing issue in all architectures, there have been many workarounds, especially
+in the past where the maximum allocation was only 128kiB. On systems equipped with an IOMMU,
+one may setup a contiguous bus address space that can be discontiguous in the physical space.
+This could be an option for UltraScale+ but not for Z-7000. Another approach is to use
+\glspl{scatterlist}, a software construct in the Linux kernel that abstracts the Scatter-Gather functionality.
+%-- depending the architecture it is optimized by coalescing or even be fully executed by hardware,
+%if the DMA controller offers such support.
+Despite that this does work, it adds an unnecessary and significant overhead in computation and implementation effort.
+%it also scatters our hopes of achieving zero-copy to the userland. 
+A simpler solution would be to keep some memory out of kernel's reach and manipulate it manually.
+This can be done by either a kernel command line parameter or by reserving the memory in early
+boot, before the \gls{buddy} is started.
+Apart from consisting not-so-nice trickeries, they also inhibit the system from ever using this memory
+even if we do not actually use it.
+
+To overcome all these issues, a new kernel facility was introduced in 2012. The \gls{cma}
+allows the allocation of indefinitely large physically contiguous memory.
+The memory assigned to the \gls{cma} will be lent to the \gls{buddy} under the precondition
+that it may not be \glslink{pinning}{pinned}. Should the \gls{cma} need
+these pages back, the \gls{buddy} will \glslink{migration}{migrate} away the offending pages 
+and will return them to the \gls{cma}. This way, the memory assigned to the \gls{cma} is
+still available for general usage until it is requested. This also permits changing the
+size of the reserved memory without the need of a reboot.
+
+The \gls{cma} is integrated at the DMA Engine API and is automatically called when using
+the \texttt{dma\_alloc\_coherent()}. This function performs two actions -- it allocates
+the requested DMA'able memory amount, and also creates a coherent mapping. Coherent
+(or consistent) memory is memory that can be accessed by both the CPU and the device
+without caching side-effects. In an architecture that offers two-way cache coherency
+this is a normal mapping, but in our case, this is ensured by marking all the allocated
+pages as uncacheable.
+\\
+
+%Until now we discussed only how we can make a valid allocation for performing DMA.
+Still, we are not done yet. By using the \gls{cma} alone, we can receive an
+arbritrarily sized DMA capable buffer that is aligned at a boundary set at kernel configuration time.
+However, we cannot force the exact physical placement of the buffer.
+This is a critical requirement, as the physical address defines which PS-to-PL port will be used,
+whih in turn leads to a certain AXI interconnect. Effectively, each accelerator may be
+reachable from different physical address regions and by controlling the physical address
+we balance the traffic between the interconnects. Traditionally this effect was achieved
+the same way contiguous memory was reserved -- by excluding it from any kernel access,
+which comes with the disadvantages already discussed. 
+
+A newer, more clean solution is now available
+with the combined usage of the \gls{cma} and the \gls{dt}.
+In section \ref{sec:dt} it was shown how a memory bank is described in the \gls{dt} file.
+This file is loaded by the first-stage bootloader and passed to the Linux kernel
+and can be manupulated by the OpenFirmware support functions. So, what has to be done
+is that the \gls{dt} be traversed to reach the node that describes the memory bank,
+and from there one must use the \texttt{of\_reserved\_mem\_device\_init\_by\_idx()}
+to instruct the \gls{cma} that the subsequent \texttt{dma\_alloc\_coherent()} will
+use the specific memory pool. The \gls{cma} already has this memory under its
+authority as we have already described it as reserved (see listing \ref{lst:resmem} at section \ref{sec:dt}).
+A final detail would be that in fact, the assignment of reserved memory regions is
+done by Linux on device basis. A single device shall not have multiple active
+reserved memory regions. To overcome this, the driver declares a pseudo-devices
+for every memory bank (or ``zone'') defined, and the reservation is instantiated on its behalf
+\footnote{The technique was exemplified by the Samsung Exynos Multi-Format Codec to support
+parallel memory access for left and right audio channel. See \texttt{s5p\_mfc\_alloc\_memdev()}
+at \texttt{drivers/media/platform/s5p-mfc/s5p\_mfc.c} on recent kernels (4.8+).}.
+
+\subsection{Controller and Channel Selection}
+
+The selection of the hardware resource that will perform a DMA transaction is done
+with the help of the \gls{dt}. Let us recall the accelerator slot declaration,
+listing \ref{lst:pblock} at section \ref{sec:dt}:
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=basic]
+		pb0: pblock@0 {
+				compatible = "tuc,pblock";
+				core = <&zcore16_0>;
+				transport = <&dma0>;
+			};
+\end{lstlisting}
+\caption{Reconfigurable partition definition}
+\label{lst:pblock-2}
+\end{figure}
+
+We see that an accelerator slot may be served by only a specific DMA controller,
+defined with the \texttt{transport} property.
+This is logical, as we chose to dedicate one DMA controller for each accelerator.
+The \texttt{dma0} is a phandle, that is, a reference to another \gls{dt} leaf.
+If we dereference it, we will obtain the DMA client definition, which is what
+\texttt{dma\_request\_channel()} needs to know. Let us recall however,
+that the DMA client definition is not the actual hardware definition.
+It just states our intent to use the hardware, which is pointed by the DMA client
+description.
 
 
+\subsection{Termination of a DMA Transaction}
+
+The AXI DMA offers two ways to signal the completion of a DMA transaction. 
+One may poll its \texttt{S2MM\_DMASR}, the receive channel status register,
+to find out if the channel has reached an idle state. Additionally,
+the DMA controller has two interrupt outputs, one for each channel,
+which we have driven to the interrupt inputs of the Zynq APU. 
+The standard procedure would be to wait for an interrupt on the S2MM channel,
+and when received, check the status register for a possible error condition.
+
+Fortunately, these are handled by the Xilinx back-end driver which is hooked
+at the DMA Engine API. The completion notification functionality
+are provided by the Linux Asynchronous Transfer API, or simply ``async\_tx API''. 
+Technically, this API is a client to the DMA Engine API, 
+however it is now integrated with it.
+
+The async\_tx API is frequently used with the ``completions'' synchronization mechanism.
+As soon as a DMA transaction is issued using \texttt{dma\_async\_issue\_pending()},
+the programmer calls \texttt{wait\_for\_completion\_timeout()} which will block
+until either a \texttt{complete()} is called or the timer has expired.
+Completions are implemented using work queues, which in turn are implemented with semaphores,
+but the indirect use is more readable and less error prone.
+
+But who is going to call \texttt{complete()}? The async\_tx API has a transaction descriptor, 
+which we get when we call \texttt{dmaengine\_prep\_slave\_single()}.
+This descriptor has a field named \texttt{callback}, a pointer to a function
+that is executed when the transaction is complete. This is an ideal place
+to call the \texttt{complete()}, waking up the blocked kernel thread.
+
+When code flow is resumed, the programmer may check two conditions:
+If the timer has expired and if the DMA controller has reported an error.
+The latter is retrieved by \texttt{dmaengine\_tx\_status()}.
+
+\section{Zero-Copy Transfers}
+
+Traditionally, a DMA transfer between a device and a user application was done through bounce buffers.
+A bounce buffer is an intermediate memory buffer that resides in kernel space where all data are
+temporarily stored before being sent to the device or the userland.  This technique arose for
+several reasons. Some older buses or devices might not offer a sufficiently large DMA'able address space.
+Some 32-bit architectures offer the notion of high memory, where not all physical address space may be
+mapped at the same time, a propterty that is a requirement for DMA. The difficulty of allocating
+large physically contiguous memory contributed to the problem. And finally, it is also the simplest way
+of dealing with protected memory.
+
+The use of intermediate buffers has three strong drawbacks: The increased latency, the decreased
+bandwidth and the doubling of memory footprint. The first issue may be alleviated by using
+multiple buffering, but it does not help the other two. The advent of IO-intensive peripherals like
+the GPUs necessitated a solution to this bottleneck.
+
+In our target systems we have all the hardware support we need to avoid any buffering.
+The AXI DMA IP core can be configured to support the full address space of both Zynq-7000 (32 bit)
+and UltraScale+ (40 bits). Neither the ARM A9 cores in the former nor the A53 ones in the latter
+support Large Physical Address Extensions (LPAE), ARM's implementation of high memory. 
+At the software front, the support of the Open Firmware's \glsentrylong{dt} 
+and the creation of \glsentrylong{cma}, eliminated any remaining software obstacles.
+
+The support for zero-copy DMA transfers could be incarnated in two forms. Either by mapping the
+user memory to the kernel address space or by mapping a kernel buffer to the calling process'
+virtual address space. The former is already there, as the installed memory in both platforms
+is small enough compared to the address space so it is fully and permanently mapped as the
+kernel's linear address space. However, userspace allocations are not physically contiguous
+and the overhead of working around this through the use of \glspl{scatterlist} is not worth the effort.
+Conversely, mapping a kernel buffer to the userspace is a straightforward process.
+
+The allocation is done in two steps. First, the user application will inform the kernel 
+about its desire to acquire memory buffers. The kernel will attempt to make a reservation
+from the memory allocator and report the result. If successful, the application will issue
+a \texttt{mmap()} system call for each buffer. The kernel will create a coherent mapping of the
+buffer it previously created to the virtual space of the calling process and hand over the address.
+
+The mapping is done with \texttt{dma\_mmap\_coherent()} and not directly by \texttt{remap\_pfn\_range()}.
+This is because before performing the actual remapping, the kernel must set the protection bits of all pages
+to non-cacheable, so the new mapping will also be coherent. Recall that we initially reserved
+the memory from the system by \texttt{dma\_alloc\_coherent()} for the exact same reason.
 
 
+\section{Security and Error Handling}
+
+%A system may fail due to a hardware fault and whereas in ASICs it is infrequent,
+%during the development of an FPGA system it is much more probable.
+A hardware fault may reduce the system's functionality, i.e. a certain accelerator slot
+may become inoperable, or even make it fail completely. 
+A proper failure path was established in ordrer to roll back any half-done operations.
+The Managed Device Resource (devres) was used, a framework that guarantees that
+any reserved resource can be later reclaimed.
+Overall, it is very likely that normal operation can be restored, in the worst case
+by unloading and re-inserting the kernel module.
+
+Nonetheless, there is at least one known weakness: If the hardware designer has not implemented
+the \gls{axilite} control interface of an accelerator, a data abort will ocurr at the first
+configuration attempt and will cause the kernel to hang. It must be added that in case
+the hardware design does not meet timing, the \gls{amba} bus may hang, causing the whole system (PL and PS)
+to become inoperable. There is nothing that can be done to counter it.
+
+A lot of effort is put to make the system foolproof, in the sense that it will not fail by a user mistake.
+Furthermore, the system offers basic security and isolation to prevent leakage of data between user tasks.
+However, the system does not implement user quotas and therefore
+it is vulnerable to a DoS attack. A malevolent non-root user can create a large number of small tasks that will
+eventually deplete all reserved memory, denying access to any new user until the system is restarted
+by removing and re-inserting the kernel module.
 
 
+\section{Configuring the Accelerators}
+
+Configuring the accelerators is quite simple. By using the \gls{axilite}, the accelerator registers
+are all mapped to the APU address space. Once we create a virtual mapping, we can use
+load/store instructions to query/modify them.
+
+At the listing \ref{lst:pblock-2} of the previous section, we say how an accelerator slot is
+defined. There, the property ``\texttt{core}'' was defined. This is a reference to the accelerator
+instance. The record for the accelerator is contained in the automatically generated part
+of \gls{dt}, using the hardware information file (\texttt{.hdf}) extracted from the static workflow.
+However, since the partial reconfiguration workflow requires the interface to remain consistent,
+the record would be valid for all accelerator variants. The record would be like this:
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=basic]
+
+		zcore16_0: zcore64@43c00000 {
+			compatible = "xlnx,zcore16-3.7";
+			reg = <0x43c00000 0x10000>;
+			xlnx,s-axi-control-addr-width = <0x6>;
+			xlnx,s-axi-control-data-width = <0x20>;
+		};
+\end{lstlisting}
+\caption{Accelerator instance definition.}
+\label{lst:accelerator-2}
+\end{figure}
+
+The value of interest is the \texttt{reg} property. The first part is the base of the address space 
+and the second is its length. The internal organization of this address space is described in section 
+\ref{sec:accelerator-interface}. We see that the control and status signals are at stable positions
+of the control register at the offset 0x00. The accelerator-specific registers start at 0x10 with a
+step of 8 bytes. However, the argument count and the data represented are strictly accelerator variant
+specific and cannot be retrieved by neither the hardware nor the kernel module as they have no
+prior knowledge of the logic they will execute.
+This information must be passed at runtime, when the end user registers the accelerator core to the system.
+
+To sum up, the communication to the accelerator follows these steps:
+
+\begin{enumerate}
+\item	Initialize the control/status register (CSR, 0x00) to zero. 
+	This de-asserts \texttt{ap\_start} and \texttt{auto\_restart}.
+\item	Read back the CSR. The \texttt{ap\_idle} should be asserted. Abort if not.
+\item	Write all the user arguments at the corresponding offsets.
+\item	Assert the \texttt{ap\_start} of the CSR.
+\item	Issue the DMA transaction and wait for completion.
+\item	Read the CSR, \texttt{ap\_done} should be asserted. Abort if not.
+\item	Read the accelerator return code at register with offset 0x38.
+\end{enumerate}
+
+A final note would be that the programmer shall not use the pointer dereference operator
+to access the registers. Instead, they must use the Linux kernel provided functions
+\texttt{ioread32()} and \texttt{iowrite32()}. The functions are for I/O memory and
+they will disable write-combine and enforce the proper memory barriers.
+
+\section{The Memory Allocator}
+\label{sec:memory-allocator}
+
+In section \ref{sec:allocating-memory} we saw how a set of pre-defined memory regions can be
+reserved and allocated to the kernel module. The allocation takes place only once
+during module initialization and its management is passed to a custom memory allocator
+which is charged with fulfilling accelerator requests.
+
+Although this functional segregation reduces memory efficiency as it prevents \gls{cma} from 
+lending unused memory to the \gls{buddy}, it offers multiple advantages:
+
+\begin{enumerate}
+\item	Reduction of run-time latency, as the page frames are guaranteed to be unused,
+	no page migration is going to happen.
+\item	Elimination of uncertainty. Although the \gls{buddy} will not make any
+	borrowed page frame unmoveable, kernel code may freely do so.
+\item	Control of allocation range. In our system our memory resources are not
+	required to be equal. Furthermore, they are not accessible by all 
+	accelerator slots and if they do, they may not use a path of similar latency.
+	To handle all this heterogeniety, we need an allocator that is aware
+	of the implemented hardware details.
+\item	Flexibility. Although currently not implemented, it would be useful if
+	the system could re-balance the memory bank utilization migrating pages
+	between memory resources. This can be done much easier if we have full
+	control of all the available space.
+\end{enumerate}
+
+The allocator executes in two stages. At first, it will attempt to find the most suitable zones that
+fulfill all requirements for the transmit and receive buffer. After a selection was made, it will
+attempt to reserve the requested amount of memory. 
+
+%Due to external fragmentation, reservation may fail.
+%In such case, it
+
+\begin{figure}[htb!]
+\begin{tikzpicture}[node distance=2cm]
+\node (start) [startstop] {Start};
+\node (a0) [decision,join] {TX size > 0 ?};
+\node (a1) [process] {allocate TX buffer};
+\node (a2) [decision,join] {success?};
+\node (a3) [decision] {RX size > 0 ?};
+\node (a4) [process] {allocate RX buffer};
+\node (a5) [decision,join] {success?};
+\node (success) [startstop] {Finish};
+
+\draw[arrow] (a0) edge["yes"] (a1);
+\draw[arrow] (a2) edge["yes"] (a3);
+\draw[arrow] (a3) edge["yes"] (a4);
+\draw[arrow] (a5) edge["yes"] (success);
+
+\coordinate [left=of a0,xshift=12mm] (x3);
+\coordinate (x3a) at ($(a3.north west) + (-12mm,8mm)$);
+\coordinate (x3b) at ($(a3.north west) + (-2.5mm,-2.5mm)$);
+\draw[arrow] (a0) to["no"] (x3) -- (x3a) -- (x3b);
+
+\coordinate (x5a) at ($(a3.south west) + (-2.5mm,2.5mm)$);
+\coordinate (x5b) at ($(x5a) + (-8mm,-8mm)$);
+\draw[arrow] (a3) -- (x5a) to["no"] (x5b) |- (success);
+
+\coordinate [right=of a0,xshift=21mm] (x0);
+
+\node (c0) [decision,right=of x0] {TX size > 0 ?};
+\node (c1) [process] {free TX buffer};
+\node (c2) [process,join] {allocate RX buffer};
+\node (c3) [decision,join] {success?};
+\node (c5) [process,join] {allocate TX buffer};
+\node (c6) [decision,join] {success?};
+
+\draw[arrow] (c0) edge["yes"] (c1);
+\coordinate [right=of a5,xshift=-8mm] (x1);
+\draw[arrow] (a5) to["no"] (x1) |- (c0) ;
+\draw[arrow] (c3) edge["yes"] (c5);
+\coordinate (x2) at (c6 |- success);
+\draw[arrow] (c6) to["yes"] (x2) -- (success);
+
+\node[startstop, right=of a3] (fail) {Failure};
+
+
+\coordinate (x6a) at ($(c0.south west) + (-2.5mm,2.5mm)$);
+%\coordinate (x6b) at ($(x6a) + (-12mm,-12mm)$);
+\coordinate (x6b) at (fail |- a1);
+\draw[arrow] (x6a) to["no"] (fail |- x6b) -- (fail);
+\draw[arrow] (a3.east) to["no"] (fail);
+\draw[arrow] (c3.west) to["no"] (fail);
+
+%\coordinate [right=of c1,xshift=-12mm] (x4);
+%\draw[arrow] (c1) to["no"] (x4) |- (c4);
+
+\node (b1) [process, left=of c6] {free RX buffer};
+\draw[arrow] (c6) to["no"] (b1);
+\draw[arrow] (b1) -- (fail);
+
+\end{tikzpicture}
+\end{figure}
 

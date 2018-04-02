@@ -2600,7 +2600,7 @@ Finally, figure \ref{fig:floorplanning-usp} displays the UltraScale+ port implem
 \midrule
 Accelerator Count	& 6			& 10 big ~/~ 6 small	& 63		\\
 Accelerator Data Width	& 64			& 16			& 32		\\
-Clock Frequency	(MHz)	& 143			& 125			& 250		\\
+Clock Frequency	(MHz)	& 143			& 133			& 250		\\
 LUT6 capacity		& 3600 - 4000 		& 800			& 1680 - 1800	\\
 LUT6 utilization\footnotemark[1] (\%)& 87.61	& 46.25 - 89.62\footnotemark[2]	& 76.67 - 89.05\footnotemark[2]\\
 BRAM36 capacity		& 10			& ~10 ~/~ ~0~ 	& 6 - 10		\\
@@ -2853,6 +2853,7 @@ Despite that decompilation is perfectly possible (and indeed, very easy)
 one will lose label names and file hierarchy.
 
 \subsection{Writing a Device Tree for the System}
+\label{sec:dt}
 
 As a guideline on how to write this part of \gls{dt}, we will use as an example the second design.
 At this point, only the hardware description syntax will be explained.
@@ -2877,10 +2878,10 @@ To begin, we will declare the memory segments at the top level block ``\texttt{r
 		/* ... */
 \end{lstlisting}
 \caption{Declaring reserved memory}
-\label{list:resmem}
+\label{lst:resmem}
 \end{figure}
 
-In listing \ref{list:resmem}, the identifier ``\texttt{hp0}'' before the colon is a ``phandle'', 
+In listing \ref{lst:resmem}, the identifier ``\texttt{hp0}'' before the colon is a ``phandle'', 
 i.e. a label that will be referenced by
 the memory region user. The following \texttt{unit@address} syntax is not of much use;
 it is the ``\texttt{reg}'' property that actually defines the memory region 
@@ -2914,7 +2915,7 @@ Inside our system's sub-tree (the ``\texttt{zdma@0}'' node) we will define our s
 	}
 \end{lstlisting}
 \caption{Memory zone definition}
-\label{list:memzone}
+\label{lst:memzone}
 \end{figure}
 
 Here, we performed the following steps:
@@ -2944,7 +2945,7 @@ In our system, it is a reconfigurable partition where an accelerator is instanti
 			};
 \end{lstlisting}
 \caption{Reconfigurable partition definition}
-\label{list:pblock}
+\label{lst:pblock}
 \end{figure}
 
 We define three parameters:
@@ -2961,7 +2962,7 @@ We define three parameters:
 Finally, the declaration of the DMA clients. 
 The ``client'' (in reference to the Linux DMA Engine API, not the DMA controller) defines
 a set of DMA controller channels that will be used by the API. 
-The format of the node as seen in listing \ref{list:dmaclient} is defined by this API. 
+The format of the node as seen in listing \ref{lst:dmaclient} is defined by this API. 
 
 The ``\texttt{dmas}'' property is used to reference the hardware.
 It is a list of pair values, with each pair describing a DMA channel.
@@ -2983,7 +2984,7 @@ The ``\texttt{dma-names}'' property is just a textual description of the DMA cha
 		};
 \end{lstlisting}
 \caption{DMA client definition}
-\label{list:dmaclient}
+\label{lst:dmaclient}
 \end{figure}
 
 These entries, repeated for every instance of the resource they describe, is all the kernel driver

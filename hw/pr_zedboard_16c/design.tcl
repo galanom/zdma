@@ -71,7 +71,8 @@ set_attribute module $static synthCheckpoint $top_dcp
 set core_basename "zcore16"
 set core_easiest "loopback"
 set core_hardest "contrast"
-set cores_with_alt_settings [list "gauss" "sobel"]
+set cores_with_alt_settings [list]
+# "gauss" "sobel"]
 #set core_list [list "gauss" "sobel" "contrast" "sharpen" "emboss" "outline" "negative" "threshold" "loopback"]
 set core_list [list "gauss" "sobel" "contrast" "sharpen" "emboss" "outline" "negative" "threshold" "loopback"]
 ### 6core ### set core_big_list $core_list

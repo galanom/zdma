@@ -252,7 +252,7 @@
 	name = {CHI},
 	long = {Coherent Hub Interface},
 	first = {\glsentrylong{chi} (\glsentryname{chi})},
-	description = {
+	description = {	\emph{\glsentrylong{chi}}:
 		An evolutionary step from \gls{ace}, this protocol the newer multi-core SoCs.
 		It is not present in UltraScale+.
 	},
@@ -452,8 +452,7 @@
 \newglossaryentry{axistream}
 {
 	name = {AXI-Stream},
-	long = {AXI-Stream},
-	description = {\emph{\glsentrylong{axistream}}:
+	description = {
 		A streaming version of \gls{axi}. It has no notion of address spaces
 		and therefore it exchanges no addressing information. 
 		This results in both higher performance and (much) lower complexity.
@@ -712,5 +711,76 @@
 		a hardware description language (Verilog) ready for synthesis by
 		the standard toolchain.
 	},
+}
+
+
+\newglossaryentry{cma}
+{
+	name = {CMA},
+	long = {Contiguous Memory Allocator},
+	first = {\glsentrylong{cma} (\glsentryname{cma})},
+	description = {	\emph{\glsentrylong{cma}}:
+		A Linux kernel facility that allows the allocation of indefinitely large physically
+		contiguous memory.
+	},
+}
+
+\newglossaryentry{pinning}
+{
+	name = {memory pinning},
+	description = {
+		Marking a memory region as not moveable. That is, the pages may not be migrated or swapped out.
+		Access to this memory region is guaranteed not to produce any page fault.
+	},
+	see = {migration,locking},
+}
+
+\newglossaryentry{locking}
+{
+	name = {memory locking},
+	description = {
+		Marking a memory region as not swappable. The locked pages can still be migrated, therefore
+		a soft page fault may still occur.
+	},
+	see = {migration,pinning},
+}
+
+\newglossaryentry{migration}
+{
+	name = {migration},
+	description = {
+		The move of an allocated page to a different \gls{pfn} while updating reference to maintain
+		consistency. This is useful in NUMA systems, where if a process is moved to another node,
+		its allocated pages may also be transparently moved at a memory bank
+		which has closer physical proximity to the new node.
+	},
+}
+
+\newglossaryentry{pfn}
+{
+	name = {PFN},
+	long = {Page Frame Number},
+	description = {\emph{\glsentrylong{pfn}}:
+		An index to the physical memory where a page is physically stored.
+	},
+}
+
+\newglossaryentry{buddy}
+{
+	name = {buddy allocator},
+	description = {
+		The standard Linux kernel memory allocator. It is called so after the allocation algorithm
+		it implements.
+	},
+}
+
+\newglossaryentry{scatterlist}
+{
+	name = {scatterlist},
+	description = {
+		A software construct in the Linux kernel that abstracts the DMA scatter-gather functionality.
+		Depending the architecture it may optimize transfers by coalescing or by processing the list
+		in hardware if the DMA controller can support it.
+	}
 }
 

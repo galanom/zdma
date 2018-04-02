@@ -622,6 +622,9 @@ static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
 		rx_vaddr = allocator_reserve(rx_size, DMA_FROM_DEVICE, &p->eff_affinity, p->core->availability, &rx_handle);
 		if (!rx_vaddr) {
 			// RX allocation failed -- try allocating RX first and then TX
+			if (!tx_size)
+				return -ENOMEM;	// there was no TX allocation
+			
 			allocator_free(tx_vaddr, tx_size);
 			
 			rx_vaddr = allocator_reserve(rx_size, DMA_FROM_DEVICE, &p->eff_affinity, p->core->availability, &rx_handle);
@@ -850,7 +853,7 @@ static int zone_add(struct device_node *np)
 		"*** In Xilinx Zynq 7000 (Cortex-A9, ARM32) this should not ***\n"
 		"*** really be happening due to the lack of IOMMU hardware. ***\n"
 		"*** Current version of this driver is not tested for such  ***\n"
-		"*** a configuration. Use at your own risk!!!               ***\n");
+		"*** a configuration. Use at your own risk.                 ***\n");
 	}
 	zone->phys = paddr;
 	zone->end = zone->start + size - 1;
@@ -892,8 +895,8 @@ static void dma_issue(struct work_struct *work)
 		iowrite32(p->core_param[i], pblock->vbase + CORE_PARAM_BASE + i*CORE_PARAM_STEP);
 	}
 	iowrite32(CORE_CSR_START, pblock->vbase + CORE_CSR); // ap_start = 1
-	udelay(100);
-	csr = ioread32(pblock->vbase + CORE_CSR);
+//	udelay(100);
+//	csr = ioread32(pblock->vbase + CORE_CSR);
 //	if (debug)
 //		pr_info("core sent init CSR, reply val %x\n", csr);
 	
@@ -951,7 +954,6 @@ static void dma_issue(struct work_struct *work)
 	
 	struct dma_tx_state /*tx_state,*/ rx_state;
 	enum dma_status 
-//		tx_status = dmaengine_tx_status(pblock->txchanp, p->tx.cookie, &tx_state),
 		rx_status = dmaengine_tx_status(pblock->rxchanp, p->rx.cookie, &rx_state);
 	
 	// determine if the transaction completed without a timeout and withtout any errors

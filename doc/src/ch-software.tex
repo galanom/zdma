@@ -29,6 +29,7 @@ to the first part at the root user only.
 %Below is the system-wide API.
 
 \subsection{The System-Wide API}
+\label{sec:sw-api-sys}
 
 The system-wide API is comprised of the following functions:
 
@@ -58,11 +59,13 @@ while the decompression is done inside the kernel. There is no user intervention
 In both functions, the \texttt{name} parameter is the accelerator core name and 
 \texttt{affinity} is an OR-mask of the \gls{rp} indices that the core is permitted to execute on.
 The library will search for all bitstreams that match the aforementioned pattern for 
-\gls{rp} index range of 0 to \texttt{8*sizeof(affinity)-1} (31 for Zedboard, 63 for zcu102),
+\gls{rp} index range of 0 to \texttt{8*sizeof(affinity)-1} (that is 31 for Zedboard and 63 for zcu102),
 omitting the ones that are i) excluded by \texttt{affinity} ii) not physically present,
 either by purpose (e.g. to reduce storage requirements) or due to core variant unavailability for
 the specific \gls{rp} in a heterogeneous design. The \texttt{priority} parameter affects
 the scheduler decisions and will be discussed in section \ref{sec:scheduler}.
+These functions are not just initialization and termination of a core variant; they may
+actually be called several times to dynamically adjust the bitstream availability to the kernel driver.
 
 The \texttt{zdma\_barrier()} flushes the work queue of all tasks of all users.
 It blocks until all tasks have finished. However, it does not block or wait for any
@@ -74,33 +77,31 @@ In figure \ref{fig:config} a list of possible configuration commands is presente
 As most of the commands affect the behavior of the memory allocator and the scheduler,
 in order to understand their function
 one should first consult the respecive sections.
-%, \ref{sec:allocator} and \ref{sec:scheduler} resoectively.
 
 \begin{figure}[htb!]
 \begin{itemize}
-\item	\texttt{CONFIG\_ALLOC\_BITMAP\_\{FIRST,BEST\}\_FIT}\\
-	Set the allocation algorithm from within a specific memory resource.
-	Implemented aglorithms are first-fit and best-fit.
-
 \item	\texttt{CONFIG\_ALLOC\_ZONE\_DEFAULT}\\
 	Set the memory resource selection algorithm.
 	Currently only the default algorithm is available.
+
+\item	\texttt{CONFIG\_ALLOC\_BITMAP\_*}\\
+	Set the allocation algorithm from within a specific memory resource.
+	Possible choices are \texttt{FIRST\_FIT} and \texttt{BEST\_FIT}.
 
 \item	\texttt{CONFIG\_SECURITY\_IOCTL\_\{ALLOW,BLOCK\}\_USER}\\
 	Allow / Block unprivileged users to issue system-wide commands.
 
 \item	\texttt{CONFIG\_SECURITY\_BUFFER\_\{KEEP,CLEAR\}}\\
-	Keep / Clear the contents of the task buffers between executions.
+	Keep / Clear the contents of the task buffers after allocation and before deallocation.
 
-\item	\texttt{CONFIG\_SCHED\_OPT\_PRIORITY\_\{ENABLE,DISABLE\}}\\
-	Enable / Disable the priority option for scheduler.
+\item	\texttt{CONFIG\_SCHED\_ALGO\_*}\\
+	Set the \gls{rp} selection algorithm for the case eviction is not needed.
+	Possible choices: \texttt{FIRST\_FIT} and \texttt{BEST\_FIT}.
 
-\item	\texttt{CONFIG\_SCHED\_OPT\_FITNESS\_\{ENABLE,DISABLE\}}\\
-	Enable / Disable the fitness criterion option for scheduler.
-
-\item	\texttt{CONFIG\_SCHED\_VICTIM\_\{FIRST\_FREE,LRP,LRU\}}\\
+\item	\texttt{CONFIG\_SCHED\_VICTIM\_ALGO\_*}\\
 	Set the victim \gls{rp} selection algorithm.
-	Possible choices: first free / least recently programmed / least recently used.
+	Possible choices: \texttt{FIRST} (First-Available), \texttt{LP} (Least Popular),
+	First-Programmed \texttt{FIFO}, \texttt{LRU} (Least Recently Used) and \texttt{LFU} (Least Frequently Used).
 \end{itemize}
 \caption{Valid configuration commands.}
 \label{fig:config}
@@ -110,6 +111,7 @@ Finally, the \texttt{zdma\_debug()} function is used to output the state of the 
 It is useful only during development.
 
 \subsection{The Task-Specific API}
+\label{sec:sw-api-task}
 
 Here is the task-specific API. Note that despite the system registers the user
 that creates a task, in its present form it does not affect its decisions.
@@ -466,7 +468,7 @@ However, the system does not implement user quotas and therefore
 it is vulnerable to a DoS attack. A malevolent non-root user can create a large number of small tasks that will
 eventually deplete all reserved memory, denying access to any new user until the system is restarted
 by removing and re-inserting the kernel module.
-
+In a more simple case, a greedy user is able to abuse the task priority mechanism to dominate processing power.
 
 \section{Configuring the Accelerators}
 
@@ -554,8 +556,60 @@ The allocator executes in two stages. At first, it will attempt to find the most
 fulfill all requirements for the transmit and receive buffer. After a selection was made, it will
 attempt to reserve the requested amount of memory. 
 
-%Due to external fragmentation, reservation may fail.
-%In such case, it
+In figure \ref{allocator-overview} we can see an overview of the memory allocator function.
+A reservation always takes place in pairs: a transmit and a receive buffer, one of them can be of zero size
+for a transmit-only or a receive-only function\footnote{Note that this operation mode is not tested.}.
+If the calling process already holds buffers, they will be deallocated. When allocating or de-allocating
+a buffer, the ``popularity'' of the memory zone, a metric needed by the scheduler, is updated accordingly.
+For brevity, both functions are not represented in the diagram. Initially, the allocator will attempt
+to reserve the transmit buffer, and afterwards, the receive. If the latter fails, it will try the allocation
+in the reverse order. This is because the scoring algorithm, in critically low memory situations, may suggest a
+memory zone for one buffer that renders the other unplaceable due to external fragmentation. Reversing the order
+of allocation may resolve this issue.
+
+Figure \ref{allocator-reservation} depicts the algorithm of the actual allocation. 
+The inner loop scans the list of memory zones and calculates a score metric.
+The default scoring algorithm is given by:
+
+\[
+	score = \frac{ZoneBandwidth \cdot \left(MemoryAvailability/8 + Schedulability\right)}{1 + ZoneOccupancy}
+\]
+
+where $ZoneBandwidth$ is a designer-supplied memory zone parameter, defined in the zone description in the \gls{dt}.
+Although it was implemented to compensate for the actual interconnect bandwith,
+it actually needs not to match any literal hardware specification -- it is rather a means for the designer to affect the
+desirability of one memory zone versus the others. The $MemoryAvailability$ is the integral ratio of the memory zone size
+to the requested memory amount while $ZoneOccupancy$ represents the number of clients that have a reservation on this
+memory zone, irrespectively of the amount of memory allocated. These parameters aim to spread the memory utilization 
+among the zones, under the assumption that they are served by different interconnects, therefore balancing the data
+traffic at the underlying hardware. The $Schedulability$ represents the scheduler freedom to place a task.
+It is quantified as the population count (i.e. the number of ones in a word) of the AND product of the following three masks: 
+
+\begin{itemize}
+\item	\textbf{Core Availability}, that represents the bitstreams that are available to the kernel driver 
+	for the specific core variant. In turn, this is a product of two factors:
+	\begin{itemize}
+	\item	\textbf{Bitstream Availability}, which refers to the physical availability of the bitstreams on the storage medium.
+	\item	\textbf{Core Affinity}, which refers to the system administrator's decision to restrict a core variant placement to
+		a set of accelerator slots.
+		See the \texttt{affinity} parameter of \texttt{zdma\_core\_register()}, section \ref{sec:sw-api-sys}.
+	\end{itemize}
+\item	\textbf{Task Affinity}, which is the client's request to constrain the slots where their task may run.
+	See the \texttt{affinity} parameter of \texttt{zdma\_task\_configure()}, section \ref{sec:sw-api-task}.
+\item	\textbf{Partition Affinity Mask}, which refers to the physical interconnect constraints that restrict core placement.
+	It is determined by two factors:
+	\begin{itemize}
+	\item	\textbf{First Interconnect Path}. Each memory zone has defined a reader and a writer mask 
+		at their entry in the \gls{dt}, defined by the interconnect architecture.
+		If we are allocating a transmit buffer we may select a slot from the reader mask and, conversely,
+		in receiver buffer we are constrained by the writer mask.
+	\item	\textbf{Second Interconnect Path}. After we choose a memory zone for one direction,
+		our choice for the other will not only be constrained by the specific direction's mask, but by its intersection with the other mask.
+		A core can be scheduled only in a slot that can both read from the transmit buffer and write to the receive buffer.
+	\end{itemize}
+\end{itemize}
+
+The score function will always return zero if either $MemoryAvailability$ or $Schedulability$ are zero. 
 
 \begin{figure}[htb!]
 \begin{tikzpicture}[node distance=2cm]
@@ -614,7 +668,162 @@ attempt to reserve the requested amount of memory.
 \node (b1) [process, left=of c6] {free RX buffer};
 \draw[arrow] (c6) to["no"] (b1);
 \draw[arrow] (b1) -- (fail);
+\draw[arrow] (a2) to["no"] (fail);
 
 \end{tikzpicture}
+\caption{Memory Allocator: Overview}
+\label{fig:allocator-overview}
 \end{figure}
+
+
+
+\begin{figure}[htb!]
+\begin{tikzpicture}[node distance=2cm]
+\node (start) [startstop] {Start};
+\node (a0) [decision,join] {For every memory zone};
+\node (fail) [startstop,xshift=-12mm] {Failure};
+\draw[arrow] (fail |- a0.south) to["done"] (fail);
+
+\node (b0) [decision,right=of fail] {For every memory zone\\\footnotesize excluding previously selected};
+\node (b1) [process,xshift=-12mm] {Select Best Zone};
+\node (b2) [process,join] {Find contiguous pages};
+\node (b3) [decision, join] {success?};
+\node (b4) [process] {Reserve pages};
+\node (stop) [startstop,join] {Finish};
+\node (c1) [process,right=of b1] {Calculate Zone Score};
+
+\draw[arrow] (b1 |- b0.south) to["done"] (b1);
+
+\draw[arrow] (a0) to["next"] (b0 |- a0) -- (b0);
+\coordinate (x1) at ($(a0.south east) - (12mm,0mm)$);
+%\draw[arrow] (b0) -- (x1 |- b0) -- (x1);
+
+\draw[arrow] (b0) to["next"] (c1 |- b0) -- (c1);
+\coordinate (x0) at ($(b0.south east) - (8mm,0mm)$);
+\draw[arrow] (c1) -- (x0 |- c1) -- (x0);
+
+\draw[arrow] (b3) to["yes"] (b4);
+%\coordinate (x2) at ($(x1) + (-4mm,0mm)$) ;
+\draw[arrow] (b3) to["no"] (x1 |- b3) -- (x1);
+\end{tikzpicture}
+\caption{Memory Allocator: Making a Reservation}
+\label{fig:allocator-reservation}
+\end{figure}
+
+
+\section{The Scheduler}
+
+The system's scheduler is charged with finding a suitable accelerator slot 
+for a task wishing to execute. The scheduler is completely dynamic; it
+will accept the queueing of a task at anytime and possess no knowledge
+of future requests. The scheduler queue is implented using the 
+Concurrency Managed Workqueue API of the Linux kernel.
+Using this API provides a safe and well-tested work queue implementation
+that automatically handles synchronization and forward progress.
+Furthermore, the API makes use of pre-allocated kernel worker threads,
+which eases memory pressure on resource constrained environments.
+
+The work queue is not strictly FIFO, although it can be made so with trivial source
+modifications\footnote{The creation of the work queue by \texttt{alloc\_workqueue()}
+should enable the \texttt{WQ\_UNBOUND} flag and set the maximum active workers to 1.}.
+When the user enqueues a task, it is placed in the work queue to be processed asynchronously.
+A task execution includes the following steps, listed in order of execution:
+
+\begin{enumerate}
+\item	Call the scheduler to get an accelerator slot. The scheduler may instruct a
+	slot reconfiguration, therefore the call is possible to block for a few milliseconds
+	but will always return successfully.
+\item	Query, configure and start the accelerator.
+\item	Configure the transmit and receive channels for the new transaction.
+\item	Submit the transaction descriptors to the DMA Engine API.
+\item	Configure the completion notification (async\_tx API).
+\item	Force issue of all pending DMA transactions.
+\item	Block waiting for completion (or timer expiry).
+\item	Check DMA return status.
+\item	Check the accelerator return value.
+\item	Release the accelerator slot.
+\end{enumerate}
+
+Depending the system load and work queue configuration, the kernel will wake up
+a number of threads to process the work queue. Since this number is not predictable
+(only upper bounded) the scheduler does not make any assumptions and take all necessary
+synchronization measures to ensure atomicity and critical region locking.
+The scheduler pseudocode is presented below, in algorithm listing \ref{lst:scheduler}.
+Before we analyze it, let us describe the notions that appear in the pseudocode.
+
+\begin{itemize}
+\item	\textbf{Popularity} reflects the number of registered tasks that can be scheduled in this slot,
+	i.e. their effective affinity mask (see section \ref{sec:memory-allocator}) matches the slot id.
+\item	\textbf{BestFit} is the slot selection algorithm for the case no eviction is required.
+	A ``good fit'' is considered a slot that can run our task wheras it cannot run many of the other tasks. 
+	This metric factors in all reasons for which a task
+	is schedulable to a slot: The slot's size and/or special resource availability, 
+	available bitstreams, the interconnect restrictions, user affinity, etc.
+	If disabled, the scheduler reverts to a plain First-Fit.
+\item	\textbf{LeastPopular}
+\item	\textbf{Age} is how ``old'' an accelerator slot is. It is measured in scheduled tasks.
+	It is used by the Least-Recentyly-Used and Least-Recently-Programmed eviction aglorithms.
+\item	\textbf{AccessAge} defines if the slot's age is reset on every access, to implement LRU,
+	or only when it was first programmed, to implement LRP.
+\item	\textbf{Priority} has two different notions.
+	If the LRU or the LRP eviction algorithm is enabled, the priority has the notion of how fast a slot
+	ages. A low priority task will age fast, making a more possible candidate for eviction.
+	If the memoryless algorithm is used, the task with the lowest priority (highest value) will be elected for eviction.
+	Disabling priority will make all tasks have a constant priority of value 1, making the algorithm to evict
+	the first free slot it finds.
+
+\end{itemize}
+
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\Procedure{SlotReserve}{Client, AcceleratorSlots, Config}
+
+\ForAll {Slot \in AcceleratorSlots}	\Comment{needed by most replacement algo}
+	\If {Slot.Core \neq \emptyset}
+		\State Slot.CreationAge ~~$\xleftarrow{\text{+}}$~~ Slot.Core.Priority\;
+		\State Slot.AccessAge ~~$\xleftarrow{\text{+}}$~~ Slot.Core.Priority\;
+	\EndIf
+\EndFor
+\State
+\Repeat
+	\State CoreMask \gets 0\;
+	\ForAll {Slot \in AcceleratorSlots}
+		\If {Slot.Core = Client.Core}	\Comment{slot is already programmed}
+			\State CoreMask |= Slot.id\;
+		\EndIf
+	\EndFor
+
+	\State SelectedSlot \gets SelectSlot(CoreMask
+	\Statex {\bf and} Client.EffectiveAffinity) \;
+
+	\If {SelectedSlot \neq \emptyset}
+		\If {TryLock(SelectedSlot)}
+			\State Slot.HitCount++\;	\Comment{needed by LFU algo}
+			\State break\;
+		\Else
+			\State SelectedSlot.State \gets ~~ \emptyset\;
+		\EndIf
+	\EndIf
+	
+	\State SelectedSlot \gets SelectSlot(Client.Core.Availability 
+	\Statex {\bf and} Client.EffectiveAffinity)\;
+	\If {SelectedSlot \neq ~ \emptyset ~{\bfseries and} TryLock(SelectedSlot)=\texttt{FALSE}}
+		\State SelectedSlot \gets ~ \emptyset\;
+	\EndIf
+	\State
+	\If {SelectedSlot \neq ~ \emptyset}
+		\State Reconfigure(SelectedSlot, Core)\;
+	\Else
+		\State YieldProcessor\;
+	\EndIf
+\Until {SelectedSlot \neq ~ \emptyset}\;
+\State
+\State SelectedSlot.AccessAge \gets ~ 0\;	\Comment{reset slot age on every access}
+\State \textbf{return} SelectedSlot\;
+\EndProcedure
+\end{algorithmic}
+\caption{The Scheduler algorithm}
+\label{lst:scheduler}
+\end{algorithm}
 

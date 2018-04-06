@@ -95,7 +95,9 @@ static struct system {
 
 	struct zdma_pblock {
 		atomic_t state,
-			age,
+			creation_age,
+			access_age,
+			hits,
 			popularity;
 		unsigned long id;
 		spinlock_t lock;
@@ -165,10 +167,10 @@ static struct system {
 	struct zdma_config {
 		bool	clear_buffer,
 			block_user_ioctl,
-			sched_age,
-			sched_access_age,
-			sched_pri,
-			sched_fitness;
+			sched_bestfit;
+		struct zdma_pblock 
+			*(*algo)(unsigned long mask),
+			*(*victim_algo)(unsigned long mask);
 		unsigned alloc_order;
 		int (*alloc_score_func)(struct zdma_zone *, size_t, unsigned long);
 		genpool_algo_t alloc_bitmap_algo;
@@ -327,91 +329,165 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		return -EIO;
 	}
 
-	atomic_set(&pblock->age, 0);
+	atomic_set(&pblock->creation_age, 0);
+	atomic_set(&pblock->access_age, 0);
+	atomic_set(&pblock->hits, 2);
 	pblock->core = core;
 	return 0;
 }
 
 
+static struct zdma_pblock *algo_lp(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	int min_popularity = 999999;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		if (atomic_read(&pblock->popularity) <= min_popularity) {
+			min_popularity = atomic_read(&pblock->popularity);
+			pblock_sel = pblock;
+		}
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
+static struct zdma_pblock *algo_lfu(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	int max_period = -1;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		int curr_period = atomic_read(&pblock->access_age) / atomic_read(&pblock->hits);
+		if (curr_period > max_period) {
+			pblock_sel = pblock;
+			max_period = curr_period;
+		}
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
+static struct zdma_pblock *algo_lru(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	int max_access_age = -1;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		if (atomic_read(&pblock->access_age) > max_access_age) {
+			pblock_sel = pblock; 
+			max_access_age = atomic_read(&pblock->access_age);
+		}
+
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
+static struct zdma_pblock *algo_fifo(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	int max_creation_age = -1;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		if (atomic_read(&pblock->creation_age) > max_creation_age) {
+			pblock_sel = pblock; 
+			max_creation_age = atomic_read(&pblock->creation_age);
+		}
+
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
+static struct zdma_pblock *algo_pri(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	int max_pri = -1, curr_pri = 1;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		if (pblock->core)
+			curr_pri = pblock->core->priority;
+		if (curr_pri > max_pri) {
+			pblock_sel = pblock;
+			max_pri = curr_pri;
+		}
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
+static struct zdma_pblock *algo_first(unsigned long mask)
+{
+	struct zdma_pblock *pblock, *pblock_sel = NULL;
+	rcu_read_lock();
+	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
+		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
+			continue;
+		pblock_sel = pblock;
+		break;
+	}
+	rcu_read_unlock();
+	return pblock_sel;
+}
+
+
 static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 {
-	struct zdma_core *core = client->core;
+//	struct zdma_core *core = client->core;
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 
 	rcu_read_lock();
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-		if (pblock->core)
-			atomic_add(pblock->core->priority, &pblock->age);
+		if (pblock->core) {
+			atomic_add(pblock->core->priority, &pblock->creation_age);
+			atomic_add(pblock->core->priority, &pblock->access_age);
+		}
 	}
 	rcu_read_unlock();
 
 	do {
 		// at first, try to lock an already running core
-		int curr_popularity, min_popularity = 999999;
+		unsigned long same_core = 0ul;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-			if ((pblock->id & client->eff_affinity) == 0)
-				continue;
-			if ((pblock->core == core) && (atomic_read(&pblock->state) == PBLOCK_FREE)) {
-				if (sys.config.sched_fitness) {
-					curr_popularity = atomic_read(&pblock->popularity);
-					if (curr_popularity < min_popularity) {
-						pblock_sel = pblock;
-						min_popularity = curr_popularity;
-					}
-				} else {
-					pblock_sel = pblock;
-					break;
-				}
-			}
+			if (pblock->core == client->core)
+				same_core |= pblock->id;
 		}
+		pblock_sel = sys.config.algo(same_core & client->eff_affinity);
 		rcu_read_unlock();
+		//pr_info("called with same mask=%lx, effaff=%lx\n", same_core, client->eff_affinity);
 		
 		// if a free pblock with the requested core was found,
 		// attempt to lock it and exit the loop
 		if (pblock_sel) {
-			if (atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE)
+			if (atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
+				atomic_inc(&pblock_sel->hits);
 				break;
-			else	// another client grabbed the pblock since last check
+			} else {	// another client grabbed the pblock since last check
 				pblock_sel = NULL; // TODO check if a redo is worth the effort
+			}
 		}
 		
 		// if there was no pblock with the requested core,
 		// or if it was not free, try to find a free pblock
 		// to reconfigure it with our new core
-		int	max_age = -1,
-			max_pri = -1,
-			curr_pri = 1;
-		min_popularity = 999999;
-
-		rcu_read_lock();
-		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-			if ((pblock->id & client->eff_affinity) == 0)
-				continue;
-			if (atomic_read(&pblock->state) == PBLOCK_BUSY)
-				continue;	// it's busy, skip
-			if (bitstream_lookup_by_pointer(core, pblock) == NULL) 
-				continue;	// no bitstream for this pblock, skip
-
-			if ((!sys.config.sched_fitness) || (atomic_read(&pblock->popularity) <= min_popularity)) {
-				min_popularity = atomic_read(&pblock->popularity);
-			
-				if (sys.config.sched_age) {
-					if (atomic_read(&pblock->age) > max_age) {
-						pblock_sel = pblock; 
-						max_age = atomic_read(&pblock->age);
-					}
-				} else {
-					if (pblock->core)
-						curr_pri = pblock->core->priority;
-					if (curr_pri > max_pri) {
-						pblock_sel = pblock;
-						max_pri = curr_pri;
-					}
-				}
-			}
-		}
-		rcu_read_unlock();
+		pblock_sel = sys.config.victim_algo(client->core->availability & client->eff_affinity);
 
 		// If the chosen pblock got locked since initial check
 		// in previous lock, release it. This will never happen.
@@ -423,15 +499,15 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		// FIXME unecessary performance penalty if a core is not loadable on all cores
 		if (pblock_sel) {
 			if (debug)
-				pr_info("programming pblock %lu, age %d, pop %d, core %s->%s\n", 
+				pr_info("programming pblock %lu, creation age %d, access age %d, pop %d, core %s->%s\n", 
 					__fls(pblock_sel->id), 
-					atomic_read(&pblock_sel->age), 
+					atomic_read(&pblock_sel->creation_age), 
+					atomic_read(&pblock_sel->access_age), 
 					atomic_read(&pblock_sel->popularity),
 					pblock_sel->core->name, 
-					core->name);
-			int err = pblock_setup(pblock_sel, core);
+					client->core->name);
+			int err = pblock_setup(pblock_sel, client->core);
 			BUG_ON(err);
-			atomic_set(&pblock_sel->age, 0);
 		}
 		
 		// either no free pblock or no bitstream for the chosen pblock
@@ -440,8 +516,7 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 			schedule();
 	} while (pblock_sel == NULL);
 
-	if (sys.config.sched_access_age)
-		atomic_set(&pblock_sel->age, 0);
+	atomic_set(&pblock_sel->access_age, 0);
 
 	return pblock_sel;
 }
@@ -558,6 +633,9 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 void allocator_free(void *buf, size_t size)
 {
 	struct zdma_zone *zone;
+	if (sys.config.clear_buffer)
+		memset(buf, 0x00, size);
+
 	int nbits = (size + (1ul << sys.config.alloc_order) - 1) >> sys.config.alloc_order;
 
 	rcu_read_lock();
@@ -752,8 +830,10 @@ static int pblock_add(struct device_node *np)
 		err = -ENOSPC;
 		goto pblock_add_error_late;
 	}
-	atomic_set(&pblock->age, 0);
+	atomic_set(&pblock->creation_age, 0);
+	atomic_set(&pblock->access_age, 0);
 	atomic_set(&pblock->popularity, 0);
+	atomic_set(&pblock->hits, 1);
 
 	// now add the pblock to the list
 	spin_lock(&sys.pblocks_lock);
@@ -1099,28 +1179,29 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		case CONFIG_SECURITY_BUFFER_CLEAR:
 			sys.config.clear_buffer = true;
 			break;
-		case CONFIG_SCHED_OPT_PRIORITY_ENABLE:
-			sys.config.sched_pri = true;
+		case CONFIG_SCHED_BEST_FIT:
+			sys.config.algo = algo_lp;
 			break;
-		case CONFIG_SCHED_OPT_PRIORITY_DISABLE:
-			sys.config.sched_pri = false;
+		case CONFIG_SCHED_FIRST_FIT:
+			sys.config.algo = algo_first;
 			break;
-		case CONFIG_SCHED_OPT_FITNESS_ENABLE:
-			sys.config.sched_fitness = true;
+		case CONFIG_SCHED_VICTIM_FIRST:
+			sys.config.victim_algo = algo_first;
 			break;
-		case CONFIG_SCHED_OPT_FITNESS_DISABLE:
-			sys.config.sched_fitness = false;
+		case CONFIG_SCHED_VICTIM_PRI:
+			sys.config.victim_algo = algo_pri;
 			break;
-		case CONFIG_SCHED_VICTIM_FIRST_FREE:
-			sys.config.sched_age = false;
+		case CONFIG_SCHED_VICTIM_LP:
+			sys.config.victim_algo = algo_lp;
 			break;
-		case CONFIG_SCHED_VICTIM_LRP:
-			sys.config.sched_age = true;
-			sys.config.sched_access_age = false;
+		case CONFIG_SCHED_VICTIM_FIFO:
+			sys.config.victim_algo = algo_fifo;
 			break;
 		case CONFIG_SCHED_VICTIM_LRU:
-			sys.config.sched_age = true;
-			sys.config.sched_access_age = true;
+			sys.config.victim_algo = algo_lru;
+			break;
+		case CONFIG_SCHED_VICTIM_LFU:
+			sys.config.victim_algo = algo_lfu;
 			break;
 		default:
 			return -ENOTTY;	
@@ -1143,7 +1224,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 				return -ENOMEM;
 			}
 			strncpy(core->name, core_conf.name, CORE_NAME_LEN);
-			core->priority = sys.config.sched_pri ? core_conf.priority : 1;
+			core->priority = core_conf.priority;
 			core->availability = 0;
 			spin_lock_init(&core->bitstreams_lock);
 			INIT_LIST_HEAD(&core->bitstreams.node);
@@ -1544,9 +1625,9 @@ static int __init mod_init(void)
 
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_IOCTL_DEFAULT);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SECURITY_BUFFER_DEFAULT);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_DEFAULT);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_OPT_PRIORITY_DEFAULT);
-	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_OPT_FITNESS_DEFAULT);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_ALGO);
+	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_VICTIM_ALGO);
+//	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_SCHED_PRIORITY_DEFAULT);
 	sys.config.alloc_order = ALLOC_ORDER;
 
 	// register the driver to the kernel

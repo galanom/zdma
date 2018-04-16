@@ -40,19 +40,13 @@ enum config {
 	CONFIG_SCHED_VICTIM_ALGO = CONFIG_SCHED_VICTIM_LP,
 };
 
-struct zdma_client_config {
+struct zdma_task_config {
 	size_t	tx_size, rx_size;		// TX, RX buffer sizes
 //	u32	flags;				// various flags
-	unsigned long affinity;			// client affinity to pblock
+	unsigned long affinity;			// task affinity to pblock
 	char	core_name[CORE_NAME_LEN];	// requested core
 	u32	core_param[CORE_PARAM_CNT];	// core parameters
 	int	core_param_count;
-};
-
-struct zdma_task {
-	int fd;
-	void *tx_buf, *rx_buf;
-	struct zdma_client_config conf;
 };
 
 struct zdma_core_config {
@@ -72,7 +66,7 @@ enum module_ioctl {
 	ZDMA_CONFIG		= _IOW(MAGIC, 0x03, long),
 	ZDMA_CORE_REGISTER	= _IOW(MAGIC, 0x10, struct core_config *),
 	ZDMA_CORE_UNREGISTER	= _IOW(MAGIC, 0x11, const char *),
-	ZDMA_CLIENT_CONFIG	= _IOW(MAGIC, 0x20, struct client_config *),
+	ZDMA_CLIENT_CONFIG	= _IOW(MAGIC, 0x20, struct task_config *),
 	ZDMA_CLIENT_ENQUEUE_BLOCK	= _IO (MAGIC, 0x21),
 	ZDMA_CLIENT_ENQUEUE_NOBLOCK	= _IO (MAGIC, 0x22),
 	ZDMA_CLIENT_WAIT	= _IO (MAGIC, 0x23),

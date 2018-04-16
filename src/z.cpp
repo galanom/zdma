@@ -44,17 +44,17 @@ int main(int argc, char **argv)
 	if (argc >= 4)
 		verify = true;
 
-	zdma_core_register("gauss", 1, 0xffff);
-	zdma_core_register("sobel", 1, 0xf0f0);
-	zdma_core_register("outline", 1, 0x0f0f);
-	zdma_core_register("sharpen", 1, 0xaaaa);
-	zdma_core_register("emboss", 1, 0x99ff);
+	zdma_core_register("threshold", 1, 0xffff);
+	/*zdma_core_register("sobel", 1, 0xffff);
+	zdma_core_register("outline", 1, 0xffff);
+	zdma_core_register("sharpen", 1, 0xffff);
+	zdma_core_register("emboss", 1, 0xffff);
+	zdma_core_register("contrast", 1, 0xcc00);
+	zdma_core_register("negative", 1, 0xcc00);
+	zdma_core_register("threshold", 1, 0xcc00);
+	zdma_core_register("loopback", 1, 0xcc00);
 
-	zdma_core_register("negative", 1, 0xff);
-	zdma_core_register("contrast", 1, 0x00ff);
-	zdma_core_register("threshold", 1, 0xf00f);
-	zdma_core_register("loopback", 1, 0xf);
-	int core_num = 9;
+	int core_num = 9;*/
 
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
@@ -71,8 +71,9 @@ int main(int argc, char **argv)
 		out[i].create(img.size(), img.type());
 		err = zdma_task_init(&task[i]);
 		assert(!err);
-		if (i % core_num == 0)
-			err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);
+		err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);
+/*		if (i % core_num == 0)
+			err  = zdma_task_configure(&task[i], "loopback", -1, img_size, img_size, 0);
 		else if (i % core_num == 1)
 			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
 		else if (i % core_num == 2)
@@ -88,12 +89,12 @@ int main(int argc, char **argv)
 		else if (i % core_num == 7)
 			err  = zdma_task_configure(&task[i], "negative", -1, img_size, img_size, 0);
 		else
-			err  = zdma_task_configure(&task[i], "loopback", -1, img_size, img_size, 0);
+			err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);*/
 		assert(!err);
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}
-
-	zdma_debug();
+	(void)verify;
+//	zdma_debug();
 	
 	struct timespec t0, t1;
 	clock_gettime(CLOCK_MONOTONIC, &t0);
@@ -105,16 +106,17 @@ int main(int argc, char **argv)
 			assert(!err);
 		}
 		
-		#pragma omp for
+/*		#pragma omp for
 		for (int j = 0; j < task_num; ++j) {
-			err = zdma_task_waitfor(&task[j]);
-			assert(!err);
+//			err = zdma_task_waitfor(&task[j]);
+//			assert(!err);
 			if (verify) {
 				memcpy(out[j].data, task[j].rx_buf, img_size);
 				imwrite("t" + to_string(j) + "r" + to_string(i)	+ 
 					"." + task[j].conf.core_name + ".jpg", out[j]);
 			}
 		}
+*/
 	}
 	
 	err = zdma_barrier();
@@ -128,7 +130,7 @@ int main(int argc, char **argv)
 	int t = tdiff(t1, t0);
 	cout << "Exec: " << task_num << " tasks by " << iter_num << " times, time: " 
 		<< t/1000 << "." << t%1000 << ", throughput: " << 
-		task_num*iter_num*(long long)img_size/(t*1000.0) << "MiB/s" << endl;
+		task_num*iter_num*2*(long long)img_size/(t*1000.0) << "MB/s" << endl;
 	return 0;
 }
 

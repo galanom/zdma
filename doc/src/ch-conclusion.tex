@@ -1,0 +1,161 @@
+\chapter{Conclusion}
+
+We developed a complete reconfigurable system, capable of providing hardware accelerators on-demand to the end user.
+The system was designed with a server environment in mind -- that is, a capable GNU/Linux system performing
+random user tasks in an unpredictable timing but of somewhat predictable nature, whose computational kernel
+can be off-loaded to the FPGA. As such, it is capable of handling any dynamic load within the system's memory limits,
+with no pre-defined static schedule or any other prior knowledge.
+
+Usage scenarios may include a web server, which can use the FPGA to perform the common encryption/decryption and
+compression/decompression tasks that are typical to such a workload. Our specific application could be made useful
+in a server that performs image or other media processing over a vast number of user content. Finally, it could
+also find place in an interactive multimedia application,
+allowing high-performance video editing or other media transformation.
+If the user-level application can tightly control the timing of execution requests, this system could even serve
+as a backend to a higher level Real-Time Management System.
+
+The design of the system tried to cover many possible scenarios, including the need of accelerators with
+a dedicated path to the memory, accelerators of different degree of criticality,
+heterogeneous memory resources of different speed, etc.
+It is designed right from the start with concurrent memory access in mind and it takes advantage of the
+platform hardware capabilities for parallelization. Acknowledging the variety of usage scenarios, several
+scheduling and accelerator replacement algorithms were implemented.
+Additionally, the administrator may define an affinity mask of the accelerator variants to the available slots,
+wheras the user may define a similar mask for their tasks. This way it is possible to enforce isolation,
+either for quality of service and predictability or for security.
+
+A system shared library is provided that abstracts all system details, making it easy of the application
+developer to use the system without any need of hardware knowledge.
+
+\section{Challenges and Lessons Learned}
+
+The development of this system was not without unpredicted or underestimated problems. In this section
+we will try to discuss some of the noteworthy issues that arose during development.
+
+\subsection{The Implementation Workflow}
+
+The first and foremost is our underestimation of hardware implementation difficulty of such a system and of partial
+reconfiguration in general. A basic working system to be used as a proof-of-concept is rather easy to implement.
+However, as the clock frequency and the number of \glspl{rp} rise, things change a lot. A major issue is that there is
+no partition placer tool despite that proper size, shape and placement is critical for attaining the highest perfomance.
+Thus, the work of the placer had to be done manually. The effort of this endeavor increases exponentially with the target clock.
+For example, our 16-core design could possibly be successfully routed with the first attempt at 100MHz. Increasing the clock
+to 125MHz requires many hours or tweaking. In order to reach the final goal of 133MHz it required several days of experimentation
+with partition moving or swapping, changing tool settings, chosing the correct initial configuration, finding per-variant
+optimal implementation settings, etc. As performance difference proved to be minimal, it is a question if it was worth the effort.
+
+The partition sizing was a decision that if it was to be taken again, it would be taken differently.
+In section \ref{sec:sizing} we discussed the sizing trade-offs. A factor not properly weighed was the
+availability and capability of routing resources. Each partition comes with a fixed cost which does
+not constitute only the LUTs of AXI DMA, but also the wires that connect it, the interconnect crossbar,
+the wires that implement the control interfaces of both the accelerator and the AXI DMA, as well as their own,
+seperate interconnects. Routing can become difficult and at some point, it will necessitate a clock frequency reduction.
+
+
+\subsection{The Xilinx Tools}
+
+An important issue proved to be the implementation tools maturity. The partial reconfiguration TCL scripts that Xilinx offers
+are not optimized at all. They are not multithreaded even in cases it would be easy to do so, e.g. a parallel \gls{ooc} synthesis
+of module variants or parallel implementation of module variants. Some work could be reused, e.g.
+the implementation of each variant needs carving out the modules of initial configuration,
+and this is repeated for each variant when the carved configuration could be saved and reused. 
+
+As of version 2017.2,
+the Vivado implementation tool support for UltraScale devices appear to be immature. Partial reconfiguration frequently
+causes locking of special resources (BRAM and DSP tiles) during initial configuration, causing the placement failure of the next.
+This is irrespectively of the variant used for each configuration. The issue was worked around by reshaping the affected partitions,
+but no golden rule could be figured out for what consists a favorable shape, and no help could be gained from Xilinx forums.
+
+A final and huge issue it the tools speed. At the GUI front, designing larger systems visually is virtually impossible.
+The slightest action causes a sequence of object property propagation which can be an excruciating for a large design.
+This can manifest at some unexplainable ways, like refreshing the custom IP directory data when the user changes the floorplanner's color palette.
+The designer must not hesitate to learn operating Vivado from the TCL console -- the effort invested will pay out fast.
+
+At the backend front, the workflow on ZynqMP target is sluggish in every possible way. Implementation is much more time consuming
+that the four-fold increase of LUT count between Z-7020 of Zedboard and XCZU9EG of zcu102 could justify. Even marking a module
+as a black-box is considerably slower; a process that takes less than a minute on Z-7020 would take more than an hour on XCZU9EG.
+A full partial reconfiguration synthesis, implementation, verification and bitstream generation would need several hours at most
+for the former but around a week for the latter in a dual Xeon X5660. 
+
+Clearly, in any new project an UltraScale-class device should not be used for initial development.
+It would be preferrable that first stages to be done in a 7-class device if possible,
+and then switch to an UltraScale-class device when the design is ready for device-specific optimizations.
+
+\subsection{The Efficiency of HLS}
+
+Finally, the usefulness of the HLS tool should be reconsidered. The HLS was chosen for accelerator implementation as it
+allows quick prototyping.
+The time from the initial algorithm conception to a validated working bitstream can be more than an order
+of magnitute less than of a traditional HDL workflow. 
+
+However, from that stage to the final optimized version is a completely different story.
+The resource consumption and attained latency of HLS is difficult to control and even more difficult to predict.
+As we saw at section \ref{sec:gaussian}, a minor chage of filter values reduced overall LUT utilization by 11\%.
+%In table \ref{tab:acc-util}
+%we saw that the emboss filter has twice the latency of the sharpen filter, despite that these filters have identical complexity.
+%Oddly enough, it also has twice latency compared to sobel which has a two-fold increased complexity.
+%TODO na to tsekarw prota
+
+Extreme caution should be paid to variable sizes as they dictate the inferred execution unit size -- e.g.
+in contrast accelerator (see \ref{sec:contrast}) we used \texttt{int} types to express the brightness and contrast parameters, 
+as from the processor we only do 32-bit load/stores.
+This inadvertently later caused a 32-bit divider to be inferred when an 8-bit would suffice. In many cases, when the bounds of the values
+a variable will receive in its lifetime can be known at compile-time, HLS will trim the variable accordingly -- a typical example
+is the index of a constant bounds loop. Integer promotion oftentimes may be inconsistent.
+For example, if a product of two \texttt{short}s (16 bits) is stored to a \texttt{char} (8 bits), an 8-bit multiplier will be inferred.
+However, if operands were \texttt{int}s (32 bits), a 32-bit multiplier would be inferred. Usually these discrepancies will be sortened out
+by the synthesizer. Finally, the effect of setting the clock target can be odd. If HLS fails to achieve the desired period,
+one could try an even more difficult target and the HLS may restructure the code to achieve the original, previously failed, target.
+
+To make things worse, the HLS resource utilization and latency estimates should be treated as randomly generated numbers.
+In order to confirm resource utilization, the designer should export the compiled output to a synthesized device checkpoint.
+The post-synthesis resource utilization report is far more precise. Regarding latency, numbers may be deceptive. For example,
+in table \ref{tab:acc-util} we see that the estimated latency does not matched measured peformance in table \ref{tab:acc-throughput}.
+
+%Some of these issues could possibly consist current implementation weaknesses that could be mitigated in the future.
+%However there have been difficulties that arise from the language's design. 
+%C and C++ were never designed as anything but software languages and therefore all their operators reflect common CPU operations
+%and do not possess the expressivity to describe common hardware concepts. Xilinx has made the effort of extending the language
+%to offer some essential hardware concepts, most importantly the arbirtrary integer arithmetic. Some 
+
+%Overall, the effort spent trying to control resource utilization and latency was multiple orders of magnitude higher than
+%what the initial working version needed. Certainly, even more is required to achieve optimal performance -- for example,
+%the accelerators that perform 2D convolution trail in latency at 8-to-1 ratio compared to the ones that peform pixel transformations,
+%with suspected culprit the inefficent use of the BRAM by the linebuffer class.
+
+At the end of the day, the use of HLS was a regretful decision.
+The effort spent to control resource utilization and latency was unexpectedly high and the result was mediocre.
+It was viewed as a quick and easy solution to implement a simple test application to evaluate our system 
+but it proved to be neither easy, and certainly, nor quick.
+
+\section{Future Work}
+
+The are several oportunities to optimize or extend this work.
+....
+
+\subsection{A More Efficient use of DMA controllers}
+
+The AXI DMA IP core was used in Direct Register mode because it is the simplest solution, not the most efficient.
+This core can be configured to support Scatter-Gather at a cost of around 33\% more resources (see table \ref{tab:dma-modes}).
+However
+
+
+\subsection{Simplifying Accelerator Control}
+
+The \gls{axilite} protocol rightfully gained its name as it requires only a few dozen of LUT instances to implement a slave interface.
+Nonetheless, this slave interface consists of 94 wires. Despite that we have so modest demands for throughput from a configuration
+port, the interface still implements seperate address, read and write channels, as all members of the \gls{axi} family do.
+On top of that, we should add the implementation of the required interconnect.
+
+It is worth exploring the use of a simpler protocol, even a serial one. The I\textsuperscript{2}C is rather slow but it uses only
+two wires (clock and data) shared between all slaves. The SPI needs a clock, a data-in and a data-out plus one slave select per slave,
+but it is significantly faster.
+
+A more efficient solution would be to embed configuration data in the data stream. It adds some implementation complexity
+and might be a bit restrictive in some cases, but it comes at no cost in routing resources.
+
+
+
+
+
+

@@ -1,4 +1,4 @@
 #pragma once
 #define FORCE_DSP48
-#define CORE_NAME zcore16
-typedef uint16_t axi_data_t;
+#define CORE_NAME zcore32
+typedef uint32_t axi_data_t;

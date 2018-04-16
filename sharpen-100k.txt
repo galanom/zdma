@@ -1,0 +1,361 @@
+Œ‘ÿ512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete.. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 10.3 MiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.3 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.2 MiB/s
+done
+Bytes transferred = 14010889 (d5ca09 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 7.9 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14010825 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc8000, end 1eb249c9 ... OK
+   Loading Device Tree to 1ddc0000, end 1ddc709c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316940K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27124K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007781] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018712] Switching to timer-based delay loop, resolution 3ns
+[    0.024622] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033589] timer #0 at e080a000, irq=17
+[    0.037912] Console: colour dummy device 80x30
+[    0.042158] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052552] pid_max: default: 32768 minimum: 301
+[    0.057231] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063663] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071271] CPU: Testing write buffer coherency: ok
+[    0.076110] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081620] Setting up static identity map for 0x100000 - 0x100058
+[    0.257892] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257996] Brought up 2 CPUs
+[    0.266358] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272653] CPU: All CPU(s) started in SVC mode.
+[    0.278062] devtmpfs: initialized
+[    0.285715] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293398] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305250] pinctrl core: initialized pinctrl subsystem
+[    0.311650] NET: Registered protocol family 16
+[    0.317834] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357960] cpuidle: using governor menu
+[    0.377418] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385241] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391090] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397931] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.429126] SCSI subsystem initialized
+[    0.433131] usbcore: registered new interface driver usbfs
+[    0.438896] usbcore: registered new interface driver hub
+[    0.444086] usbcore: registered new device driver usb
+[    0.449328] pps_core: LinuxPPS API ver. 1 registered
+[    0.454077] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.463167] PTP clock support registered
+[    0.467031] EDAC MC: Ver: 3.0.0
+[    0.478477] FPGA manager framework
+[    0.481955] fpga-region fpga-full: FPGA Region probed
+[    0.498083] clocksource: Switched to clocksource arm_global_timer
+[    0.518867] NET: Registered protocol family 2
+[    0.523692] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.530681] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.536964] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.543253] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.548986] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.555287] NET: Registered protocol family 1
+[    0.569895] RPC: Registered named UNIX socket transport module.
+[    0.575594] RPC: Registered udp transport module.
+[    0.580302] RPC: Registered tcp transport module.
+[    0.584882] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.591520] Trying to unpack rootfs image as initramfs...
+[    1.541362] Freeing initrd memory: 13684K (dddc8000 - deb25000)
+[    1.547331] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.556624] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.562678] audit: initializing netlink subsys (disabled)
+[    1.567892] audit: type=2000 audit(1.519:1): initialized
+[    1.573923] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.580917] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.588679] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.595841] io scheduler noop registered
+[    1.599742] io scheduler deadline registered
+[    1.603935] io scheduler cfq registered (default)
+[    1.610725] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.617199] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.625986] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.634211] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.643257] console [ttyPS0] enabled
+[    1.643257] console [ttyPS0] enabled
+[    1.650273] bootconsole [cdns0] disabled
+[    1.650273] bootconsole [cdns0] disabled
+[    1.658721] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.668706] brd: module loaded
+[    1.678880] loop: module loaded
+[    1.685083] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.691353] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.696277] 5 ofpart partitions found on MTD device spi0.0
+[    1.701735] Creating 5 MTD partitions on "spi0.0":
+[    1.706483] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.713711] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.720372] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.727529] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.734358] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.745439] libphy: Fixed MDIO Bus: probed
+[    1.754905] CAN device driver interface
+[    1.760335] libphy: MACB_mii_bus: probed
+[    1.868311] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.878181] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.891468] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.898008] usbcore: registered new interface driver usb-storage
+[    1.904207] e0002000.usb supply vbus not found, using dummy regulator
+[    1.910917] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.916491] Found TI TUSB1210 ULPI transceiver.
+[    1.921040] ULPI integrity check: passed.
+[    1.925017] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.929915] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.958121] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.964350] hub 1-0:1.0: USB hub found
+[    1.968054] hub 1-0:1.0: 1 port detected
+[    1.973816] mousedev: PS/2 mouse device common for all mice
+[    1.979609] i2c /dev entries driver
+[    1.984793] EDAC MC: ECC not enabled
+[    1.989271] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.996511] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    2.005157] Xilinx Zynq CpuIdle Driver started
+[    2.010101] sdhci: Secure Digital Host Controller Interface driver
+[    2.016197] sdhci: Copyright(c) Pierre Ossman
+[    2.020562] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.090169] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.097778] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.103971] usbcore: registered new interface driver usbhid
+[    2.109479] usbhid: USB HID core driver
+[    2.115411] NET: Registered protocol family 10
+[    2.120778] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.127439] NET: Registered protocol family 17
+[    2.131840] can: controller area network core (rev 20120528 abi 9)
+[    2.138020] NET: Registered protocol family 29
+[    2.142416] can: raw protocol (rev 20120528)
+[    2.146641] can: broadcast manager protocol (rev 20161123 t)
+[    2.152308] can: netlink gateway (rev 20130117) max_hops=1
+[    2.157933] Registering SWP/SWPB emulation handler
+[    2.169845] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.436615] udevd[708]: starting version 3.2.1
+[    2.442031] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.448660] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.455118] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.472205] udevd[709]: starting eudev-3.2.1
+[    2.567972] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.597205] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.603389] zoled: loading out-of-tree module taints kernel.
+[    2.613254] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.621611] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.634377] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.641951] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.649491] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.658756] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.666050] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.671984] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.677579] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.688961] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.697417] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.707557]  zone@de6e0010: assigned reserved memory node all_ports@10000000
+[    2.783562] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.789718] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.306929] random: dd: uninitialized urandom read (512 bytes read)
+Sat Apr 14 04:33:54 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.407310] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# [    6.518380] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.523980] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+z
+Core sharpen registered 6 bitstream(s)
+[  531.698118] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.45, throughput: 27.3067MB/s
+root@zedboard-zynq7:~# z
+Core sharpen registered 0 bitstream(s)
+[  533.112461] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.55, throughput: 22.3418MB/s
+root@zedboard-zynq7:~# 1[Jz 11[J00[J[J[J4[J45 1
+Core sharpen registered 0 bitstream(s)
+[  542.622644] dev_ioctl[1165] flushing queue
+Exec: 45 tasks by 1 times, time: 0.117, throughput: 472.615MB/s
+root@zedboard-zynq7:~# vi go
+[?1049h[1;1H[J[2;1H~[3;1H~[4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/1 100%[1;1H[1;1H[24;1H[KI go 1/1 100%[1;1H[1;1HOn[1;3H[1;3H-camera per[1;14H[1;14Hsonalities â€“ who, to vie[1;40H[1;1Hamera personalities â€“ who, to viewers, are the trusted faces of news departme[2;1H [3;1H [4;1H [5;1H [6;1H [7;1H [8;1H [9;1H [10;1H [11;1H [12;1H [13;1H [14;1H [15;1H [16;1H [17;1H [18;1H [19;1H [20;1H [21;1H [22;1H [23;1H [1;80H[1;1H faces of news departments â€“ were used by Sinclair to disseminate their coord[2;1H                                                                                [3;1H                                                                                [4;1H                                                                                [5;1H                                                                                [6;1H                                                                                [7;1H                                                                                [8;1H                                                                                [9;1H                                                                                [10;1H                                                                                [11;1H                                                                                [12;1H                                                                                [13;1H                                                                                [14;1H                                                                                [15;1H                                                                                [16;1H                                                                   [  550.327373] random: fast init done
+             [17;1H                                                                                [18;1H                                                                                [19;1H                                                                                [20;1H                                                                                [21;1H                                                                                [22;1H                                                                                [23;1H                                                                                [1;80H[1;1Hdisseminate their coordinated message. In newsrooms, the division between opini[2;1H                                                                                [3;1H                                                                                [4;1H                                                                                [5;1H                                                                                [6;1H                                                                                [7;1H                                                                                [8;1H                                                                                [9;1H                                                                                [10;1H                                                                                [11;1H                                                                                [12;1H                                                                                [13;1H                                                                                [14;1H                                                                                [15;1H                                                                                [16;1H                                                                                [17;1H                                                                                [18;1H                                                                                [19;1H                                                                                [20;1H                                                                                [21;1H                                                                                [22;1H                                                                                [23;1H                                                                                [1;80H[1;1H division between opinion and fact is a sacred one. Borrowing the credibility o[2;1H                                                                                [3;1H                                                                                [4;1H                                                                                [5;1H                                                                                [6;1H                                                                                [7;1H                                                                                [8;1H                                                                                [9;1H                                                                                [10;1H                                                                                [11;1H                                                                                [12;1H                                                                                [13;1H                                                                                [14;1H                                                                                [15;1H                                                                                [16;1H                                                                                [17;1H                                                                                [18;1H                                                                                [19;1H                                                                                [20;1H                                                                                [21;1H                                                                                [22;1H                                                                                [23;1H                                                                                [1;80H[24;1H[KI go [Modified] 1/1 100%[1;80H[24;1H[KI go [Modified] 2/2 100%[1;80H[1;1HOn-camera personalities â€“ who, to viewers, are the trusted faces of news depar[2;1H                                                                                [3;1H                                                                                [4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[3;1H[24;1H[KI go [Modified] 3/3 100%[3;1H[3;1H[24;1H[K- go [Modified] 3/3 100%[3;1H[24;1H[K:q![3;1H[3;1H[24;1H[K- go [Modified] 3/3 100%[3;1H[24;1H[K[?1049lroot@zedboard-zynq7:~# vu [J[Ji o[Jgo
+[?1049h[1;1H[J[2;1H~[3;1H~[4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/1 100%[1;1H[1;1H[24;1H[KI go 1/1 100%[1;1H[1;1Hf[1;2H[1;2Ho[1;3H[1;3Hr[1;4H[1;5H[1;5Hi[1;6H[1;7H[1;7Hi[1;8H[1;8Hn[1;9H[1;10H[1;10H`[1;11H[1;11Hs[1;12H[1;12He[1;13H[1;13Hq[1;14H[1;15H[1;15H1[1;16H[1;16H0[1;17H[1;16H [1;16H[24;1H[KI go [Modified] 1/1 100%[1;16H[1;15H [1;15H[1;15H5[1;16H[1;15H [1;15H[1;15H6[1;16H[1;16H`[1;17H[2;1H [2;1H[24;1H[KI go [Modified] 2/2 100%[2;1H[2;1Hd[2;2H[2;2Ho[2;3H[3;1H [3;1H[24;1H[KI go [Modified] 3/3 100%[3;1H[3;9H[3;9Hz[3;10H[3;11H[3;11H$[3;12H[3;12Hi[3;13H[3;14H[3;14H1[3;15H[3;15H0[3;16H[3;16H0[3;17H[3;17H0[3;18H[3;18H0[3;19H[3;19H0[3;20H[4;1H [4;1H[24;1H[KI go [Modified] 4/4 100%[4;1H[4;1Hd[4;2H[4;2Ho[4;3H[4;3Hn[4;4H[4;4He[4;5H[3;9H[24;1H[KI go [Modified] 3/4 75%[3;9H[2;3H[24;1H[KI go [Modified] 2/4 50%[2;3H[1;3H[24;1H[KI go [Modified] 1/4 25%[1;3H[1;3H[1;17H[1;16H[1;15H` [1;15H[1;15H1`[1;16H[1;16H0`[1;17H[1;16H[24;1H[K- go [Modified] 1/4 25%[1;16H[24;1H[K:wq[1;16H[1;16H[24;1H[K'go' 4L, 39C[1;16H[24;1H[K[?1049lroot@zedboard-zynq7:~# chmod +x go
+root@zedboard-zynq7:~# ./go
+Core sharpen registered 0 bitstream(s)
+[  629.228739] random: crng init done
+[ 1288.283460] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100000 times, time: 698.866, throughput: 175.828MB/s
+Core sharpen registered 0 bitstream(s)
+[ 1988.563141] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 100000 times, time: 700.153, throughput: 351.009MB/s
+Core sharpen registered 0 bitstream(s)
+[ 2689.495084] dev_ioctl[1165] flushing queue
+Exec: 3 tasks by 100000 times, time: 700.762, throughput: 526.056MB/s
+Core sharpen registered 0 bitstream(s)
+[ 3389.755034] dev_ioctl[1165] flushing queue
+Exec: 4 tasks by 100000 times, time: 700.49, throughput: 702.122MB/s
+Core sharpen registered 0 bitstream(s)
+[ 4090.303112] dev_ioctl[1165] flushing queue
+Exec: 5 tasks by 100000 times, time: 700.277, throughput: 877.367MB/s
+Core sharpen registered 0 bitstream(s)
+[ 4790.787968] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 100000 times, time: 700.195, throughput: 1052.96MB/s
+Core sharpen registered 0 bitstream(s)
+[ 5610.992776] dev_ioctl[1165] flushing queue
+Exec: 7 tasks by 100000 times, time: 819.834, throughput: 1049.19MB/s
+Core sharpen registered 0 bitstream(s)
+[ 6548.785387] dev_ioctl[1165] flushing queue
+Exec: 8 tasks by 100000 times, time: 937.411, throughput: 1048.68MB/s
+Core sharpen registered 0 bitstream(s)
+[ 7611.552140] dev_ioctl[1165] flushing queue
+Exec: 9 tasks by 100000 times, time: 1062.299, throughput: 1041.06MB/s
+Core sharpen registered 0 bitstream(s)
+[ 8785.636927] dev_ioctl[1165] flushing queue
+Exec: 10 tasks by 100000 times, time: 1173.617, throughput: 1047.02MB/s
+root@zedboard-zynq7:~# 
+
+
+
+BIG UIMAGE
+177.159
+354.284
+530.615
+708.396
+885.418
+
+1062.47
+1064.37
+1064.88
+1063.27
+1064.67

@@ -17,6 +17,39 @@ be done in kernel mode, namely the file operations to read the partial bitstream
 The development was initially done in Xilinx PetaLinux, but later the work was
 ported to the Yocto Project framework, which is officially supported by Xilinx.
 
+\section{System Initialization}
+
+The kernel driver has two requirements: A working bitstream loaded on the FPGA,
+and a correct \gls{fdt} that describes faithfully the hardware implemented in that bitstream.
+After system has initialized, further input comes from user requests via the system library.
+These requests consist of a control command and optionally a partial bitstream.
+
+The timing that this input is provided is important for system initialization.
+The \gls{fdt} is supposed to describe existing hardware, 
+and when the driver detects the hardware via \gls{fdt} it will attempt to access it.
+Therefore, initial FPGA programming must precede the hardware declaration in the \gls{fdt}
+if the kernel is running. This also stands true for the other drivers -- for example,
+when the AXI DMA IP \gls{fdt} entry is visible, the system will attempt to load the \texttt{xilinx\_dma}
+driver which will attempt to initialize the IP core, assuming it is there.
+
+Currently, there is ongoing work at the Linux implementation of the \gls{dt} to make it more
+flexible for the reconfigurable hardware, FPGAs and modular single board computers.
+We will briefly discuss this in section \ref{sec:linux-pr} but for now let us assume that \gls{fdt} is static.
+Therefore, the ideal solution would be to deliver the bitstream to the FPGA and the \gls{fdt} to the kernel
+before the kernel boots, when the bootloader is running. Xilinx has patched U-Boot to allow it to program their FPGAs,
+and this is the recommended way.
+
+When system has booted and the driver is loaded, it assumes it is the sole user of the FPGA.
+The end-user can interact with the driver either through the wrapper library or directly with ioctl commands.
+Partial reconfiguration should be done only via this interface,
+or it will go unnoticed and the system will behave as if the old accelerator was still present.
+
+A system shutdown is achieved by removing the driver.
+The driver will release all the resources it claimed; memory, I/O space, DMA channels, etc.
+The user may reload the driver, but if the intent was to perform a new full reconfiguration,
+the \texttt{xilinx\_dma} should also be removed.
+
+
 \section{The System Library}
 
 The system library which functions as the interface to the user
@@ -52,7 +85,7 @@ All bitstreams are expected to be at \texttt{/lib/firmware/zdma/} directory,
 and the naming convention would be \texttt{<CORE\_NAME>.<RP\_IDX>.bin.xz},
 where \texttt{<CORE\_NAME>} is the accelerator core name (i.e. ``sobel'')
 and \texttt{<RP\_IDX>} is the \gls{rp} index, an integer that matches
-the \texttt{zcore{16,32,64}\_i} naming in the \gls{dt} (see section \ref{sec:dt}).
+the \texttt{zcore\{16,32,64\}\_i} naming in the \gls{dt} (see section \ref{sec:dt}).
 All bitstream naming and compression is done by the P.R. scripts (see appendix section \ref{sec:scripts-install}),
 while the decompression is done inside the kernel. There is no user intervention.
 
@@ -554,7 +587,16 @@ lending unused memory to the \gls{buddy}, it offers multiple advantages:
 
 The allocator executes in two stages. At first, it will attempt to find the most suitable zones that
 fulfill all requirements for the transmit and receive buffer. After a selection was made, it will
-attempt to reserve the requested amount of memory. 
+attempt to reserve the requested amount of memory. Initially, the allocator was implemented
+using the \texttt{genalloc} subsystem. This subsystem is intended for allocation of special-purpose
+memory resources, typically from on-board SRAM or OCM of embedded devices. 
+It was a quick and easy implementation but the subsystem was too restrictive for our purposes as
+it does not differentiate the memory zones and their selection was only on a first-fit basis.
+The subsystem was patched to allow custom algorithms for zone selection and zone metadata were held
+at the kernel driver. However, it was an unclean solution that became difficult to maintain and extend.
+It was decided that the first stage should be re-written to our needs while keeping its original concept.
+The second stage that involves the per-zone bitmap manipulation continues to use the \texttt{genalloc}
+library.
 
 In figure \ref{allocator-overview} we can see an overview of the memory allocator function.
 A reservation always takes place in pairs: a transmit and a receive buffer, one of them can be of zero size
@@ -582,8 +624,9 @@ desirability of one memory zone versus the others. The $MemoryAvailability$ is t
 to the requested memory amount while $ZoneOccupancy$ represents the number of clients that have a reservation on this
 memory zone, irrespectively of the amount of memory allocated. These parameters aim to spread the memory utilization 
 among the zones, under the assumption that they are served by different interconnects, therefore balancing the data
-traffic at the underlying hardware. The $Schedulability$ represents the scheduler freedom to place a task.
-It is quantified as the population count (i.e. the number of ones in a word) of the AND product of the following three masks: 
+traffic at the underlying hardware. The $Schedulability$ represents the scheduler freedom to place the task if this zone is chosen.
+It is quantified as the population count (i.e. the number of ones in a word) of the $SchedulabilityMask$, which we will define
+as the AND product of the following three masks:
 
 \begin{itemize}
 \item	\textbf{Core Availability}, that represents the bitstreams that are available to the kernel driver 
@@ -749,35 +792,76 @@ a number of threads to process the work queue. Since this number is not predicta
 (only upper bounded) the scheduler does not make any assumptions and take all necessary
 synchronization measures to ensure atomicity and critical region locking.
 The scheduler pseudocode is presented below, in algorithm listing \ref{lst:scheduler}.
-Before we analyze it, let us describe the notions that appear in the pseudocode.
+
+We can see that an execution loop consists of two attempts to reserve a slot,
+each passing a different bitmask as an argument. The bitmask represents the slots
+that $ReserveSlot()$ is allowed to consider. The common term, $Task.EffectiveAffinity$,
+represents the user defined task affinity further constrained by the interconnect restraints
+(see Task Affinity and Partition Affinity Mask in section \ref{sec:memory-allocator}).
+
+The first attempt used the additional mask $CoreMask$,
+which we construct by placing a 1 wherever the already programmed core ($Slot.Core$) is the same with the one
+the task intends to use ($Task.Core$). Essentially, this restricts the search space only the slots that
+will not require reconfiguration. If the search is unsuccessful, the second attempt will be with the
+$Task.Core.Availability$ mask, i.e. all the slots that have a bitstream available for this core variant,
+which after constrained by $Task.EffectiveAffinity$ would be equal to $SchedulabilityMask$, 
+i.e. all the possible legal slots for this task.
+Of course, this would require us to re-configure the slot and suffer the corresponding time penalty.
+
+The $SelectSlot$ is actually a function pointer, and the selection algorithm can be configured by the system
+administrator as we saw at the figure \ref{fig:config} at section \ref{sec:sw-api-sys}. The functions that
+implement the two calls are common, however the configuration options are seperate since the context is
+a different and as most are replacement algorithms, they have no purpose in the first stage.
+A detailed list of algorithms implemented is given below at figure \ref{fig:algo}, of whom only the first two
+are for the first stage selection while all are offered for second stage (victim) selection.
 
 \begin{itemize}
-\item	\textbf{Popularity} reflects the number of registered tasks that can be scheduled in this slot,
-	i.e. their effective affinity mask (see section \ref{sec:memory-allocator}) matches the slot id.
-\item	\textbf{BestFit} is the slot selection algorithm for the case no eviction is required.
-	A ``good fit'' is considered a slot that can run our task wheras it cannot run many of the other tasks. 
-	This metric factors in all reasons for which a task
-	is schedulable to a slot: The slot's size and/or special resource availability, 
-	available bitstreams, the interconnect restrictions, user affinity, etc.
-	If disabled, the scheduler reverts to a plain First-Fit.
-\item	\textbf{LeastPopular}
-\item	\textbf{Age} is how ``old'' an accelerator slot is. It is measured in scheduled tasks.
-	It is used by the Least-Recentyly-Used and Least-Recently-Programmed eviction aglorithms.
-\item	\textbf{AccessAge} defines if the slot's age is reset on every access, to implement LRU,
-	or only when it was first programmed, to implement LRP.
-\item	\textbf{Priority} has two different notions.
-	If the LRU or the LRP eviction algorithm is enabled, the priority has the notion of how fast a slot
-	ages. A low priority task will age fast, making a more possible candidate for eviction.
-	If the memoryless algorithm is used, the task with the lowest priority (highest value) will be elected for eviction.
-	Disabling priority will make all tasks have a constant priority of value 1, making the algorithm to evict
-	the first free slot it finds.
-
+\item	\textbf{Least Popular} represents the slot where the smallest number of tasks can be scheduled into.
+	The system maintains a popularity counter for each slot and it is calculated by counting the tasks
+	for whose their $SchedulabilityMask$ contains that slot. A slot with low popularity is expected
+	to not be claimed frequently as is suitable for fewer tasks. In a way, it is a form of an {\em a priori} variant of LFU.
+	Being the least desirable is likened to being the ``smallest'' and by this analogy is used by 
+	the Best-Fit configuration option of the first selection.
+\item	\textbf{First Fit / Available} is the simplest algorithm, as it returns the first free and suitable slot.
+\item	\textbf{Lowest Priority} algorithm will return the slot with the lowest priority (least important, therefore best victim).
+\item	\textbf{FIFO} will chose the oldest slot, counting from the time of reconfiguration. The time ticks at every scheduler call.
+\item	\textbf{Least Recently Used} is similar to FIFO, but counts from the last time it was chosen by the scheduler.
+\item	\textbf{Least Frequently Used} uses as a measure of period the ratio of the time since the slot was last chosen
+	over the ``hit counter'' which is incremented every time it is chosen in the first stage, i.e. for re-use with no reconfiguration.
+	The counter is initialized to 1 for an empty (never configured) slot 
+	and to 2 during reconfiguration -- there is no persistence between reconfigurations.
 \end{itemize}
+
+
+%Before we analyze it, let us describe the notions that appear in the pseudocode.
+
+%\begin{itemize}
+%\item	\textbf{Popularity} reflects the number of registered tasks that can be scheduled in this slot,
+%	i.e. the AND product of the Task Affinity and Partition Affinity Mask (see section \ref{sec:memory-allocator}).
+
+%\item	\textbf{BestFit} is the slot selection algorithm for the case no eviction is required.
+%	A ``good fit'' is considered a slot that can run our task wheras it cannot run many of the other tasks. 
+%	This metric factors in all reasons for which a task
+%	is schedulable to a slot: The slot's size and/or special resource availability, 
+%	available bitstreams, the interconnect restrictions, user affinity, etc.
+%	If disabled, the scheduler reverts to a plain First-Fit.
+%\item	\textbf{LeastPopular}
+%\item	\textbf{Age} is how ``old'' an accelerator slot is. It is measured in scheduled tasks.
+%	It is used by the Least-Recentyly-Used and Least-Recently-Programmed eviction aglorithms.
+%\item	\textbf{AccessAge} defines if the slot's age is reset on every access, to implement LRU,
+%	or only when it was first programmed, to implement LRP.
+%\item	\textbf{Priority} has two different notions.
+%	If the LRU or the LRP eviction algorithm is enabled, the priority has the notion of how fast a slot
+%	ages. A low priority task will age fast, making a more possible candidate for eviction.
+%	If the memoryless algorithm is used, the task with the lowest priority (highest value) will be elected for eviction.
+%	Disabling priority will make all tasks have a constant priority of value 1, making the algorithm to evict
+%	the first free slot it finds.
+%\end{itemize}
 
 
 \begin{algorithm}
 \begin{algorithmic}[1]
-\Procedure{SlotReserve}{Client, AcceleratorSlots, Config}
+\Procedure{Scheduler}{Task, AcceleratorSlots, Config}
 
 \ForAll {Slot \in AcceleratorSlots}	\Comment{needed by most replacement algo}
 	\If {Slot.Core \neq \emptyset}
@@ -789,13 +873,13 @@ Before we analyze it, let us describe the notions that appear in the pseudocode.
 \Repeat
 	\State CoreMask \gets 0\;
 	\ForAll {Slot \in AcceleratorSlots}
-		\If {Slot.Core = Client.Core}	\Comment{slot is already programmed}
+		\If {Slot.Core = Task.Core}	\Comment{slot is already programmed}
 			\State CoreMask |= Slot.id\;
 		\EndIf
 	\EndFor
 
-	\State SelectedSlot \gets SelectSlot(CoreMask
-	\Statex {\bf and} Client.EffectiveAffinity) \;
+	\State SelectedSlot \gets ReserveSlot(CoreMask
+	\Statex {\bf and} Task.EffectiveAffinity) \;
 
 	\If {SelectedSlot \neq \emptyset}
 		\If {TryLock(SelectedSlot)}
@@ -806,24 +890,146 @@ Before we analyze it, let us describe the notions that appear in the pseudocode.
 		\EndIf
 	\EndIf
 	
-	\State SelectedSlot \gets SelectSlot(Client.Core.Availability 
-	\Statex {\bf and} Client.EffectiveAffinity)\;
+	\State SelectedSlot \gets ReserveSlot(Task.Core.Availability 
+	\Statex {\bf and} Task.EffectiveAffinity)\;
 	\If {SelectedSlot \neq ~ \emptyset ~{\bfseries and} TryLock(SelectedSlot)=\texttt{FALSE}}
 		\State SelectedSlot \gets ~ \emptyset\;
 	\EndIf
 	\State
 	\If {SelectedSlot \neq ~ \emptyset}
-		\State Reconfigure(SelectedSlot, Core)\;
+		\State Reconfigure(SelectedSlot, Task.Core)\;
 	\Else
-		\State YieldProcessor\;
+		\State YieldProcessor\;	\Comment{wait for progress to be made}
 	\EndIf
 \Until {SelectedSlot \neq ~ \emptyset}\;
 \State
-\State SelectedSlot.AccessAge \gets ~ 0\;	\Comment{reset slot age on every access}
+\State SelectedSlot.AccessAge \gets ~ 0\;
 \State \textbf{return} SelectedSlot\;
 \EndProcedure
 \end{algorithmic}
 \caption{The Scheduler algorithm}
 \label{lst:scheduler}
 \end{algorithm}
+
+\section{Partial Reconfiguration}
+\label{sec:linux-pr}
+
+The mechanism of performing FPGA configuration, partial or not, 
+is undergoing major restructuring as of the time of writing.
+There are two FPGA programming interfaces supported by Xilinx, none of them fully.
+
+The older interface is \texttt{devcfg}. It is a Xilinx driver which implements a character device. The user
+may perform read/write operations to the appropritate device file from userspace and a degree of configuration
+is possible through sysfs. For example, to perform partial reconfiguration from a Linux console, one should type
+
+\begin{figure}[H]
+\begin{lstlisting}[style=basic,language=bash]
+	> echo 1 > /sys/class/xdevcfg/xdevcfg/device/is_partial_bitstream
+	> cat bitstream_file.bin > /dev/xdevcfg
+	> cat /sys/class/xdevcfg/xdevcfg/device/prog_done
+	1
+\end{lstlisting}
+\caption{Programming a partial bitstream to an FPGA from Linux console.}
+\label{lst:pr-under-linux}
+\end{figure}
+
+The driver will read the contents of the bitstream (only in .BIN format, the .BIT is not supported) and
+will use the PCAP DMA to transfer it.
+
+There is a critical design flaw with this programming interface. It is a very basic and purpose-built driver, 
+made to address the need of programming the FPGA from the command line, and nothing more.
+It offers no kernel API at all and therefore it cannot be integrated with any Linux subsystem.
+Of course, it is Xilinx-specific and completely incompatible with any other vendor.
+
+As both major FPGA manufacturers, Xilinx and Altera/Intel offer FPGA SoCs and are trying hard to penetrate
+the supercomputing sector, the need of a complete and standardized interface between an FPGA and the Linux kernel
+became aparent. 
+
+In 2015, a novel approach was presented at ELC \cite{fpgamanager}, the ``FPGA Manager Framework''.
+The framework abstracts the FPGA to the Linux kernel, offering a stable API which is vendor and hardware agnostic.
+However, the FPGA Manager is not just a hook that FPGA vendors attach a driver function; it is integrated to the kernel
+and it makes it aware of the FPGA presents. It abstracts the notion of the FPGA, the \gls{rp}, the isolation logic.
+Furthermore, a parallell development in \gls{dt} support, the \glspl{dto} \cite{dto}, enabled the dynamic modification\footnote{
+	The Linux kernel already supported dynamic \gls{fdt} update, albeit in a very basic level and used only 
+	in very specific corner cases. It does not offer any advanced feature that \gls{dto} offer; modifications are not atomic,
+	cannot be reverted and the bus driver model does not react to the changes.
+}
+of a live \gls{fdt} and the automatic reaction of the Linux bus driver model (i.e. associated device probing, removal, etc).
+Although the work primarily targeted the BeagleBone and its removable extension boards, it permitted the FPGA Manager
+to provide automated handling of FPGA state change, e.g. partition isolation or driver probing/removal 
+upon full or partial reconfiguration.
+
+The FPGA Manager was admitted to the mainline kernel recently (2016, v4.4) whereas \glspl{dto} were accepted a bit earlier (2015, v3.19).
+At the time of writing, the most recent developments may be found at \cite{fpgamanagerwhatsnew}. 
+Support for Intel and Xilinx SoC FPGAs is here, with ZynqMP not yet mainlined. PCIe attached FPGAs are not yet supported but is expected.
+At the vendor front, both Altera/Intel and Xilinx support the framework. Xilinx has deprecated the \texttt{devcfg} and has
+completely removed it from its latest kernel. 
+Xilinx offers an FPGA Manager backend driver for both Zynq and ZynqMP, 
+albeit the driver lacks partial reconfiguration functionality for ZynqMP as it is not yet supported by the \texttt{Xilfgpa} library
+which implements FPGA programming through PCAP.
+Although it is expected to change soon, currently it appears there is no way to perform partial reconfiguration in ZynqMP from the PS,
+under either Linux or standalone.
+
+Xilinx proposed \texttt{devcfg} for partial reconfiguration in Zynq and it is this interface it uses 
+on both partial reconfiguration application notes \cite{xapp1231} and \cite{xapp1159}.
+Combined with the at that time lack of proper understanding of FPGA Manager's nature,
+lead us to use \texttt{devcfg}, a choice that only much later became apparent that it was a mistake.
+
+\subsection{Using the \texttt{devcfg} Interface}
+
+First of all, using \texttt{devcfg} means that the kernel will not be aware of the presence of the FPGA.
+That could be a significant problem if any bus master peripherals resided in the \gls{rp} as we would need to find a way
+to properly initialize and de-initialize their drivers externally. Thankfully this was not the case, as the accelerator
+that resides inside the \gls{rp} is a slave to its corresponding AXI DMA, which we take care to manipulate properly in our driver.
+
+The major issue with \texttt{devcfg} is that it has no kernel API at all. Even worse, its structure does not permit
+an easy modification for external linkage, as everything is done within the implementation of \texttt{read()} file operation.
+
+Accessing a file from kernel space is technically possible but it is a practice always frowned upon. 
+Furthermore, the reconfiguration time could be affected. If the filesystem resides in an SD card, the file access time would dominate
+the reconfiguration process. File caching would help but performance would be unpredictable.
+
+The idea of a cooperating userland library was considered but was not realized as despite it is a safer approach,
+it is complicated and it still suffers the same, in fact worse, performance penalty.
+
+In order to bypass this obstacle, a not so clean workaround was employed. The \texttt{devcfg} driver implementation of the \texttt{read()} system call
+was broken down to its preamble (accessing the file data), its main body (perfoming the reconfiguration) and epilogue (clean up), and moved the main body
+as an independent function with external linkage. Our kernel driver creates the data structures expected by the reconfiguration part and calls it directly.
+The reconfiguration part is still callable by the original system call implementation, therefore the \texttt{devcfg} is still reachable from userspace.
+
+This approach has an advantage in performance. First, no file I/O is done at reconfiguration time; actually the whole 
+file system and the Linux \gls{vfs} layers are circumvented. Second, it was observed that when accessed from userspace,
+file reads were done in 4096-byte steps and each caused a PCAP DMA transaction. This means that for a half-megabyte partial bitstream,
+there need to be done 128 DMA transactions. As we were not restricted by such a limit, our driver performs a single big DMA transaction.
+
+To demonstrate the reconfiguration perfomance, we measured the reconfiguration time of our driver. Interestingly, reconfiguration
+throughput was usually just marginally less than {\em half} of maximum theoretical, which is 400MB/s for non-encrypted bitstreams.
+Infrequently, the attained throughput was further halved. A summary is shown in table \ref{tab:pr-perf}.
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\toprule
+Throughput	& Occurrence\\
+(MB/s)		& (\%)	\\
+\midrule
+\geq 200 	& ~~0.0	\\
+199 to 200	& 88.0	\\
+85 to 115	& 10.3	\\
+other		& ~~1.7	\\
+\bottomrule
+\end{tabular}
+\caption{P.R. performance of our system.}
+\label{tab:pr-perf}
+\end{figure}
+
+The overall mean was 188.36MB/s.
+The measurement was taken from a sample size of 40K reconfigurations of almost evenly distributed accelerator slots, using the symmetrical 6-core design.
+To make a comparison, we also measured the reconfiguration time from userspace,
+copying the partial bitstreams from a RAM-based filesystem to \texttt{/dev/xdevcfg}.
+For a sample size of 10K iterations per core slot, for two module variants, we measured an average of 31.58 to 31.80 MB/s for the five \~530KB sized bitstreams,
+and 33.88MB/s for the larger \~682KB one. A speedup of 6x was actually more than what was expected.
+
+
+
 

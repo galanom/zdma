@@ -59,7 +59,7 @@ case $1 in
 "boot")
 	ls -l image/download.bit
 	scripts/boot || exit 1
-	picocom -b115200 /dev/ttyACM0
+	picocom -b115200 /dev/ttyACM0 -g serial.log
 	;;
 "bb")
 	./go build && ./go boot

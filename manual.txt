@@ -1,0 +1,56 @@
+q
+
+0
+real	0m 16.75s
+user	0m 0.77s
+sys	0m 9.61s
+1
+real	0m 16.60s
+user	0m 0.75s
+sys	0m 9.63s
+2
+real	0m 16.79s
+user	0m 0.94s
+sys	0m 9.44s
+3
+real	0m 16.65s
+user	0m 0.76s
+sys	0m 9.62s
+4
+real	0m 20.15s
+user	0m 0.91s
+sys	0m 9.47s
+5
+real	0m 16.60s
+user	0m 0.73s
+sys	0m 9.65s
+root@zedboard-zynq7:~# l[J
+
+loop
+10K/ea
+
+0
+real	2m 47.86s
+user	0m 8.10s
+sys	1m 35.85s
+1
+real	2m 46.74s
+user	0m 9.18s
+sys	1m 34.78s
+2
+real	2m 48.35s
+user	0m 7.86s
+sys	1m 36.10s
+3
+real	2m 47.21s
+user	0m 8.13s
+sys	1m 35.82s
+4
+real	3m 21.43s
+user	0m 7.87s
+sys	1m 36.11s
+5
+real	2m 46.61s
+user	0m 7.53s
+sys	1m 36.42s
+

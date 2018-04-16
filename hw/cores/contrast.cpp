@@ -43,11 +43,17 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int8_t brightness, int8_t co
 //#pragma HLS resource variable=tmp core=Mul_LUT
 			tmp = alpha * (pixel.at[px] - 128);
 			ap_int<10> val = (tmp >> 7 ) + beta;
-			pixel.at[px] = (uint8_t)val;
+			if (val > 255)
+				pixel.at[px] = 255;
+			else if (val < 0)
+				pixel.at[px] = 0;
+			else
+				pixel.at[px] = val;
+			/*pixel.at[px] = (uint8_t)val;
 			if (val > 255)
 				pixel.at[px] = 255;
 			if (val < 0)
-				pixel.at[px] = 0;
+				pixel.at[px] = 0;*/
 		}
 		data_out.data = pixel.all;
 		dst << data_out;

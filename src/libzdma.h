@@ -1,6 +1,13 @@
 #pragma once
 #include "glue.h"
 
+struct zdma_task {
+	int fd;
+	void *tx_buf, *rx_buf;
+	struct zdma_task_config conf;
+};
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

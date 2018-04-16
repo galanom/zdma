@@ -51,7 +51,7 @@ enum zdma_system_state {
 	SYS_DEINIT,
 };
 
-enum zdma_client_state {
+enum zdma_task_state {
 	CLIENT_OPENED = 0,
 	CLIENT_CONFIGURED,
 	CLIENT_MMAP_TX_DONE,
@@ -85,11 +85,11 @@ static struct system {
 	enum zdma_system_state state;
 	atomic_t	pblock_count,
 			zone_count,
-			client_count;
+			task_count;
 	spinlock_t	pblocks_lock,
 			cores_lock,
 			zones_lock,
-			clients_lock;
+			tasks_lock;
 	
 	struct workqueue_struct *workqueue;
 
@@ -142,7 +142,7 @@ static struct system {
 
 	} zones;
 
-	struct zdma_client {
+	struct zdma_task {
 		int id;
 		uid_t uid;
 		atomic_t state;
@@ -162,7 +162,7 @@ static struct system {
 			dma_cookie_t cookie;
 			struct completion cmp;
 		} tx, rx;
-	} clients;
+	} tasks;
 
 	struct zdma_config {
 		bool	clear_buffer,
@@ -255,7 +255,7 @@ static void zdma_debug(void)
 	struct zdma_pblock *pblock;
 	struct zdma_core *core;
 	struct zdma_zone *zone;
-	struct zdma_client *client;
+	struct zdma_task *task;
 	struct zdma_bitstream *bitstream;
 	
 	pr_info("------------------------------------------------------\n");
@@ -282,10 +282,10 @@ static void zdma_debug(void)
 			atomic_long_read(&zone->avail)/Ki);
 	}
 	
-	list_for_each_entry_rcu(client, &sys.clients.node, node) {
+	list_for_each_entry_rcu(task, &sys.tasks.node, node) {
 		pr_info("CLIENT %d: core: %s, mem: %#x->%#x, size: %zu->%zu KiB, state: %d\n",
-			client->id, client->core->name, client->tx.handle, client->rx.handle,
-			client->tx.size/Ki, client->rx.size/Ki, atomic_read(&client->state));
+			task->id, task->core->name, task->tx.handle, task->rx.handle,
+			task->tx.size/Ki, task->rx.size/Ki, atomic_read(&task->state));
 	}
 
 	rcu_read_unlock();
@@ -317,7 +317,17 @@ static int pblock_setup(struct zdma_pblock *pblock, struct zdma_core *core)
 		return -EEXIST;
 	}
 
+	/*cycles_t t0, t1;
+	t0 = get_cycles();*/
 	int err = xdevcfg_program(bitstream_sel->dma_handle, bitstream_sel->size, true);
+	/*t1 = get_cycles();
+	pr_info("%zu %lu %lu %s\n",
+		bitstream_sel->size,
+		t1-t0,
+		__fls(bitstream_sel->pblock->id),
+		bitstream_sel->pblock->core->name
+		);*/
+
 	if (err) {
 		pr_crit("Error %d during FPGA reconfiguration!\n", err);
 		return -EIO;
@@ -412,7 +422,7 @@ static struct zdma_pblock *algo_fifo(unsigned long mask)
 }
 
 
-static struct zdma_pblock *algo_pri(unsigned long mask)
+static struct zdma_pblock *algo_lopri(unsigned long mask)
 {
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 	int max_pri = -1, curr_pri = 1;
@@ -422,7 +432,9 @@ static struct zdma_pblock *algo_pri(unsigned long mask)
 			continue;
 		if (pblock->core)
 			curr_pri = pblock->core->priority;
-		if (curr_pri > max_pri) {
+		else
+			curr_pri = PRI_MAX + 1;	// it is an empty slot, consider it lower priority than PRI_MAX
+ 		if (curr_pri > max_pri) {
 			pblock_sel = pblock;
 			max_pri = curr_pri;
 		}
@@ -447,9 +459,9 @@ static struct zdma_pblock *algo_first(unsigned long mask)
 }
 
 
-static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
+static struct zdma_pblock *pblock_reserve(struct zdma_task *task)
 {
-//	struct zdma_core *core = client->core;
+//	struct zdma_core *core = task->core;
 	struct zdma_pblock *pblock, *pblock_sel = NULL;
 
 	rcu_read_lock();
@@ -466,12 +478,12 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		unsigned long same_core = 0ul;
 		rcu_read_lock();
 		list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
-			if (pblock->core == client->core)
+			if (pblock->core == task->core)
 				same_core |= pblock->id;
 		}
-		pblock_sel = sys.config.algo(same_core & client->eff_affinity);
+		pblock_sel = sys.config.algo(same_core & task->eff_affinity);
 		rcu_read_unlock();
-		//pr_info("called with same mask=%lx, effaff=%lx\n", same_core, client->eff_affinity);
+		//pr_info("called with same mask=%lx, effaff=%lx\n", same_core, task->eff_affinity);
 		
 		// if a free pblock with the requested core was found,
 		// attempt to lock it and exit the loop
@@ -479,7 +491,7 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 			if (atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) == PBLOCK_FREE) {
 				atomic_inc(&pblock_sel->hits);
 				break;
-			} else {	// another client grabbed the pblock since last check
+			} else {	// another task grabbed the pblock since last check
 				pblock_sel = NULL; // TODO check if a redo is worth the effort
 			}
 		}
@@ -487,11 +499,11 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 		// if there was no pblock with the requested core,
 		// or if it was not free, try to find a free pblock
 		// to reconfigure it with our new core
-		pblock_sel = sys.config.victim_algo(client->core->availability & client->eff_affinity);
+		pblock_sel = sys.config.victim_algo(task->core->availability & task->eff_affinity);
 
 		// If the chosen pblock got locked since initial check
 		// in previous lock, release it. This will never happen.
-		if (pblock_sel && atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE)
+		if ((pblock_sel != NULL) && (atomic_cmpxchg(&pblock_sel->state, PBLOCK_FREE, PBLOCK_BUSY) != PBLOCK_FREE))
 			pblock_sel = NULL;
 			
 
@@ -505,8 +517,8 @@ static struct zdma_pblock *pblock_reserve(struct zdma_client *client)
 					atomic_read(&pblock_sel->access_age), 
 					atomic_read(&pblock_sel->popularity),
 					pblock_sel->core->name, 
-					client->core->name);
-			int err = pblock_setup(pblock_sel, client->core);
+					task->core->name);
+			int err = pblock_setup(pblock_sel, task->core);
 			BUG_ON(err);
 		}
 		
@@ -549,7 +561,7 @@ static int allocator_score_default(
 
 
 void *allocator_reserve(size_t size, enum dma_data_direction dir,
-	unsigned long *client_affinity, unsigned long core_availability, dma_addr_t *handle)
+	unsigned long *task_affinity, unsigned long core_availability, dma_addr_t *handle)
 {
 	struct zdma_zone *zone, *zone_sel = NULL, *zone_prev = NULL;
 	unsigned long pblock_affinity, pblock_affinity_sel;
@@ -570,12 +582,12 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 				: dir == DMA_FROM_DEVICE ? zone->writer_mask
 				: zone->reader_mask & zone->writer_mask;
 			if (debug)
-				pr_info("passing affinity pblockaffz=%lx (dir=%d, reader=%lx, writer=%lx), client=%lx, coreavail=%lx\n",
+				pr_info("passing affinity pblockaffz=%lx (dir=%d, reader=%lx, writer=%lx), task=%lx, coreavail=%lx\n",
 				pblock_affinity, 
 				dir, zone->reader_mask, zone->writer_mask,
-				*client_affinity, core_availability);
+				*task_affinity, core_availability);
 			score = sys.config.alloc_score_func(zone, size, 
-				pblock_affinity & *client_affinity & core_availability);
+				pblock_affinity & *task_affinity & core_availability);
 
 			if (score == score_prev && found_prev) {
 				zone_sel = zone;
@@ -623,7 +635,7 @@ void *allocator_reserve(size_t size, enum dma_data_direction dir,
 	atomic_inc(&zone_sel->users);
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-	*client_affinity &= pblock_affinity_sel;
+	*task_affinity &= pblock_affinity_sel;
 	off_t offset = (unsigned long)start_bit << sys.config.alloc_order;
 	*handle = zone_sel->phys + offset;
 	return zone_sel->start + offset;
@@ -654,7 +666,7 @@ void allocator_free(void *buf, size_t size)
 	rcu_read_unlock();
 }
 
-static int allocator(struct zdma_client *p, size_t tx_size, size_t rx_size)
+static int allocator(struct zdma_task *p, size_t tx_size, size_t rx_size)
 {
 	if (sys.state != SYS_UP)
 		return -EBUSY;	
@@ -954,7 +966,7 @@ static int zone_add(struct device_node *np)
 static void dma_issue(struct work_struct *work)
 {
 	s32 ret;
-	struct zdma_client *p = container_of(work, struct zdma_client, work);
+	struct zdma_task *p = container_of(work, struct zdma_task, work);
 	atomic_set(&p->state, CLIENT_INPROGRESS);
 
 	struct zdma_pblock *pblock = pblock_reserve(p);
@@ -1038,7 +1050,7 @@ static void dma_issue(struct work_struct *work)
 	
 	// determine if the transaction completed without a timeout and withtout any errors
 	if (!rx_timeout) {
-		pr_crit("*** DMA operation timed out for core %s/%lu, client %d.\n",
+		pr_crit("*** DMA operation timed out for core %s/%lu, task %d.\n",
 			pblock->core->name, __fls(pblock->id), p->id);
 		//	!tx_timeout && !rx_timeout ? "TX and RX" :
 		//	!tx_timeout ? "TX" : "RX");
@@ -1046,7 +1058,7 @@ static void dma_issue(struct work_struct *work)
 	}
 
 	if (rx_status != DMA_COMPLETE) {
-		pr_crit("*** DMA status at %s/%lu, client %d: "
+		pr_crit("*** DMA status at %s/%lu, task %d: "
 			"%s [res %u] ***\n", 
 			pblock->core->name, __fls(pblock->id), p->id,
 	//		tx_status == DMA_ERROR ? "ERROR" : 
@@ -1087,18 +1099,18 @@ static int dev_open(struct inode *inodep, struct file *filep)
 {
 	static atomic_t id = ATOMIC_INIT(0);
 	if (sys.state != SYS_UP) return -EAGAIN;
-	struct zdma_client *p;
+	struct zdma_task *p;
 	if ((p = filep->private_data = devm_kzalloc(sys.devp, 
-			sizeof(struct zdma_client), GFP_KERNEL)) == NULL) {
-		pr_err("error allocating memory for client private data!\n");
+			sizeof(struct zdma_task), GFP_KERNEL)) == NULL) {
+		pr_err("error allocating memory for task private data!\n");
 		return -ENOMEM;
 	}
 	INIT_WORK(&p->work, dma_issue);
 	p->uid = current_uid().val;
-	spin_lock(&sys.clients_lock);
-	list_add_tail_rcu(&p->node, &sys.clients.node);
-	spin_unlock(&sys.clients_lock);
-	atomic_inc(&sys.client_count);
+	spin_lock(&sys.tasks_lock);
+	list_add_tail_rcu(&p->node, &sys.tasks.node);
+	spin_unlock(&sys.tasks_lock);
+	atomic_inc(&sys.task_count);
 	p->id = atomic_inc_return(&id);
 	return 0;
 }
@@ -1106,7 +1118,7 @@ static int dev_open(struct inode *inodep, struct file *filep)
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-	struct zdma_client *p = filep->private_data;
+	struct zdma_task *p = filep->private_data;
 	struct zdma_pblock *pblock;
 
 	rcu_read_lock();
@@ -1124,13 +1136,13 @@ static int dev_release(struct inode *inodep, struct file *filep)
 	if (p->rx.vaddr)
 		allocator_free(p->rx.vaddr, p->rx.size);
 
-	spin_lock(&sys.clients_lock);
+	spin_lock(&sys.tasks_lock);
 	list_del_rcu(&p->node);
-	spin_unlock(&sys.clients_lock);
+	spin_unlock(&sys.tasks_lock);
 	synchronize_rcu(); // TODO learn what this does and also call_rcu
 	
 	devm_kfree(sys.devp, p);
-	atomic_dec(&sys.client_count);
+	atomic_dec(&sys.task_count);
 	return 0;
 }
 
@@ -1140,8 +1152,8 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 	struct zdma_core *core;
 	struct zdma_bitstream *bitstream = NULL;
 	struct zdma_core_config core_conf;
-	struct zdma_client_config client_conf;
-	struct zdma_client *p = NULL;
+	struct zdma_task_config task_conf;
+	struct zdma_task *p = NULL;
 	if (filep) 
 		p = filep->private_data;
 
@@ -1189,7 +1201,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 			sys.config.victim_algo = algo_first;
 			break;
 		case CONFIG_SCHED_VICTIM_PRI:
-			sys.config.victim_algo = algo_pri;
+			sys.config.victim_algo = algo_lopri;
 			break;
 		case CONFIG_SCHED_VICTIM_LP:
 			sys.config.victim_algo = algo_lp;
@@ -1376,29 +1388,29 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		}
 		break;
 	case ZDMA_CLIENT_CONFIG:
-		if (copy_from_user(&client_conf, (void __user *)arg, sizeof(client_conf))) {
+		if (copy_from_user(&task_conf, (void __user *)arg, sizeof(task_conf))) {
 			pr_err("could not read all configuration data, ioctl ignored\n");
 			return -EIO;
 		}
 
-		p->core_param_count = client_conf.core_param_count;
-		for (int i = 0; i < client_conf.core_param_count; ++i) {
-			p->core_param[i] = client_conf.core_param[i];
+		p->core_param_count = task_conf.core_param_count;
+		for (int i = 0; i < task_conf.core_param_count; ++i) {
+			p->core_param[i] = task_conf.core_param[i];
 		}
 
-		p->req_affinity = client_conf.affinity;
+		p->req_affinity = task_conf.affinity;
 		p->eff_affinity = p->req_affinity;
-		p->tx.size = client_conf.tx_size;
-		p->rx.size = client_conf.rx_size;
+		p->tx.size = task_conf.tx_size;
+		p->rx.size = task_conf.rx_size;
 
-		p->core = core_lookup(client_conf.core_name);
+		p->core = core_lookup(task_conf.core_name);
 		if (p->core == NULL) {
-			pr_warn("requested core [%s] is not registered\n", client_conf.core_name);
+			pr_warn("requested core [%s] is not registered\n", task_conf.core_name);
 			return -EINVAL;
 		}
 
 		// keep this last, it needs p->core->availability
-		if (allocator(p, client_conf.tx_size, client_conf.rx_size)) {
+		if (allocator(p, task_conf.tx_size, task_conf.rx_size)) {
 			pr_err("error allocating new buffers\n");
 			return -ENOMEM;
 		}
@@ -1411,7 +1423,7 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 		// Delibarate fall-through to _NOBLOCK variant
 	case ZDMA_CLIENT_ENQUEUE_NOBLOCK:
 		if ((p->eff_affinity & p->core->availability) == 0) {
-			pr_warn("client affinity prohibits scheduling to any available pblock\n");
+			pr_warn("task affinity prohibits scheduling to any available pblock\n");
 			return -EPERM;
 		}
 			
@@ -1434,7 +1446,7 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 {
 	if (sys.state != SYS_UP) 
 		return -EAGAIN;
-	struct zdma_client *p = filep->private_data;
+	struct zdma_task *p = filep->private_data;
 	
 	if (	atomic_read(&p->state) != CLIENT_CONFIGURED && 
 		atomic_read(&p->state) != CLIENT_MMAP_TX_DONE && 
@@ -1530,10 +1542,10 @@ static int zdma_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&sys.pblocks.node);
 	INIT_LIST_HEAD(&sys.cores.node);
 	INIT_LIST_HEAD(&sys.zones.node);
-	INIT_LIST_HEAD(&sys.clients.node);
+	INIT_LIST_HEAD(&sys.tasks.node);
 	atomic_set(&sys.pblock_count, 0);
 	atomic_set(&sys.zone_count, 0);
-	atomic_set(&sys.client_count, 0);
+	atomic_set(&sys.task_count, 0);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_ALLOC_BITMAP_DEFAULT);
 	dev_ioctl(NULL, ZDMA_CONFIG, CONFIG_ALLOC_ZONE_DEFAULT);
 
@@ -1601,7 +1613,7 @@ static int __init mod_init(void)
 	spin_lock_init(&sys.pblocks_lock);
 	spin_lock_init(&sys.zones_lock);
 	spin_lock_init(&sys.cores_lock);
-	spin_lock_init(&sys.clients_lock);
+	spin_lock_init(&sys.tasks_lock);
 
 	static struct file_operations fops;
 	fops.owner = THIS_MODULE;

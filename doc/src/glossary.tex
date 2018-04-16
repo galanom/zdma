@@ -4,10 +4,56 @@
 	long = {Device Tree},
 	first = {\glsentrylong{dt} (\glsentryname{dt})},
 	description = {
-		A device structure that describes the hardware.
-		It is used in systems that offer no BIOS-like functionality,
-		as it is the norm in the embedded world. It presents 
-		at the operating system the peripherals that cannot be auto-detected.
+		An hierarchical device structure that describes hardware topology,
+		originally developed by Sun for the \glsentrylong{of} system.
+	},
+}
+
+
+\newglossaryentry{fdt}
+{
+	name = {FDT},
+	long = {Flattened Device Tree},
+	first = {\glsentrylong{fdt} (\glsentryname{dft})},
+	description = {
+		A \glsentrylong{dt} representation used by Linux that may also be
+		passed to the kernel by the bootloader, thus supporting systems
+		that do not implement \glsentrylong{of}.
+	},
+	see = {dt,of},
+}
+
+
+\newglossaryentry{dto}
+{
+	name = {DTO},
+	long = {Device Tree Overlay},
+	first = {\glsentrylong{dto} (\glsentryname{dto})},
+	description = {
+		An extension to the \glsentrylong{fdt} that allows the dynamic (run-time) modification
+		of the kernel's live \glsentrylong{dt}.
+	},
+	see = {dt},
+}
+
+
+\newglossaryentry{of}
+{
+	name = {Open Firmware},
+	description = {
+		A computer firmware standard, originally created by Sun and commonly
+		implemented in PowerPC and SPARC architectures.
+	},
+}
+
+
+\newglossaryentry{vfs}
+{
+	name = {VFS},
+	long = {Virtual File System},
+	description = {\glsentrylong{vfs} (\glsentryname{vfs}),
+		An abstraction layer between a concrete file system and the rest of the operating system.
+		All file access is routed to the \gls{vfs} before it reaches the kernel block layer. 
 	},
 }
 

@@ -347,6 +347,7 @@ to perform the multiplication. For this reason, it is compatible only with the
 ``big'' \glspl{rp} of the 16-accelerator design.
 
 \subsection{The Gaussian Blur Filter}
+\label{sec:gaussian}
 
 The Gaussian Blur filter is an image smoothing filter.
 It is used for various purposes, mostly for noise suppression.
@@ -744,5 +745,65 @@ described in the following list, and an example memory map is given in figure \r
 \label{fig:hls-map}
 \end{figure}
 
+\section{Evaluation}
+
+\begin{figure}[htb!]
+\begin{gnuplot}[terminal=pdf,terminaloptions=color]
+set grid
+set key inside top left
+set xlabel 'Accelerator Data Width'
+#set xtics rotate by -25 offset -1.2,-0.2
+set ylabel 'LUT utilization'
+set y2label 'Core Latency'
+set xrange [-0.5:3.5]
+set yrange [0:4000]
+set y2range [0:9]
+
+set style line 1 lc rgb '#f0f0f0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 2 lc rgb '#e0e0e0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 3 lc rgb '#d0d0d0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 4 lc rgb '#c0c0c0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 5 lc rgb '#b0b0b0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 6 lc rgb '#a0a0a0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 7 lc rgb '#909090' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 8 lc rgb '#808080' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 9 lc rgb '#707070' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set pointintervalbox 1
+
+set style line 11 lc rgb '#ffffff' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 12 lc rgb '#e8e8e8' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 13 lc rgb '#d0d0d0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 14 lc rgb '#c0c0c0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 15 lc rgb '#b0b0b0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 16 lc rgb '#a0a0a0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 17 lc rgb '#909090' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 18 lc rgb '#808080' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 19 lc rgb '#707070' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+
+
+set style data linespoints
+
+plot "data/acc-util.plot" using 2:xtic(1) title "loopback" ls 1,\
+			"" using 3 title "negative" ls 2,	\
+			"" using 4 title "threshold" ls 3,	\
+			"" using 5 title "contrast" ls 4,	\
+			"" using 6 title "sharpen" ls 5,	\
+			"" using 7 title "emboss" ls 6,		\
+			"" using 8 title "outline" ls 7,	\
+			"" using 9 title "gauss" ls 8,		\
+			"" using 11 title "sobel" ls 9,		\
+	"data/acc-perf.plot" using 2:xtic(1) notitle ls 11 axes x1y2,	\
+			"" using 3 notitle ls 12 axes x1y2, \
+			"" using 4 notitle ls 13 axes x1y2, \
+			"" using 5 notitle ls 14 axes x1y2, \
+			"" using 6 notitle ls 15 axes x1y2, \
+			"" using 7 notitle ls 16 axes x1y2, \
+			"" using 8 notitle ls 17 axes x1y2, \
+			"" using 9 notitle ls 18 axes x1y2, \
+			"" using 11 notitle ls 19 axes x1y2
+\end{gnuplot}
+\caption{Resource Utilization vs. Core Latency}
+\label{fig:acc-eff}
+\end{figure}
 
 

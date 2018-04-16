@@ -1,0 +1,2498 @@
+k÷ÀECC disabled 512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete... done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 733.4 KiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.2 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.1 MiB/s
+done
+Bytes transferred = 14013555 (d5d473 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 5.3 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14013491 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc7000, end 1eb24433 ... OK
+   Loading Device Tree to 1ddbf000, end 1ddc609c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316936K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27128K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007778] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018709] Switching to timer-based delay loop, resolution 3ns
+[    0.024620] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033586] timer #0 at e080a000, irq=17
+[    0.037908] Console: colour dummy device 80x30
+[    0.042155] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052549] pid_max: default: 32768 minimum: 301
+[    0.057227] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063660] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071263] CPU: Testing write buffer coherency: ok
+[    0.076095] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081608] Setting up static identity map for 0x100000 - 0x100058
+[    0.257882] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257985] Brought up 2 CPUs
+[    0.266347] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272642] CPU: All CPU(s) started in SVC mode.
+[    0.278044] devtmpfs: initialized
+[    0.285671] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293350] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305144] pinctrl core: initialized pinctrl subsystem
+[    0.311489] NET: Registered protocol family 16
+[    0.317604] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357957] cpuidle: using governor menu
+[    0.377155] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.384979] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.390830] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397637] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.417268] SCSI subsystem initialized
+[    0.421246] usbcore: registered new interface driver usbfs
+[    0.426582] usbcore: registered new interface driver hub
+[    0.431873] usbcore: registered new device driver usb
+[    0.437032] pps_core: LinuxPPS API ver. 1 registered
+[    0.442111] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.451052] PTP clock support registered
+[    0.454913] EDAC MC: Ver: 3.0.0
+[    0.467872] FPGA manager framework
+[    0.471352] fpga-region fpga-full: FPGA Region probed
+[    0.477279] clocksource: Switched to clocksource arm_global_timer
+[    0.497828] NET: Registered protocol family 2
+[    0.502709] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.509615] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.515951] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.522428] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.528090] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.534382] NET: Registered protocol family 1
+[    0.548956] RPC: Registered named UNIX socket transport module.
+[    0.554651] RPC: Registered udp transport module.
+[    0.559346] RPC: Registered tcp transport module.
+[    0.563939] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.570563] Trying to unpack rootfs image as initramfs...
+[    1.517021] Freeing initrd memory: 13688K (dddc7000 - deb25000)
+[    1.523207] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.532488] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.538509] audit: initializing netlink subsys (disabled)
+[    1.543720] audit: type=2000 audit(1.489:1): initialized
+[    1.549766] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.556693] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.564526] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.571749] io scheduler noop registered
+[    1.575557] io scheduler deadline registered
+[    1.579800] io scheduler cfq registered (default)
+[    1.586541] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.593050] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.601776] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.609928] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.618977] console [ttyPS0] enabled
+[    1.618977] console [ttyPS0] enabled
+[    1.625942] bootconsole [cdns0] disabled
+[    1.625942] bootconsole [cdns0] disabled
+[    1.634436] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.644372] brd: module loaded
+[    1.654450] loop: module loaded
+[    1.660573] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.666809] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.671780] 5 ofpart partitions found on MTD device spi0.0
+[    1.677180] Creating 5 MTD partitions on "spi0.0":
+[    1.682206] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.699206] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.715624] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.732622] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.749264] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.769909] libphy: Fixed MDIO Bus: probed
+[    1.778895] CAN device driver interface
+[    1.783989] libphy: MACB_mii_bus: probed
+[    1.887572] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.897434] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.910708] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.917255] usbcore: registered new interface driver usb-storage
+[    1.923453] e0002000.usb supply vbus not found, using dummy regulator
+[    1.930157] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.935731] Found TI TUSB1210 ULPI transceiver.
+[    1.940282] ULPI integrity check: passed.
+[    1.944257] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.949155] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.977318] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.983542] hub 1-0:1.0: USB hub found
+[    1.987250] hub 1-0:1.0: 1 port detected
+[    1.993018] mousedev: PS/2 mouse device common for all mice
+[    1.998807] i2c /dev entries driver
+[    2.004000] EDAC MC: ECC not enabled
+[    2.008466] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    2.015708] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    2.024352] Xilinx Zynq CpuIdle Driver started
+[    2.029292] sdhci: Secure Digital Host Controller Interface driver
+[    2.035385] sdhci: Copyright(c) Pierre Ossman
+[    2.039761] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.100291] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.107945] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.114107] usbcore: registered new interface driver usbhid
+[    2.119622] usbhid: USB HID core driver
+[    2.125524] NET: Registered protocol family 10
+[    2.130847] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.137529] NET: Registered protocol family 17
+[    2.141900] can: controller area network core (rev 20120528 abi 9)
+[    2.148148] NET: Registered protocol family 29
+[    2.152508] can: raw protocol (rev 20120528)
+[    2.156758] can: broadcast manager protocol (rev 20161123 t)
+[    2.162440] can: netlink gateway (rev 20130117) max_hops=1
+[    2.168072] Registering SWP/SWPB emulation handler
+[    2.179930] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.435921] udevd[708]: starting version 3.2.1
+[    2.441218] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.447876] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.454325] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.471377] udevd[709]: starting eudev-3.2.1
+[    2.590238] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.597454] zoled: loading out-of-tree module taints kernel.
+[    2.606722] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.614820] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.624487] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.625112] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.642498] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.650083] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.659587] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.668521] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.674796] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.681093] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.687652] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.694028] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.702534]  zone@de6f2010: assigned reserved memory node all_ports@10000000
+[    2.785116] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.791273] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.308703] random: dd: uninitialized urandom read (512 bytes read)
+Fri Apr 13 20:40:53 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.407449] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# [    6.517576] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.523174] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+
+root@zedboard-zynq7:~# z
+Core loopback registered 6 bitstream(s)
+[ 1283.161640] zdma_debug[261] ------------------------------------------------------
+[ 1283.169174] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[ 1283.176073] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[ 1283.183053] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[ 1283.189982] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[ 1283.196905] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[ 1283.203886] zdma_debug[267] PBLOCK 5: core: (null), popularity: 1, state: 0
+[ 1283.210809] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[ 1283.217914] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[ 1283.226855] zdma_debug[288] CLIENT 2: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[ 1283.236957] zdma_debug[288] CLIENT 3: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[ 1283.245281] zdma_debug[292] ------------------------------------------------------
+[ 1283.283558] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.59, throughput: 10.4136MiB/s
+root@zedboard-zynq7:~# z 1 100
+Core loopback registered 0 bitstream(s)
+[ 1287.251518] zdma_debug[261] ------------------------------------------------------
+[ 1287.259051] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[ 1287.265950] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[ 1287.272931] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[ 1287.279868] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[ 1287.286782] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[ 1287.293766] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[ 1287.300861] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[ 1287.307965] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[ 1287.316905] zdma_debug[288] CLIENT 6: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[ 1287.327008] zdma_debug[288] CLIENT 7: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[ 1287.335329] zdma_debug[292] ------------------------------------------------------
+[ 1287.429841] random: fast init done
+[ 1287.465590] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100 times, time: 0.129, throughput: 476.279MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 100[J0
+Core loopback registered 0 bitstream(s)
+[ 1290.001690] zdma_debug[261] ------------------------------------------------------
+[ 1290.009234] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[ 1290.016130] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[ 1290.023111] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[ 1290.030048] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[ 1290.036961] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[ 1290.043945] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[ 1290.051041] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[ 1290.058145] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[ 1290.067085] zdma_debug[288] CLIENT 10: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[ 1290.077286] zdma_debug[288] CLIENT 11: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[ 1290.085664] zdma_debug[292] ------------------------------------------------------
+[ 1290.980669] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1000 times, time: 0.899, throughput: 683.426MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 1000[J0
+Core loopback registered 0 bitstream(s)
+[ 1296.241535] zdma_debug[261] ------------------------------------------------------
+[ 1296.249076] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[ 1296.255974] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[ 1296.262953] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[ 1296.269892] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[ 1296.276806] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[ 1296.283789] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[ 1296.290883] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[ 1296.297989] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[ 1296.306928] zdma_debug[288] CLIENT 14: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[ 1296.317123] zdma_debug[288] CLIENT 15: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[ 1296.325525] zdma_debug[292] ------------------------------------------------------
+[ 1300.960958] random: crng init done
+[ 1304.926585] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 10000 times, time: 8.599, throughput: 714.502MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 10000[J 10000000[J 1000[J[5D2 1000[5D 1000
+Core loopback registered 0 bitstream(s)
+[ 1314.481616] dev_ioctl[1408] requested core [sobel] is not registered
+ioctl error 22 (Invalid argument) while configuring DMA task
+z: z.cpp:95: int main(int, char**): Assertion `!err' failed.
+Aborted
+root@zedboard-zynq7:~# Në÷AÂþ÷ùÉÿÈ×öÈÙMþÑ‚Aw#ÇþgÑþÀECC disabled 512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete.. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 734.4 KiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.3 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.2 MiB/s
+done
+Bytes transferred = 14014809 (d5d959 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 7.9 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14014745 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc7000, end 1eb24919 ... OK
+   Loading Device Tree to 1ddbf000, end 1ddc609c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316936K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27128K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007775] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018707] Switching to timer-based delay loop, resolution 3ns
+[    0.024618] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033585] timer #0 at e080a000, irq=17
+[    0.037908] Console: colour dummy device 80x30
+[    0.042153] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052547] pid_max: default: 32768 minimum: 301
+[    0.057228] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063658] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071268] CPU: Testing write buffer coherency: ok
+[    0.076107] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081625] Setting up static identity map for 0x100000 - 0x100058
+[    0.257887] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257992] Brought up 2 CPUs
+[    0.266354] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272648] CPU: All CPU(s) started in SVC mode.
+[    0.278055] devtmpfs: initialized
+[    0.285690] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293377] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305223] pinctrl core: initialized pinctrl subsystem
+[    0.311610] NET: Registered protocol family 16
+[    0.317707] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357954] cpuidle: using governor menu
+[    0.377400] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385217] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391062] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397869] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.419112] SCSI subsystem initialized
+[    0.423014] usbcore: registered new interface driver usbfs
+[    0.428421] usbcore: registered new interface driver hub
+[    0.433616] usbcore: registered new device driver usb
+[    0.439572] pps_core: LinuxPPS API ver. 1 registered
+[    0.444320] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.453426] PTP clock support registered
+[    0.457275] EDAC MC: Ver: 3.0.0
+[    0.460961] FPGA manager framework
+[    0.464441] fpga-region fpga-full: FPGA Region probed
+[    0.470362] clocksource: Switched to clocksource arm_global_timer
+[    0.487764] NET: Registered protocol family 2
+[    0.492714] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.499577] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.506052] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.512258] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.517956] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.524323] NET: Registered protocol family 1
+[    0.538882] RPC: Registered named UNIX socket transport module.
+[    0.544645] RPC: Registered udp transport module.
+[    0.549221] RPC: Registered tcp transport module.
+[    0.553915] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.560507] Trying to unpack rootfs image as initramfs...
+[    1.494748] Freeing initrd memory: 13688K (dddc7000 - deb25000)
+[    1.500952] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.510319] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.516351] audit: initializing netlink subsys (disabled)
+[    1.521635] audit: type=2000 audit(1.479:1): initialized
+[    1.527618] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.534622] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.542377] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.549534] io scheduler noop registered
+[    1.553469] io scheduler deadline registered
+[    1.557628] io scheduler cfq registered (default)
+[    1.565104] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.571617] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.580519] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.589129] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.598181] console [ttyPS0] enabled
+[    1.598181] console [ttyPS0] enabled
+[    1.605198] bootconsole [cdns0] disabled
+[    1.605198] bootconsole [cdns0] disabled
+[    1.613769] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.624367] brd: module loaded
+[    1.635512] loop: module loaded
+[    1.642092] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.648382] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.653349] 5 ofpart partitions found on MTD device spi0.0
+[    1.658753] Creating 5 MTD partitions on "spi0.0":
+[    1.663559] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.670815] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.677472] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.684696] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.691535] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.702684] libphy: Fixed MDIO Bus: probed
+[    1.712216] CAN device driver interface
+[    1.717600] libphy: MACB_mii_bus: probed
+[    1.820584] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.830460] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.843768] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.850299] usbcore: registered new interface driver usb-storage
+[    1.856496] e0002000.usb supply vbus not found, using dummy regulator
+[    1.863203] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.868774] Found TI TUSB1210 ULPI transceiver.
+[    1.873323] ULPI integrity check: passed.
+[    1.877300] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.882199] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.910400] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.916625] hub 1-0:1.0: USB hub found
+[    1.920328] hub 1-0:1.0: 1 port detected
+[    1.926118] mousedev: PS/2 mouse device common for all mice
+[    1.931923] i2c /dev entries driver
+[    1.937145] EDAC MC: ECC not enabled
+[    1.941600] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.948848] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    1.957492] Xilinx Zynq CpuIdle Driver started
+[    1.962440] sdhci: Secure Digital Host Controller Interface driver
+[    1.968533] sdhci: Copyright(c) Pierre Ossman
+[    1.972908] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.032479] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.040079] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.046296] usbcore: registered new interface driver usbhid
+[    2.051817] usbhid: USB HID core driver
+[    2.057725] NET: Registered protocol family 10
+[    2.063073] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.069713] NET: Registered protocol family 17
+[    2.074130] can: controller area network core (rev 20120528 abi 9)
+[    2.080296] NET: Registered protocol family 29
+[    2.084691] can: raw protocol (rev 20120528)
+[    2.088917] can: broadcast manager protocol (rev 20161123 t)
+[    2.094592] can: netlink gateway (rev 20130117) max_hops=1
+[    2.100210] Registering SWP/SWPB emulation handler
+[    2.112166] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.378791] udevd[708]: starting version 3.2.1
+[    2.384147] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.390780] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.397232] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.414204] udevd[709]: starting eudev-3.2.1
+[    2.512930] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.536340] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.545803] zoled: loading out-of-tree module taints kernel.
+[    2.555670] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.563620] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.574496] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.582150] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.589625] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.598890] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.606747] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.615146] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.623705] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.631052] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.644980] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.655082]  zone@de6fc010: assigned reserved memory node all_ports@10000000
+[    2.733992] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.740108] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.257421] random: dd: uninitialized urandom read (512 bytes read)
+Fri Apr 13 21:07:23 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.357543] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# [    6.440658] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.446257] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+
+root@zedboard-zynq7:~# z
+Core loopback registered 6 bitstream(s)
+[   14.074624] zdma_debug[261] ------------------------------------------------------
+[   14.082162] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[   14.089056] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[   14.096032] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[   14.102967] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[   14.109888] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[   14.116864] zdma_debug[267] PBLOCK 5: core: (null), popularity: 1, state: 0
+[   14.123844] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   14.130897] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[   14.139837] zdma_debug[288] CLIENT 2: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   14.149941] zdma_debug[288] CLIENT 3: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   14.158261] zdma_debug[292] ------------------------------------------------------
+[   14.205874] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.39, throughput: 15.7538MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z[J 1 10
+Core loopback registered 0 bitstream(s)
+[   16.704641] zdma_debug[261] ------------------------------------------------------
+[   16.712184] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[   16.719078] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[   16.726059] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[   16.732989] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[   16.739910] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[   16.746887] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[   16.753990] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   16.761093] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[   16.770033] zdma_debug[288] CLIENT 6: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   16.780141] zdma_debug[288] CLIENT 7: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   16.788459] zdma_debug[292] ------------------------------------------------------
+[   16.828167] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 10 times, time: 0.59, throughput: 104.136MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 10[J00
+Core loopback registered 0 bitstream(s)
+[   18.944585] zdma_debug[261] ------------------------------------------------------
+[   18.952113] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[   18.959022] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[   18.966001] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[   18.972930] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[   18.979853] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[   18.986831] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[   18.993934] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   19.001037] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[   19.009977] zdma_debug[288] CLIENT 10: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   19.020167] zdma_debug[288] CLIENT 11: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   19.028576] zdma_debug[292] ------------------------------------------------------
+[   19.158943] random: fast init done
+[   19.931435] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1000 times, time: 0.889, throughput: 691.114MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 1000[J 1000[J[5D2 1000[5D 1000
+Core loopback registered 0 bitstream(s)
+[   24.466737] zdma_debug[261] ------------------------------------------------------
+[   24.474270] zdma_debug[267] PBLOCK 0: core: (null), popularity: 2, state: 0
+[   24.481208] zdma_debug[267] PBLOCK 1: core: (null), popularity: 2, state: 0
+[   24.488114] zdma_debug[267] PBLOCK 2: core: (null), popularity: 2, state: 0
+[   24.495095] zdma_debug[267] PBLOCK 3: core: (null), popularity: 2, state: 0
+[   24.502027] zdma_debug[267] PBLOCK 4: core: (null), popularity: 2, state: 0
+[   24.508944] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 2, state: 0
+[   24.516094] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   24.523183] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 128672
+[   24.532153] zdma_debug[288] CLIENT 14: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   24.542307] zdma_debug[288] CLIENT 15: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   24.552466] zdma_debug[288] CLIENT 16: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   24.560873] zdma_debug[292] ------------------------------------------------------
+[   26.240452] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 1000 times, time: 1.670, throughput: 735.808MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 2 1000[J
+Core loopback registered 0 bitstream(s)
+[   31.856679] zdma_debug[261] ------------------------------------------------------
+[   31.864217] zdma_debug[267] PBLOCK 0: core: (null), popularity: 2, state: 0
+[   31.871152] zdma_debug[267] PBLOCK 1: core: (null), popularity: 2, state: 0
+[   31.878057] zdma_debug[267] PBLOCK 2: core: (null), popularity: 2, state: 0
+[   31.885039] zdma_debug[267] PBLOCK 3: core: (null), popularity: 2, state: 0
+[   31.891964] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 2, state: 0
+[   31.899061] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 2, state: 0
+[   31.906209] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   31.913300] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 128672
+[   31.922272] zdma_debug[288] CLIENT 19: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   31.932424] zdma_debug[288] CLIENT 20: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   31.942582] zdma_debug[288] CLIENT 21: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   31.950992] zdma_debug[292] ------------------------------------------------------
+[   33.618373] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 1000 times, time: 1.660, throughput: 740.241MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 2 1000[J[J0 1000[J[5D1 1000[5D 1000
+Core loopback registered 0 bitstream(s)
+[   38.894708] zdma_debug[261] ------------------------------------------------------
+[   38.902246] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[   38.909142] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[   38.916123] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[   38.923054] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[   38.929974] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 1, state: 0
+[   38.937127] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[   38.944229] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   38.951331] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[   38.960271] zdma_debug[288] CLIENT 24: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   38.970465] zdma_debug[288] CLIENT 25: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   38.978842] zdma_debug[292] ------------------------------------------------------
+[   39.858381] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1000 times, time: 0.890, throughput: 690.337MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 1000[J 1000[J[5D4 1000[5D 1000
+Core loopback registered 0 bitstream(s)
+[   42.740758] zdma_debug[261] ------------------------------------------------------
+[   42.748249] zdma_debug[267] PBLOCK 0: core: (null), popularity: 4, state: 0
+[   42.755241] zdma_debug[267] PBLOCK 1: core: (null), popularity: 4, state: 0
+[   42.762194] zdma_debug[267] PBLOCK 2: core: (null), popularity: 4, state: 0
+[   42.769077] zdma_debug[267] PBLOCK 3: core: (null), popularity: 4, state: 0
+[   42.776063] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 4, state: 0
+[   42.783159] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 4, state: 0
+[   42.790256] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   42.797378] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 126272
+[   42.806349] zdma_debug[288] CLIENT 28: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   42.816491] zdma_debug[288] CLIENT 29: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   42.826658] zdma_debug[288] CLIENT 30: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[   42.836808] zdma_debug[288] CLIENT 31: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[   42.847175] zdma_debug[288] CLIENT 32: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   42.855570] zdma_debug[292] ------------------------------------------------------
+[   43.150548] random: crng init done
+[   45.246069] dev_ioctl[1165] flushing queue
+Exec: 4 tasks by 1000 times, time: 2.380, throughput: 1032.61MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 4 1000[J 1000[J[5D6 1000[5D 1000
+Core loopback registered 0 bitstream(s)
+[   59.834629] zdma_debug[261] ------------------------------------------------------
+[   59.842169] zdma_debug[267] PBLOCK 0: core: (null), popularity: 6, state: 0
+[   59.849061] zdma_debug[267] PBLOCK 1: core: (null), popularity: 6, state: 0
+[   59.856039] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 6, state: 0
+[   59.863146] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 6, state: 0
+[   59.870240] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 6, state: 0
+[   59.877393] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 6, state: 0
+[   59.884501] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   59.891597] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 123872
+[   59.900577] zdma_debug[288] CLIENT 35: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   59.910714] zdma_debug[288] CLIENT 36: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   59.920879] zdma_debug[288] CLIENT 37: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[   59.931027] zdma_debug[288] CLIENT 38: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[   59.941188] zdma_debug[288] CLIENT 39: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[   59.951332] zdma_debug[288] CLIENT 40: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[   59.961500] zdma_debug[288] CLIENT 41: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   59.969893] zdma_debug[292] ------------------------------------------------------
+[   62.387711] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 1000 times, time: 2.420, throughput: 1523.31MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 6 1000[J
+Core loopback registered 0 bitstream(s)
+[   78.824845] zdma_debug[261] ------------------------------------------------------
+[   78.832386] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 6, state: 0
+[   78.839452] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 6, state: 0
+[   78.846602] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 6, state: 0
+[   78.853709] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 6, state: 0
+[   78.860828] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 6, state: 0
+[   78.867922] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 6, state: 0
+[   78.875069] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   78.882160] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 123872
+[   78.891140] zdma_debug[288] CLIENT 44: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   78.901278] zdma_debug[288] CLIENT 45: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   78.911443] zdma_debug[288] CLIENT 46: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[   78.921592] zdma_debug[288] CLIENT 47: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[   78.931754] zdma_debug[288] CLIENT 48: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[   78.941896] zdma_debug[288] CLIENT 49: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[   78.952062] zdma_debug[288] CLIENT 50: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   78.960472] zdma_debug[292] ------------------------------------------------------
+[   81.382083] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 1000 times, time: 2.420, throughput: 1523.31MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 6 1000[J00
+Core loopback registered 0 bitstream(s)
+[   96.694807] zdma_debug[261] ------------------------------------------------------
+[   96.702355] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 6, state: 0
+[   96.709419] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 6, state: 0
+[   96.716567] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 6, state: 0
+[   96.723678] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 6, state: 0
+[   96.730796] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 6, state: 0
+[   96.737890] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 6, state: 0
+[   96.745037] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   96.752127] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 123872
+[   96.761107] zdma_debug[288] CLIENT 53: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   96.771245] zdma_debug[288] CLIENT 54: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[   96.781410] zdma_debug[288] CLIENT 55: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[   96.791559] zdma_debug[288] CLIENT 56: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[   96.801721] zdma_debug[288] CLIENT 57: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[   96.811864] zdma_debug[288] CLIENT 58: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[   96.822030] zdma_debug[288] CLIENT 59: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   96.830439] zdma_debug[292] ------------------------------------------------------
+[  120.581219] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 10000 times, time: 23.740, throughput: 1552.82MiB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 6 10000[J 10000[J[6D5 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  130.962854] zdma_debug[261] ------------------------------------------------------
+[  130.970346] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 5, state: 0
+[  130.977462] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 5, state: 0
+[  130.984616] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 5, state: 0
+[  130.991721] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 5, state: 0
+[  130.998812] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 5, state: 0
+[  131.005964] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 5, state: 0
+[  131.013066] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  131.020168] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 125072
+[  131.029140] zdma_debug[288] CLIENT 62: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  131.039293] zdma_debug[288] CLIENT 63: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  131.049453] zdma_debug[288] CLIENT 64: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  131.059594] zdma_debug[288] CLIENT 65: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  131.069763] zdma_debug[288] CLIENT 66: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  131.079905] zdma_debug[288] CLIENT 67: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  131.088334] zdma_debug[292] ------------------------------------------------------
+[  154.746681] dev_ioctl[1165] flushing queue
+Exec: 5 tasks by 10000 times, time: 23.659, throughput: 1298.45MiB/s
+root@zedboard-zynq7:~# «÷á	ðþÉöÁÿBýaQýáECC disabled 512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete.. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 734.4 KiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.4 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.3 MiB/s
+done
+Bytes transferred = 14012125 (d5cedd hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 7.9 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14012061 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc7000, end 1eb23e9d ... OK
+   Loading Device Tree to 1ddbf000, end 1ddc609c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316940K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27124K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007780] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018711] Switching to timer-based delay loop, resolution 3ns
+[    0.024622] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033588] timer #0 at e080a000, irq=17
+[    0.037912] Console: colour dummy device 80x30
+[    0.042158] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052551] pid_max: default: 32768 minimum: 301
+[    0.057229] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063662] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071271] CPU: Testing write buffer coherency: ok
+[    0.076108] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081620] Setting up static identity map for 0x100000 - 0x100058
+[    0.257888] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257994] Brought up 2 CPUs
+[    0.266357] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272652] CPU: All CPU(s) started in SVC mode.
+[    0.278065] devtmpfs: initialized
+[    0.285708] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293390] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305236] pinctrl core: initialized pinctrl subsystem
+[    0.311630] NET: Registered protocol family 16
+[    0.317819] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357954] cpuidle: using governor menu
+[    0.377407] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385232] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391080] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397922] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.419109] SCSI subsystem initialized
+[    0.422997] usbcore: registered new interface driver usbfs
+[    0.428402] usbcore: registered new interface driver hub
+[    0.433597] usbcore: registered new device driver usb
+[    0.439533] pps_core: LinuxPPS API ver. 1 registered
+[    0.444281] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.453387] PTP clock support registered
+[    0.457235] EDAC MC: Ver: 3.0.0
+[    0.460923] FPGA manager framework
+[    0.464400] fpga-region fpga-full: FPGA Region probed
+[    0.470320] clocksource: Switched to clocksource arm_global_timer
+[    0.487723] NET: Registered protocol family 2
+[    0.492681] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.499536] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.506011] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.512220] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.517917] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.524281] NET: Registered protocol family 1
+[    0.538826] RPC: Registered named UNIX socket transport module.
+[    0.544558] RPC: Registered udp transport module.
+[    0.549165] RPC: Registered tcp transport module.
+[    0.553854] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.560443] Trying to unpack rootfs image as initramfs...
+[    1.508163] Freeing initrd memory: 13684K (dddc7000 - deb24000)
+[    1.514363] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.523869] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.529794] audit: initializing netlink subsys (disabled)
+[    1.535187] audit: type=2000 audit(1.489:1): initialized
+[    1.541218] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.548163] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.555950] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.563169] io scheduler noop registered
+[    1.566977] io scheduler deadline registered
+[    1.571222] io scheduler cfq registered (default)
+[    1.578586] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.585133] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.593970] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.602529] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.611574] console [ttyPS0] enabled
+[    1.611574] console [ttyPS0] enabled
+[    1.618541] bootconsole [cdns0] disabled
+[    1.618541] bootconsole [cdns0] disabled
+[    1.627131] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.637627] brd: module loaded
+[    1.648485] loop: module loaded
+[    1.654892] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.661178] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.666094] 5 ofpart partitions found on MTD device spi0.0
+[    1.671550] Creating 5 MTD partitions on "spi0.0":
+[    1.676302] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.683480] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.690070] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.697234] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.704008] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.714889] libphy: Fixed MDIO Bus: probed
+[    1.724163] CAN device driver interface
+[    1.729572] libphy: MACB_mii_bus: probed
+[    1.830548] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.840421] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.853718] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.860258] usbcore: registered new interface driver usb-storage
+[    1.866457] e0002000.usb supply vbus not found, using dummy regulator
+[    1.873155] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.878732] Found TI TUSB1210 ULPI transceiver.
+[    1.883281] ULPI integrity check: passed.
+[    1.887257] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.892157] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.920358] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.926579] hub 1-0:1.0: USB hub found
+[    1.930286] hub 1-0:1.0: 1 port detected
+[    1.936067] mousedev: PS/2 mouse device common for all mice
+[    1.941870] i2c /dev entries driver
+[    1.947060] EDAC MC: ECC not enabled
+[    1.951519] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.958762] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    1.967412] Xilinx Zynq CpuIdle Driver started
+[    1.972356] sdhci: Secure Digital Host Controller Interface driver
+[    1.978455] sdhci: Copyright(c) Pierre Ossman
+[    1.982821] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.042288] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.049903] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.056114] usbcore: registered new interface driver usbhid
+[    2.061632] usbhid: USB HID core driver
+[    2.067554] NET: Registered protocol family 10
+[    2.072905] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.079559] NET: Registered protocol family 17
+[    2.083975] can: controller area network core (rev 20120528 abi 9)
+[    2.090142] NET: Registered protocol family 29
+[    2.094543] can: raw protocol (rev 20120528)
+[    2.098762] can: broadcast manager protocol (rev 20161123 t)
+[    2.104438] can: netlink gateway (rev 20130117) max_hops=1
+[    2.110056] Registering SWP/SWPB emulation handler
+[    2.121991] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.378954] udevd[708]: starting version 3.2.1
+[    2.384316] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.390979] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.397436] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.414470] udevd[709]: starting eudev-3.2.1
+[    2.507210] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.542096] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.543334] zoled: loading out-of-tree module taints kernel.
+[    2.556702] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.566856] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.577845] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.585433] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.594601] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.604426] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.610211] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.616574] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.622944] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.629396] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.635809] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.644492]  zone@de732010: assigned reserved memory node all_ports@10000000
+[    2.727698] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.733844] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.255103] random: dd: uninitialized urandom read (512 bytes read)
+Fri Apr 13 21:23:12 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.355628] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# [    6.440616] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.446215] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+z
+Core loopback registered 6 bitstream(s)
+[   21.075021] zdma_debug[261] ------------------------------------------------------
+[   21.082563] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[   21.089461] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[   21.096440] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[   21.103370] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[   21.110292] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[   21.117273] zdma_debug[267] PBLOCK 5: core: (null), popularity: 1, state: 0
+[   21.124199] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[   21.131302] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[   21.140241] zdma_debug[288] CLIENT 2: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[   21.150335] zdma_debug[288] CLIENT 3: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[   21.158653] zdma_debug[292] ------------------------------------------------------
+[   21.215825] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.39, throughput: 31.5077MB/s
+root@zedboard-zynq7:~# z 1 100
+Core loopback registered 0 bitstream(s)
+[  162.954661] zdma_debug[261] ------------------------------------------------------
+[  162.962202] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[  162.969094] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[  162.976075] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[  162.983005] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[  162.989926] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[  162.996903] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[  163.004008] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  163.011109] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[  163.020049] zdma_debug[288] CLIENT 6: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  163.030152] zdma_debug[288] CLIENT 7: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  163.038473] zdma_debug[292] ------------------------------------------------------
+[  163.154081] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100 times, time: 0.119, throughput: 1032.61MB/s
+root@zedboard-zynq7:~# [  163.238304] random: fast init done
+
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 100[J
+Core loopback registered 0 bitstream(s)
+[  170.794611] zdma_debug[261] ------------------------------------------------------
+[  170.802146] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[  170.809044] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[  170.816025] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[  170.822955] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[  170.829875] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[  170.836854] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[  170.843957] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  170.851059] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[  170.859999] zdma_debug[288] CLIENT 10: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  170.870189] zdma_debug[288] CLIENT 11: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  170.878597] zdma_debug[292] ------------------------------------------------------
+[  171.014013] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100 times, time: 0.120, throughput: 1024MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 100[J0
+Core loopback registered 0 bitstream(s)
+[  177.324556] zdma_debug[261] ------------------------------------------------------
+[  177.332095] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[  177.338991] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[  177.345971] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[  177.352902] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[  177.359823] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[  177.366805] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[  177.373903] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  177.381006] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[  177.389946] zdma_debug[288] CLIENT 14: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  177.400136] zdma_debug[288] CLIENT 15: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  177.408544] zdma_debug[292] ------------------------------------------------------
+[  178.307309] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1000 times, time: 0.890, throughput: 1380.67MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 1000[J[J[J000
+Core loopback registered 0 bitstream(s)
+[  183.514766] zdma_debug[261] ------------------------------------------------------
+[  183.522304] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[  183.529202] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[  183.536181] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[  183.543113] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[  183.550034] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[  183.557016] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[  183.564115] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  183.571217] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[  183.580158] zdma_debug[288] CLIENT 18: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  183.590352] zdma_debug[288] CLIENT 19: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  183.598728] zdma_debug[292] ------------------------------------------------------
+[  188.070374] random: crng init done
+[  192.154085] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 10000 times, time: 8.570, throughput: 1433.84MB/s
+root@zedboard-zynq7:~# ls -l
+-rwxr-xr-x    1 root     root        109716 Apr 13 21:22 sample.jpg
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# ls -l[Jroot@zedboard-zynq7:~# z 1 10000[Jroot@zedboard-zynq7:~# z 1 1000[J[J
+Core loopback registered 0 bitstream(s)
+[  238.824764] zdma_debug[261] ------------------------------------------------------
+[  238.832307] zdma_debug[267] PBLOCK 0: core: (null), popularity: 1, state: 0
+[  238.839204] zdma_debug[267] PBLOCK 1: core: (null), popularity: 1, state: 0
+[  238.846185] zdma_debug[267] PBLOCK 2: core: (null), popularity: 1, state: 0
+[  238.853115] zdma_debug[267] PBLOCK 3: core: (null), popularity: 1, state: 0
+[  238.860035] zdma_debug[267] PBLOCK 4: core: (null), popularity: 1, state: 0
+[  238.867016] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 1, state: 0
+[  238.874116] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  238.881219] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 129872
+[  238.890159] zdma_debug[288] CLIENT 22: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  238.900354] zdma_debug[288] CLIENT 23: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  238.908730] zdma_debug[292] ------------------------------------------------------
+[  239.044040] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100 times, time: 0.120, throughput: 1024MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 1 100[J1 100[J2 100 10000
+Core loopback registered 0 bitstream(s)
+[  246.786591] zdma_debug[261] ------------------------------------------------------
+[  246.794132] zdma_debug[267] PBLOCK 0: core: (null), popularity: 2, state: 0
+[  246.801065] zdma_debug[267] PBLOCK 1: core: (null), popularity: 2, state: 0
+[  246.807975] zdma_debug[267] PBLOCK 2: core: (null), popularity: 2, state: 0
+[  246.814948] zdma_debug[267] PBLOCK 3: core: (null), popularity: 2, state: 0
+[  246.821882] zdma_debug[267] PBLOCK 4: core: (null), popularity: 2, state: 0
+[  246.828805] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 2, state: 0
+[  246.835953] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  246.843044] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 128672
+[  246.852015] zdma_debug[288] CLIENT 26: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  246.862170] zdma_debug[288] CLIENT 27: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  246.872327] zdma_debug[288] CLIENT 28: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  246.880736] zdma_debug[292] ------------------------------------------------------
+[  262.988334] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 10000 times, time: 16.99, throughput: 1526.55MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 2 10000[J 10000[J[6D3 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  292.638604] zdma_debug[261] ------------------------------------------------------
+[  292.646148] zdma_debug[267] PBLOCK 0: core: (null), popularity: 3, state: 0
+[  292.653078] zdma_debug[267] PBLOCK 1: core: (null), popularity: 3, state: 0
+[  292.659988] zdma_debug[267] PBLOCK 2: core: (null), popularity: 3, state: 0
+[  292.666969] zdma_debug[267] PBLOCK 3: core: (null), popularity: 3, state: 0
+[  292.673902] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 3, state: 0
+[  292.681024] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 3, state: 0
+[  292.688109] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  292.695231] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 127472
+[  292.704206] zdma_debug[288] CLIENT 31: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  292.714355] zdma_debug[288] CLIENT 32: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  292.724515] zdma_debug[288] CLIENT 33: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  292.734656] zdma_debug[288] CLIENT 34: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  292.743093] zdma_debug[292] ------------------------------------------------------
+[  315.910957] dev_ioctl[1165] flushing queue
+Exec: 3 tasks by 10000 times, time: 23.159, throughput: 1591.78MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 3 10000[J 10000[J[6D4 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  326.031008] zdma_debug[261] ------------------------------------------------------
+[  326.038505] zdma_debug[267] PBLOCK 0: core: (null), popularity: 4, state: 0
+[  326.045501] zdma_debug[267] PBLOCK 1: core: (null), popularity: 4, state: 0
+[  326.052414] zdma_debug[267] PBLOCK 2: core: (null), popularity: 4, state: 0
+[  326.059334] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 4, state: 0
+[  326.066489] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 4, state: 0
+[  326.073588] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 4, state: 0
+[  326.080715] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  326.087807] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 126272
+[  326.096779] zdma_debug[288] CLIENT 37: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  326.106931] zdma_debug[288] CLIENT 38: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  326.117091] zdma_debug[288] CLIENT 39: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  326.127231] zdma_debug[288] CLIENT 40: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  326.137402] zdma_debug[288] CLIENT 41: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  326.145813] zdma_debug[292] ------------------------------------------------------
+[  349.632067] dev_ioctl[1165] flushing queue
+Exec: 4 tasks by 10000 times, time: 23.479, throughput: 2093.45MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 4 10000[J 10000[J[6D5 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  378.612899] zdma_debug[261] ------------------------------------------------------
+[  378.620451] zdma_debug[267] PBLOCK 0: core: (null), popularity: 5, state: 0
+[  378.627331] zdma_debug[267] PBLOCK 1: core: (null), popularity: 5, state: 0
+[  378.634308] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 5, state: 0
+[  378.641424] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 5, state: 0
+[  378.648510] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 5, state: 0
+[  378.655667] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 5, state: 0
+[  378.662765] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  378.669866] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 125072
+[  378.678843] zdma_debug[288] CLIENT 44: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  378.688981] zdma_debug[288] CLIENT 45: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  378.699148] zdma_debug[288] CLIENT 46: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  378.709291] zdma_debug[288] CLIENT 47: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  378.719460] zdma_debug[288] CLIENT 48: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  378.729603] zdma_debug[288] CLIENT 49: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  378.738029] zdma_debug[292] ------------------------------------------------------
+[  402.646109] dev_ioctl[1165] flushing queue
+Exec: 5 tasks by 10000 times, time: 23.900, throughput: 2570.71MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 5 10000[J 10000[J[6D6 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  436.464782] zdma_debug[261] ------------------------------------------------------
+[  436.472328] zdma_debug[267] PBLOCK 0: core: (null), popularity: 6, state: 0
+[  436.479219] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 6, state: 0
+[  436.486366] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 6, state: 0
+[  436.493487] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 6, state: 0
+[  436.500609] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 6, state: 0
+[  436.507690] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 6, state: 0
+[  436.514838] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  436.521928] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 123872
+[  436.530898] zdma_debug[288] CLIENT 52: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  436.541041] zdma_debug[288] CLIENT 53: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  436.551207] zdma_debug[288] CLIENT 54: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  436.561359] zdma_debug[288] CLIENT 55: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  436.571521] zdma_debug[288] CLIENT 56: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  436.581664] zdma_debug[288] CLIENT 57: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[  436.591829] zdma_debug[288] CLIENT 58: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  436.600225] zdma_debug[292] ------------------------------------------------------
+[  460.486946] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 10000 times, time: 23.890, throughput: 3086.14MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 6 10000[J 10000[J[6D7 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  477.856656] zdma_debug[261] ------------------------------------------------------
+[  477.864202] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 7, state: 0
+[  477.871297] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 7, state: 0
+[  477.878384] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 7, state: 0
+[  477.885539] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 7, state: 0
+[  477.892638] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 7, state: 0
+[  477.899736] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 7, state: 0
+[  477.906884] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  477.913975] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 122672
+[  477.922955] zdma_debug[288] CLIENT 61: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  477.933092] zdma_debug[288] CLIENT 62: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  477.943258] zdma_debug[288] CLIENT 63: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  477.953407] zdma_debug[288] CLIENT 64: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  477.963569] zdma_debug[288] CLIENT 65: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  477.973710] zdma_debug[288] CLIENT 66: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[  477.983879] zdma_debug[288] CLIENT 67: core: loopback, mem: 0x10708000->0x1079e000, size: 600->600 KiB, state: 4
+[  477.994022] zdma_debug[288] CLIENT 68: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  478.002450] zdma_debug[292] ------------------------------------------------------
+[  505.751564] dev_ioctl[1165] flushing queue
+Exec: 7 tasks by 10000 times, time: 27.739, throughput: 3100.9MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 7 10000[J 10000[J[6D8 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  517.859990] zdma_debug[261] ------------------------------------------------------
+[  517.867537] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 8, state: 0
+[  517.874634] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 8, state: 0
+[  517.881741] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 8, state: 0
+[  517.888835] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 8, state: 0
+[  517.895989] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 8, state: 0
+[  517.903096] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 8, state: 0
+[  517.910187] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  517.917309] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 121472
+[  517.926288] zdma_debug[288] CLIENT 71: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  517.936426] zdma_debug[288] CLIENT 72: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  517.946591] zdma_debug[288] CLIENT 73: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  517.956740] zdma_debug[288] CLIENT 74: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  517.966903] zdma_debug[288] CLIENT 75: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  517.977045] zdma_debug[288] CLIENT 76: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[  517.987210] zdma_debug[288] CLIENT 77: core: loopback, mem: 0x10708000->0x1079e000, size: 600->600 KiB, state: 4
+[  517.997355] zdma_debug[288] CLIENT 78: core: loopback, mem: 0x10834000->0x108ca000, size: 600->600 KiB, state: 4
+[  518.007521] zdma_debug[288] CLIENT 79: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  518.015934] zdma_debug[292] ------------------------------------------------------
+[  550.424162] dev_ioctl[1165] flushing queue
+Exec: 8 tasks by 10000 times, time: 32.399, throughput: 3034.17MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 8 10000[J
+Core loopback registered 0 bitstream(s)
+[  563.809653] zdma_debug[261] ------------------------------------------------------
+[  563.817199] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 8, state: 0
+[  563.824296] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 8, state: 0
+[  563.831403] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 8, state: 0
+[  563.838498] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 8, state: 0
+[  563.845643] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 8, state: 0
+[  563.852753] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 8, state: 0
+[  563.859850] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  563.866972] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 121472
+[  563.875953] zdma_debug[288] CLIENT 82: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  563.886090] zdma_debug[288] CLIENT 83: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  563.896255] zdma_debug[288] CLIENT 84: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  563.906403] zdma_debug[288] CLIENT 85: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  563.916565] zdma_debug[288] CLIENT 86: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  563.926707] zdma_debug[288] CLIENT 87: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[  563.936874] zdma_debug[288] CLIENT 88: core: loopback, mem: 0x10708000->0x1079e000, size: 600->600 KiB, state: 4
+[  563.947019] zdma_debug[288] CLIENT 89: core: loopback, mem: 0x10834000->0x108ca000, size: 600->600 KiB, state: 4
+[  563.957185] zdma_debug[288] CLIENT 90: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  563.965597] zdma_debug[292] ------------------------------------------------------
+[  596.376330] dev_ioctl[1165] flushing queue
+Exec: 8 tasks by 10000 times, time: 32.410, throughput: 3033.14MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 8 10000[Jroot@zedboard-zynq7:~# z 7 10000[Jroot@zedboard-zynq7:~# z 8 10000[J 10000[J[6D7 10000[6D 10000
+Core loopback registered 0 bitstream(s)
+[  619.037591] zdma_debug[261] ------------------------------------------------------
+[  619.045140] zdma_debug[267] PBLOCK 0: core: loopback, popularity: 7, state: 0
+[  619.052234] zdma_debug[267] PBLOCK 1: core: loopback, popularity: 7, state: 0
+[  619.059322] zdma_debug[267] PBLOCK 2: core: loopback, popularity: 7, state: 0
+[  619.066477] zdma_debug[267] PBLOCK 3: core: loopback, popularity: 7, state: 0
+[  619.073577] zdma_debug[267] PBLOCK 4: core: loopback, popularity: 7, state: 0
+[  619.080705] zdma_debug[267] PBLOCK 5: core: loopback, popularity: 7, state: 0
+[  619.087792] zdma_debug[271] CORE loopback: mask=0x3f <0> <1> <2> <3> <4> <5> 
+[  619.094913] zdma_debug[282] MEM phys 0x0x10000000 mapped at 0xe1000000, size: 131072 avail: 122672
+[  619.103893] zdma_debug[288] CLIENT 93: core: loopback, mem: 0x10000000->0x10096000, size: 600->600 KiB, state: 4
+[  619.114030] zdma_debug[288] CLIENT 94: core: loopback, mem: 0x1012c000->0x101c2000, size: 600->600 KiB, state: 4
+[  619.124195] zdma_debug[288] CLIENT 95: core: loopback, mem: 0x10258000->0x102ee000, size: 600->600 KiB, state: 4
+[  619.134344] zdma_debug[288] CLIENT 96: core: loopback, mem: 0x10384000->0x1041a000, size: 600->600 KiB, state: 4
+[  619.144506] zdma_debug[288] CLIENT 97: core: loopback, mem: 0x104b0000->0x10546000, size: 600->600 KiB, state: 4
+[  619.154648] zdma_debug[288] CLIENT 98: core: loopback, mem: 0x105dc000->0x10672000, size: 600->600 KiB, state: 4
+[  619.164816] zdma_debug[288] CLIENT 99: core: loopback, mem: 0x10708000->0x1079e000, size: 600->600 KiB, state: 4
+[  619.174959] zdma_debug[288] CLIENT 100: core: (null), mem: 0x0->0x0, size: 0->0 KiB, state: 0
+[  619.183475] zdma_debug[292] ------------------------------------------------------
+[  646.948318] dev_ioctl[1165] flushing queue
+Exec: 7 tasks by 10000 times, time: 27.769, throughput: 3097.55MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 7 10000[J0000[Jroot@zedboard-zynq7:~# [J‹÷bÎÀ	÷øÈ×AõÉÿBgÓcýB BþECC disabled 512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 734.4 KiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.2 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.3 MiB/s
+done
+Bytes transferred = 14010933 (d5ca35 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 5.3 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14010869 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc8000, end 1eb249f5 ... OK
+   Loading Device Tree to 1ddc0000, end 1ddc709c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316940K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27124K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007775] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018706] Switching to timer-based delay loop, resolution 3ns
+[    0.024616] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033584] timer #0 at e080a000, irq=17
+[    0.037905] Console: colour dummy device 80x30
+[    0.042153] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052547] pid_max: default: 32768 minimum: 301
+[    0.057226] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063658] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071261] CPU: Testing write buffer coherency: ok
+[    0.076096] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081606] Setting up static identity map for 0x100000 - 0x100058
+[    0.257885] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257990] Brought up 2 CPUs
+[    0.266354] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272649] CPU: All CPU(s) started in SVC mode.
+[    0.278054] devtmpfs: initialized
+[    0.285696] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293379] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305229] pinctrl core: initialized pinctrl subsystem
+[    0.311617] NET: Registered protocol family 16
+[    0.317711] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357954] cpuidle: using governor menu
+[    0.377406] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385226] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391070] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397909] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.439147] SCSI subsystem initialized
+[    0.443034] usbcore: registered new interface driver usbfs
+[    0.448410] usbcore: registered new interface driver hub
+[    0.453646] usbcore: registered new device driver usb
+[    0.459277] pps_core: LinuxPPS API ver. 1 registered
+[    0.464031] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.473127] PTP clock support registered
+[    0.476987] EDAC MC: Ver: 3.0.0
+[    0.488421] FPGA manager framework
+[    0.491891] fpga-region fpga-full: FPGA Region probed
+[    0.497830] clocksource: Switched to clocksource arm_global_timer
+[    0.518602] NET: Registered protocol family 2
+[    0.523437] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.530539] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.536821] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.543104] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.548864] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.555143] NET: Registered protocol family 1
+[    0.569748] RPC: Registered named UNIX socket transport module.
+[    0.575443] RPC: Registered udp transport module.
+[    0.580186] RPC: Registered tcp transport module.
+[    0.584732] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.591384] Trying to unpack rootfs image as initramfs...
+[    1.542471] Freeing initrd memory: 13684K (dddc8000 - deb25000)
+[    1.548515] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.557699] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.563678] audit: initializing netlink subsys (disabled)
+[    1.569123] audit: type=2000 audit(1.529:1): initialized
+[    1.575019] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.582000] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.589767] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.596928] io scheduler noop registered
+[    1.600830] io scheduler deadline registered
+[    1.605021] io scheduler cfq registered (default)
+[    1.611813] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.618322] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.627035] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.635265] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.644310] console [ttyPS0] enabled
+[    1.644310] console [ttyPS0] enabled
+[    1.651327] bootconsole [cdns0] disabled
+[    1.651327] bootconsole [cdns0] disabled
+[    1.659765] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.669740] brd: module loaded
+[    1.679917] loop: module loaded
+[    1.686148] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.692417] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.697339] 5 ofpart partitions found on MTD device spi0.0
+[    1.702796] Creating 5 MTD partitions on "spi0.0":
+[    1.707545] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.714787] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.721455] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.728682] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.735459] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.746530] libphy: Fixed MDIO Bus: probed
+[    1.755991] CAN device driver interface
+[    1.761437] libphy: MACB_mii_bus: probed
+[    1.868057] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.877922] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.891208] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.897740] usbcore: registered new interface driver usb-storage
+[    1.903940] e0002000.usb supply vbus not found, using dummy regulator
+[    1.910652] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.916224] Found TI TUSB1210 ULPI transceiver.
+[    1.920775] ULPI integrity check: passed.
+[    1.924749] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.929650] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.957868] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.964099] hub 1-0:1.0: USB hub found
+[    1.967804] hub 1-0:1.0: 1 port detected
+[    1.973574] mousedev: PS/2 mouse device common for all mice
+[    1.979369] i2c /dev entries driver
+[    1.984615] EDAC MC: ECC not enabled
+[    1.989094] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.996331] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    2.004938] Xilinx Zynq CpuIdle Driver started
+[    2.009939] sdhci: Secure Digital Host Controller Interface driver
+[    2.016034] sdhci: Copyright(c) Pierre Ossman
+[    2.020408] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.079923] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.087541] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.093724] usbcore: registered new interface driver usbhid
+[    2.099242] usbhid: USB HID core driver
+[    2.105165] NET: Registered protocol family 10
+[    2.110535] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.117213] NET: Registered protocol family 17
+[    2.121664] can: controller area network core (rev 20120528 abi 9)
+[    2.127850] NET: Registered protocol family 29
+[    2.132211] can: raw protocol (rev 20120528)
+[    2.136462] can: broadcast manager protocol (rev 20161123 t)
+[    2.142172] can: netlink gateway (rev 20130117) max_hops=1
+[    2.147754] Registering SWP/SWPB emulation handler
+[    2.159702] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.424578] udevd[708]: starting version 3.2.1
+[    2.429851] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.436428] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.442945] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.459743] udevd[709]: starting eudev-3.2.1
+[    2.544527] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.585563] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.587777] zoled: loading out-of-tree module taints kernel.
+[    2.600714] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.609444] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.618059] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.628715] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.636208] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.645459] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.653005] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.659179] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.667406] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.675516] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.684005] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.694014]  zone@de6c0010: assigned reserved memory node all_ports@10000000
+[    2.768205] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.774322] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.286543] random: dd: uninitialized urandom read (512 bytes read)
+Fri Apr 13 21:36:30 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.385576] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# z[    6.508133] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.513730] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+ [J
+Core loopback registered 6 bitstream(s)
+[    8.198007] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.45, throughput: 27.3067MB/s
+root@zedboard-zynq7:~# z 10[J[J30 1
+Core loopback registered 0 bitstream(s)
+[   15.128215] dev_ioctl[1165] flushing queue
+Exec: 30 tasks by 1 times, time: 0.73, throughput: 504.986MB/s
+root@zedboard-zynq7:~# z
+Core loopback registered 0 bitstream(s)
+[   21.812197] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.35, throughput: 35.1086MB/s
+root@zedboard-zynq7:~# z
+Core loopback registered 0 bitstream(s)
+[   23.192345] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 1 times, time: 0.35, throughput: 35.1086MB/s
+root@zedboard-zynq7:~# vi go
+[?1049h[1;1H[J[2;1H~[3;1H~[4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/1 100%[1;1H[1;1H[24;1H[KI go 1/1 100%[1;1H[1;1Hf[1;2H[1;2Ho[1;3H[1;3Hr[1;4H[1;5H[1;5Hi[1;6H[1;7H[1;7Hi[1;8H[1;8Hn[1;9H[1;10H[1;10H1[1;11H[1;12H[1;12H2[1;13H[1;14H[1;14H3[1;15H[1;16H[1;15H[24;1H[KI go [Modified] 1/1 100%[1;15H[1;14H [1;14H[1;13H[1;12H [1;12H[1;11H[1;10H [1;10H[1;10H`[1;11H[1;11Hs[1;12H[1;12He[1;13H[1;13Hq[1;14H[1;15H[1;15H1[1;16H[1;16H6[1;17H[1;17H`[1;18H[2;1H [2;1H[24;1H[KI go [Modified] 2/2 100%[2;1H[2;1Hd[2;2H[2;2Ho[2;3H[3;1H [3;1H[24;1H[KI go [Modified] 3/3 100%[3;1H[3;9H[3;9Hz[3;10H[3;11H[3;11H$[3;12H[3;12Hi[3;13H[3;14H[3;14H1[3;15H[3;15H0[3;16H[3;16H0[3;17H[3;17H0[3;18H[3;18H0[3;19H[3;19H0[3;20H[4;1H [4;1H[24;1H[KI go [Modified] 4/4 100%[4;1H[4;1Hd[4;2H[4;2Ho[4;3H[4;3Hn[4;4H[   66.370871] random: fast init done
+[4;4He[4;5H[5;1H [5;1H[24;1H[KI go [Modified] 5/5 100%[5;1H[5;1H[24;1H[K- go [Modified] 5/5 100%[5;1H[24;1H[K:wq[5;1H[5;1H[24;1H[K'go' 5L, 40C[5;1H[24;1H[K[?1049lroot@zedboard-zynq7:~# zroot@zedboard-zynq7:~# vi go[Jroot@zedboard-zynq7:~# z[Jroot@zedboard-zynq7:~# z 30 1[J
+Core loopback registered 0 bitstream(s)
+[   72.679681] dev_ioctl[1165] flushing queue
+Exec: 30 tasks by 1 times, time: 0.58, throughput: 635.586MB/s
+root@zedboard-zynq7:~# chmod +x go
+root@zedboard-zynq7:~# ./go
+Core loopback registered 0 bitstream(s)
+[  100.028657] random: crng init done
+[  179.582961] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100000 times, time: 84.876, throughput: 1447.76MB/s
+Core loopback registered 0 bitstream(s)
+[  341.789208] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 100000 times, time: 162.73, throughput: 1516.35MB/s
+Core loopback registered 0 bitstream(s)
+[  572.758618] dev_ioctl[1165] flushing queue
+Exec: 3 tasks by 100000 times, time: 230.782, throughput: 1597.35MB/s
+Core loopback registered 0 bitstream(s)
+[  807.783324] dev_ioctl[1165] flushing queue
+Exec: 4 tasks by 100000 times, time: 234.801, throughput: 2093.35MB/s
+Core loopback registered 0 bitstream(s)
+[ 1052.607308] dev_ioctl[1165] flushing queue
+Exec: 5 tasks by 100000 times, time: 244.576, throughput: 2512.1MB/s
+Core loopback registered 0 bitstream(s)
+[ 1290.950258] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 100000 times, time: 238.46, throughput: 3097.22MB/s
+Core loopback registered 0 bitstream(s)
+[ 1568.587912] dev_ioctl[1165] flushing queue
+Exec: 7 tasks by 100000 times, time: 277.282, throughput: 3102.11MB/s
+Core loopback registered 0 bitstream(s)
+[ 1892.689406] dev_ioctl[1165] flushing queue
+Exec: 8 tasks by 100000 times, time: 323.713, throughput: 3036.76MB/s
+Core loopback registered 0 bitstream(s)
+[ 2258.547217] dev_ioctl[1165] flushing queue
+Exec: 9 tasks by 100000 times, time: 365.439, throughput: 3026.28MB/s
+Core loopback registered 0 bitstream(s)
+[ 2664.237756] dev_ioctl[1165] flushing queue
+Exec: 10 tasks by 100000 times, time: 405.227, throughput: 3032.37MB/s
+Core loopback registered 0 bitstream(s)
+[ 3106.496950] dev_ioctl[1165] flushing queue
+Exec: 11 tasks by 100000 times, time: 441.747, throughput: 3059.85MB/s
+Core loopback registered 0 bitstream(s)
+[ 3592.052875] dev_ioctl[1165] flushing queue
+Exec: 12 tasks by 100000 times, time: 485.14, throughput: 3040.24MB/s
+Core loopback registered 0 bitstream(s)
+[ 4121.351728] dev_ioctl[1165] flushing queue
+Exec: 13 tasks by 100000 times, time: 528.663, throughput: 3021.66MB/s
+Core loopback registered 0 bitstream(s)
+[ 4694.954569] dev_ioctl[1165] flushing queue
+Exec: 14 tasks by 100000 times, time: 572.938, throughput: 3002.63MB/s
+Core loopback registered 0 bitstream(s)
+[ 5312.153925] dev_ioctl[1165] flushing queue
+Exec: 15 tasks by 100000 times, time: 616.507, throughput: 2989.75MB/s
+Core loopback registered 0 bitstream(s)
+[ 5972.390908] dev_ioctl[1165] flushing queue
+Exec: 16 tasks by 100000 times, time: 659.506, throughput: 2981.14MB/s
+root@zedboard-zynq7:~# 
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# ./go[Jroot@zedboard-zynq7:~# [Jë÷ÈÿøÈ×Éöÿ~‚vcÃÿï“cÿBaþECC disabled 512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete.. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 737.3 KiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.4 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.4 MiB/s
+done
+Bytes transferred = 14010541 (d5c8ad hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 7.9 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14010477 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc8000, end 1eb2486d ... OK
+   Loading Device Tree to 1ddc0000, end 1ddc709c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316940K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27124K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007774] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018705] Switching to timer-based delay loop, resolution 3ns
+[    0.024617] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033583] timer #0 at e080a000, irq=17
+[    0.037907] Console: colour dummy device 80x30
+[    0.042152] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052546] pid_max: default: 32768 minimum: 301
+[    0.057224] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063657] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071257] CPU: Testing write buffer coherency: ok
+[    0.076095] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081604] Setting up static identity map for 0x100000 - 0x100058
+[    0.257884] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257989] Brought up 2 CPUs
+[    0.266352] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272647] CPU: All CPU(s) started in SVC mode.
+[    0.278063] devtmpfs: initialized
+[    0.285704] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293393] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305237] pinctrl core: initialized pinctrl subsystem
+[    0.311631] NET: Registered protocol family 16
+[    0.317828] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357950] cpuidle: using governor menu
+[    0.377393] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385217] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391064] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397866] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.419109] SCSI subsystem initialized
+[    0.422998] usbcore: registered new interface driver usbfs
+[    0.428407] usbcore: registered new interface driver hub
+[    0.433601] usbcore: registered new device driver usb
+[    0.439540] pps_core: LinuxPPS API ver. 1 registered
+[    0.444293] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.453398] PTP clock support registered
+[    0.457248] EDAC MC: Ver: 3.0.0
+[    0.467848] FPGA manager framework
+[    0.471318] fpga-region fpga-full: FPGA Region probed
+[    0.477718] clocksource: Switched to clocksource arm_global_timer
+[    0.495677] NET: Registered protocol family 2
+[    0.500647] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.507503] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.513950] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.520174] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.525883] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.532246] NET: Registered protocol family 1
+[    0.546805] RPC: Registered named UNIX socket transport module.
+[    0.552542] RPC: Registered udp transport module.
+[    0.557141] RPC: Registered tcp transport module.
+[    0.561838] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.568418] Trying to unpack rootfs image as initramfs...
+[    1.509403] Freeing initrd memory: 13684K (dddc8000 - deb25000)
+[    1.515359] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.524730] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.530694] audit: initializing netlink subsys (disabled)
+[    1.535973] audit: type=2000 audit(1.489:1): initialized
+[    1.542105] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.549149] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.556850] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.564032] io scheduler noop registered
+[    1.567896] io scheduler deadline registered
+[    1.572098] io scheduler cfq registered (default)
+[    1.579488] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.585967] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.594902] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.603499] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.612548] console [ttyPS0] enabled
+[    1.612548] console [ttyPS0] enabled
+[    1.619562] bootconsole [cdns0] disabled
+[    1.619562] bootconsole [cdns0] disabled
+[    1.628122] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.638698] brd: module loaded
+[    1.649693] loop: module loaded
+[    1.656053] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.662350] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.667269] 5 ofpart partitions found on MTD device spi0.0
+[    1.672725] Creating 5 MTD partitions on "spi0.0":
+[    1.677476] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.684695] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.691332] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.698514] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.705279] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.716220] libphy: Fixed MDIO Bus: probed
+[    1.725453] CAN device driver interface
+[    1.730861] libphy: MACB_mii_bus: probed
+[    1.837945] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.847809] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.861068] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.867602] usbcore: registered new interface driver usb-storage
+[    1.873792] e0002000.usb supply vbus not found, using dummy regulator
+[    1.880492] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.886069] Found TI TUSB1210 ULPI transceiver.
+[    1.890618] ULPI integrity check: passed.
+[    1.894594] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.899494] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.927754] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.933971] hub 1-0:1.0: USB hub found
+[    1.937671] hub 1-0:1.0: 1 port detected
+[    1.943429] mousedev: PS/2 mouse device common for all mice
+[    1.949208] i2c /dev entries driver
+[    1.954372] EDAC MC: ECC not enabled
+[    1.958831] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.966072] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    1.974715] Xilinx Zynq CpuIdle Driver started
+[    1.979658] sdhci: Secure Digital Host Controller Interface driver
+[    1.985749] sdhci: Copyright(c) Pierre Ossman
+[    1.990122] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.059809] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.067443] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.073636] usbcore: registered new interface driver usbhid
+[    2.079147] usbhid: USB HID core driver
+[    2.085053] NET: Registered protocol family 10
+[    2.090387] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.097039] NET: Registered protocol family 17
+[    2.101452] can: controller area network core (rev 20120528 abi 9)
+[    2.107624] NET: Registered protocol family 29
+[    2.112024] can: raw protocol (rev 20120528)
+[    2.116245] can: broadcast manager protocol (rev 20161123 t)
+[    2.121919] can: netlink gateway (rev 20130117) max_hops=1
+[    2.127538] Registering SWP/SWPB emulation handler
+[    2.139510] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.407365] udevd[708]: starting version 3.2.1
+[    2.412724] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.419364] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.425817] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.442833] udevd[709]: starting eudev-3.2.1
+[    2.518319] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.570231] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.579162] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.591185] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.599663] zoled: loading out-of-tree module taints kernel.
+[    2.607951] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.615953] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.625197] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.635476] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.645719] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.652838] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.658524] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.666423] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.672078] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.682064]  zone@de73c010: assigned reserved memory node all_ports@10000000
+[    2.757422] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.763560] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.285615] random: dd: uninitialized urandom read (512 bytes read)
+Sat Apr 14 00:51:44 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.386688] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# c[Jvi go
+[?1049h[1;1H[J[2;1H~[3;1H~[4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/1 100%[1;1H[1;1H[24;1H[KI go 1/1 100%[1;1H[1;1Hca[1;3H[24;1H[KI go [Modified] 2/2 100%[1;3H[1;3Ht go[2;1Hfor i[2;7H[24;1H[KI go [Modified] 3/3 100%[2;7H[24;1H[KI go [Modified] 4/4 100%[2;7H[24;1H[KI go [Modified] 5/5 100%[2;7H[2;7Hin `seq 16`[3;1Hdo[4;1H        z $i 100000[5;1Hdone[6;1H [6;1H[24;1H[KI go [Modified] 6/6 100%[6;1H[6;1H~[5;5H[24;1H[KI go [Modified] 5/5 100%[5;5H[5;4H[24;1H[K- go [Modified] 5/5 100%[5;4H[    9.628005] macb e000b000.ethernet eth0: link up (1000/Full)
+[    9.633603] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[24;1H[K:wq[5;4H[5;4H[24;1H[K'go' 5L, 46C[5;4H[24;1H[K[?1049lroot@zedboard-zynq7:~# root@zedboard-zynq7:~# vi go[J
+[?1049h[1;1H[J[1;1Hcat go[2;1Hfor i in `seq 16`[3;1Hdo[4;9Hz $i 100000[5;1Hdone[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/5 20%[1;1H[2;1H[24;1H[K- go 2/5 40%[2;1H[3;1H[24;1H[K- go 3/5 60%[3;1H[3;1H[24;1H[K[7m'q' is not implemented[0m[3;1H[24;1H[K- go 3/5 60%[3;1H[24;1H[K:q[3;1H[3;1H[24;1H[K- go 3/5 60%[3;1H[24;1H[K[?1049lroot@zedboard-zynq7:~# chmod +x go
+root@zedboard-zynq7:~# ls -l
+-rwxr-xr-x    1 root     root            46 Apr 14 00:51 go
+-rwxr-xr-x    1 root     root        109716 Apr 14 00:51 sample.jpg
+root@zedboard-zynq7:~# vim go
+-sh: vim: not found
+root@zedboard-zynq7:~# vi go
+[?1049h[1;1H[J[1;1Hcat go[2;1Hfor i in `seq 16`[3;1Hdo[4;9Hz $i 100000[5;1Hdone[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/5 20%[1;1H[1;1H[24;1H[K[7m'q' is not implemented[0m[1;1H[24;1H[K- go 1/5 20%[1;1H[1;1H[24;1H[K[7m'q' is not implemented[0m[1;1H[24;1H[K- go 1/5 20%[1;1H[1;1H[24;1H[K- go 1/5 20%[1;1H[1;1H[24;1H[K- go 1/5 20%[1;1H[24;1H[K:q[1;1H[1;1H[24;1H[K- go 1/5 20%[1;1H[24;1H[K[?1049lroot@zedboard-zynq7:~# z 10 1
+Core loopback registered 6 bitstream(s)
+[   42.019706] dev_ioctl[1408] requested core [emboss] is not registered
+ioctl error 22 (Invalid argument) while configuring DMA task
+z: z.cpp:96: int main(int, char**): Assertion `!err' failed.
+Aborted
+root@zedboard-zynq7:~# iðÈÿøÈ×È×úIOÿÑ‚wcÇê˜Q“þ"ÎÀQ¨YZ,512 MiB
+MMC:   Card did not respond to voltage select!
+Card did not respond to voltage select!
+sdhci@e0100000 - probe failed: -95
+Card did not respond to voltage select!
+
+SF: Detected s25fl256s_64k with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Model: Zynq Zed Development Board
+Board: Xilinx Zynq
+Net:   ZYNQ GEM: e000b000, phyaddr 0, interface rgmii-id
+eth0: ethernet@e000b000
+Hit any key to stop autoboot:  2  1  0 
+ethernet@e000b000 Waiting for PHY auto negotiation to complete.. done
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'download.bit'.
+Load address: 0x1000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 ################
+	 10.4 MiB/s
+done
+Bytes transferred = 4045675 (3dbb6b hex)
+  design filename = "sym_pb4_wrapper;UserID=0XFFFFFFFF;Version=2017.2"
+  part number = "7z020clg484"
+  date = "2018/03/11"
+  time = "22:47:58"
+  bytes in bitstream = 4045564
+zynq_align_dma_buffer: Align buffer at 100006f to ffff80(swap 1)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage'.
+Load address: 0x2000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+	 10.3 MiB/s
+done
+Bytes transferred = 3567160 (366e38 hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'core-image-minimal-zedboard-zynq7.cpio.gz.u-boot'.
+Load address: 0x3000000
+Loading: *#################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #################################################################
+	 #############################################
+	 10.4 MiB/s
+done
+Bytes transferred = 14010876 (d5c9fc hex)
+Using ethernet@e000b000 device
+TFTP from server 192.168.2.1; our IP address is 192.168.2.2
+Filename 'uImage-zynq-zed.dtb'.
+Load address: 0x2a00000
+Loading: *##
+	 5.3 MiB/s
+done
+Bytes transferred = 16541 (409d hex)
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-xilinx-v2017.1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    3567096 Bytes = 3.4 MiB
+   Load Address: 00008000
+   Entry Point:  00008000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 03000000 ...
+   Image Name:   core-image-minimal-zedboard-zynq
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    14010812 Bytes = 13.4 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 02a00000
+   Booting using the fdt blob at 0x2a00000
+   Loading Kernel Image ... OK
+   Loading Ramdisk to 1ddc8000, end 1eb249bc ... OK
+   Loading Device Tree to 1ddc0000, end 1ddc709c ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.9.0-xilinx-v2017.1 (oe-user@oe-host) (gcc version 6.3.0 (GCC) ) #1 SMP PREEMPT Wed Apr 11 02:21:45 EEST 2018
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt:Machine model: Zynq Zed Development Board
+[    0.000000] earlycon: cdns0 at MMIO 0xe0001000 (options '115200n8')
+[    0.000000] bootconsole [cdns0] enabled
+[    0.000000] Reserved memory: created DMA memory pool at 0x10000000, size 128 MiB
+[    0.000000] OF: reserved mem: initialized node all_ports@10000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 48 MiB at 0x1ac00000
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] percpu: Embedded 14 pages/cpu @dfbb6000 s25996 r8192 d23156 u57344
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 97280
+[    0.000000] Kernel command line: console=ttyPS0,115200 earlycon
+[    0.000000] PID hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Memory: 316940K/393216K available (5120K kernel code, 203K rwdata, 1276K rodata, 1024K init, 1233K bss, 27124K reserved, 49152K cma-reserved, 0K highmem)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+[    0.000000]     fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+[    0.000000]     vmalloc : 0xe0800000 - 0xff800000   ( 496 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xe0000000   ( 512 MB)
+[    0.000000]     pkmap   : 0xbfe00000 - 0xc0000000   (   2 MB)
+[    0.000000]     modules : 0xbf000000 - 0xbfe00000   (  14 MB)
+[    0.000000]       .text : 0xc0008000 - 0xc0600000   (6112 kB)
+[    0.000000]       .init : 0xc0800000 - 0xc0900000   (1024 kB)
+[    0.000000]       .data : 0xc0900000 - 0xc0932f40   ( 204 kB)
+[    0.000000]        .bss : 0xc0932f40 - 0xc0a67558   (1234 kB)
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 32.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=4 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=32, nr_cpu_ids=2
+[    0.000000] NR_IRQS:16 nr_irqs:16 16
+[    0.000000] efuse mapped to e0800000
+[    0.000000] slcr mapped to e0802000
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x32460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] zynq_clock_init: clkc starts at e0802100
+[    0.000000] Zynq clock init
+[    0.000009] sched_clock: 64 bits at 333MHz, resolution 3ns, wraps every 4398046511103ns
+[    0.007780] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x4ce07af025, max_idle_ns: 440795209040 ns
+[    0.018711] Switching to timer-based delay loop, resolution 3ns
+[    0.024624] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    0.033589] timer #0 at e080a000, irq=17
+[    0.037914] Console: colour dummy device 80x30
+[    0.042157] Calibrating delay loop (skipped), value calculated using timer frequency.. 666.66 BogoMIPS (lpj=3333333)
+[    0.052551] pid_max: default: 32768 minimum: 301
+[    0.057230] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.063662] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.071266] CPU: Testing write buffer coherency: ok
+[    0.076101] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.081612] Setting up static identity map for 0x100000 - 0x100058
+[    0.257890] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.257995] Brought up 2 CPUs
+[    0.266358] SMP: Total of 2 processors activated (1333.33 BogoMIPS).
+[    0.272653] CPU: All CPU(s) started in SVC mode.
+[    0.278062] devtmpfs: initialized
+[    0.285697] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.293386] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.305221] pinctrl core: initialized pinctrl subsystem
+[    0.311619] NET: Registered protocol family 16
+[    0.317833] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.357956] cpuidle: using governor menu
+[    0.377417] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.385241] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.391087] zynq-ocm f800c000.ocmc: ZYNQ OCM pool: 256 KiB @ 0xe0840000
+[    0.397927] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    0.418396] SCSI subsystem initialized
+[    0.422572] usbcore: registered new interface driver usbfs
+[    0.428050] usbcore: registered new interface driver hub
+[    0.433282] usbcore: registered new device driver usb
+[    0.439506] pps_core: LinuxPPS API ver. 1 registered
+[    0.444255] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.453389] PTP clock support registered
+[    0.457303] EDAC MC: Ver: 3.0.0
+[    0.461265] FPGA manager framework
+[    0.464931] fpga-region fpga-full: FPGA Region probed
+[    0.471099] clocksource: Switched to clocksource arm_global_timer
+[    0.492370] NET: Registered protocol family 2
+[    0.497374] TCP established hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.504267] TCP bind hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.510623] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.516910] UDP hash table entries: 256 (order: 1, 8192 bytes)
+[    0.522642] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes)
+[    0.528940] NET: Registered protocol family 1
+[    0.533522] RPC: Registered named UNIX socket transport module.
+[    0.539216] RPC: Registered udp transport module.
+[    0.543899] RPC: Registered tcp transport module.
+[    0.548504] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.555126] Trying to unpack rootfs image as initramfs...
+[    1.503005] Freeing initrd memory: 13684K (dddc8000 - deb25000)
+[    1.508963] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.518278] futex hash table entries: 512 (order: 3, 32768 bytes)
+[    1.524319] audit: initializing netlink subsys (disabled)
+[    1.529538] audit: type=2000 audit(1.479:1): initialized
+[    1.535598] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.542648] jffs2: version 2.2. (NAND) (SUMMARY)  Â© 2001-2006 Red Hat, Inc.
+[    1.550365] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    1.557584] io scheduler noop registered
+[    1.561414] io scheduler deadline registered
+[    1.565619] io scheduler cfq registered (default)
+[    1.572473] dma-pl330 f8003000.dmac: Loaded driver for PL330 DMAC-241330
+[    1.578955] dma-pl330 f8003000.dmac: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.587744] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.595965] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 143, base_baud = 3125000) is a xuartpsà[    1.605014] console [ttyPS0] enabled
+[    1.605014] console [ttyPS0] enabled
+[    1.612028] bootconsole [cdns0] disabled
+[    1.612028] bootconsole [cdns0] disabled
+[    1.620467] xdevcfg f8007000.devcfg: ioremap 0xf8007000 to e0832000
+[    1.630436] brd: module loaded
+[    1.640564] loop: module loaded
+[    1.646867] m25p80 spi0.0: found s25fl256s1, expected n25q128a11
+[    1.653133] m25p80 spi0.0: s25fl256s1 (32768 Kbytes)
+[    1.658050] 5 ofpart partitions found on MTD device spi0.0
+[    1.663507] Creating 5 MTD partitions on "spi0.0":
+[    1.668256] 0x000000000000-0x000000100000 : "qspi-fsbl-uboot"
+[    1.675483] 0x000000100000-0x000000600000 : "qspi-linux"
+[    1.682168] 0x000000600000-0x000000620000 : "qspi-device-tree"
+[    1.689330] 0x000000620000-0x000000c00000 : "qspi-rootfs"
+[    1.696177] 0x000000c00000-0x000001000000 : "qspi-bitstream"
+[    1.707274] libphy: Fixed MDIO Bus: probed
+[    1.716754] CAN device driver interface
+[    1.722210] libphy: MACB_mii_bus: probed
+[    1.831329] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 145 (00:0a:35:00:01:22)
+[    1.841194] Marvell 88E1510 e000b000.etherne:00: attached PHY driver [Marvell 88E1510] (mii_bus:phy_addr=e000b000.etherne:00, irq=-1)
+[    1.854474] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.861020] usbcore: registered new interface driver usb-storage
+[    1.867210] e0002000.usb supply vbus not found, using dummy regulator
+[    1.873907] ULPI transceiver vendor/product ID 0x0451/0x1507
+[    1.879479] Found TI TUSB1210 ULPI transceiver.
+[    1.884028] ULPI integrity check: passed.
+[    1.888004] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    1.892903] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    1.921136] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    1.927364] hub 1-0:1.0: USB hub found
+[    1.931067] hub 1-0:1.0: 1 port detected
+[    1.936846] mousedev: PS/2 mouse device common for all mice
+[    1.942649] i2c /dev entries driver
+[    1.947832] EDAC MC: ECC not enabled
+[    1.952302] cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 666666 KHz
+[    1.959544] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 666667 KHz
+[    1.968187] Xilinx Zynq CpuIdle Driver started
+[    1.973144] sdhci: Secure Digital Host Controller Interface driver
+[    1.979237] sdhci: Copyright(c) Pierre Ossman
+[    1.983603] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.042214] mmc0: SDHCI controller on e0100000.sdhci [e0100000.sdhci] using DMA
+[    2.049804] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.056008] usbcore: registered new interface driver usbhid
+[    2.061520] usbhid: USB HID core driver
+[    2.067814] NET: Registered protocol family 10
+[    2.073169] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.079828] NET: Registered protocol family 17
+[    2.084241] can: controller area network core (rev 20120528 abi 9)
+[    2.090414] NET: Registered protocol family 29
+[    2.094810] can: raw protocol (rev 20120528)
+[    2.099031] can: broadcast manager protocol (rev 20161123 t)
+[    2.104700] can: netlink gateway (rev 20130117) max_hops=1
+[    2.110327] Registering SWP/SWPB emulation handler
+[    2.122205] Freeing unused kernel memory: 1024K (c0800000 - c0900000)
+INIT: version 2.88 booting
+Starting udev
+[    2.377052] udevd[708]: starting version 3.2.1
+[    2.382382] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.388972] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.395551] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.412542] udevd[709]: starting eudev-3.2.1
+[    2.487311] random: udevd: uninitialized urandom read (16 bytes read)
+[    2.537169] xilinx-vdma 40400000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.546088] xilinx-vdma 40410000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.555298] xilinx-vdma 40420000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.563141] zoled: loading out-of-tree module taints kernel.
+[    2.572416] xilinx-vdma 40430000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.581961] xilinx-vdma 40440000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.591038] xilinx-vdma 40450000.dma: Xilinx AXI VDMA Engine Driver Probed!!
+[    2.600635] pblock_add[784] adding pblock 0 (pblock@0)
+[    2.607760] pblock_add[784] adding pblock 1 (pblock@1)
+[    2.615016] pblock_add[784] adding pblock 2 (pblock@2)
+[    2.623219] pblock_add[784] adding pblock 3 (pblock@3)
+[    2.630327] pblock_add[784] adding pblock 4 (pblock@4)
+[    2.637870] pblock_add[784] adding pblock 5 (pblock@5)
+[    2.647043]  zone@de722010: assigned reserved memory node all_ports@10000000
+[    2.725906] zone_add[955] created zone @10000000 e1000000-e8ffffff
+[    2.732056] zdma_probe[1576] ZDMA initialized. Detected 6 partition block(s) and 1 memory banks(s)
+Populating dev cache
+[    3.236453] random: dd: uninitialized urandom read (512 bytes read)
+Sat Apr 14 00:54:09 UTC 2018
+INIT: Entering runlevel: 5
+Configuring network interfaces... [    3.334976] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+done.
+Starting syslogd/klogd: done
+-sh: can't access tty; job control turned off
+root@zedboard-zynq7:~# [    6.441395] macb e000b000.ethernet eth0: link up (1000/Full)
+[    6.446991] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+
+root@zedboard-zynq7:~# z 2[J16[J2 1
+Core emboss registered 6 bitstream(s)
+[   75.757531] dev_ioctl[1165] flushing queue
+Exec: 12 tasks by 1 times, time: 0.73, throughput: 201.995MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 12 1[J
+Core emboss registered 0 bitstream(s)
+[   78.171656] dev_ioctl[1165] flushing queue
+Exec: 12 tasks by 1 times, time: 0.54, throughput: 273.067MB/s
+root@zedboard-zynq7:~# root@zedboard-zynq7:~# z 12 1[J[J[J[J[J24 1
+Core emboss registered 0 bitstream(s)
+[   80.523289] dev_ioctl[1165] flushing queue
+Exec: 24 tasks by 1 times, time: 0.76, throughput: 388.042MB/s
+root@zedboard-zynq7:~# vu gi[J[J[J[Ji go
+[?1049h[1;1H[J[2;1H~[3;1H~[4;1H~[5;1H~[6;1H~[7;1H~[8;1H~[9;1H~[10;1H~[11;1H~[12;1H~[13;1H~[14;1H~[15;1H~[16;1H~[17;1H~[18;1H~[19;1H~[20;1H~[21;1H~[22;1H~[23;1H~[1;1H[24;1H[K- go 1/1 100%[1;1H[1;1H[24;1H[KI go 1/1 100%[1;1H[1;1Hca[1;3H[24;1H[KI go [Modified] 2/2 100%[1;3H[1;3Ht go[2;1Hfor i[2;7H[24;1H[KI go [Modified] 3/3 100%[2;7H[24;1H[KI go [Modified] 4/4 100%[2;7H[24;1H[KI go [Modified] 5/5 100%[2;7H[2;7Hin `seq 16`[3;1Hdo[4;1H        z $i 100000[5;1Hdone[6;1H [6;1H[24;1H[KI go [Modified] 6/6 100%[6;1H[6;1H[24;1H[K- go [Modified] 6/6 100%[6;1H[24;1H[K:wq[6;1H[6;1H[24;1H[K'go' 6L, 47C[6;1H[24;1H[K[?1049lroot@zedboard-zynq7:~# chmod +x go[   91.598096] random: fast init done
+
+root@zedboard-zynq7:~# 
+root@zedboard-zynq7:~# ./go
+cat go
+for i in `seq 16`
+do
+	z $i 100000
+done
+
+Core emboss registered 0 bitstream(s)
+[  143.401086] random: crng init done
+[  796.923700] dev_ioctl[1165] flushing queue
+Exec: 1 tasks by 100000 times, time: 698.706, throughput: 175.868MB/s
+Core emboss registered 0 bitstream(s)
+[ 1496.517551] dev_ioctl[1165] flushing queue
+Exec: 2 tasks by 100000 times, time: 699.453, throughput: 351.36MB/s
+Core emboss registered 0 bitstream(s)
+[ 2199.084830] dev_ioctl[1165] flushing queue
+Exec: 3 tasks by 100000 times, time: 702.403, throughput: 524.827MB/s
+Core emboss registered 0 bitstream(s)
+[ 2899.277846] dev_ioctl[1165] flushing queue
+Exec: 4 tasks by 100000 times, time: 699.971, throughput: 702.201MB/s
+Core emboss registered 0 bitstream(s)
+[ 3599.540414] dev_ioctl[1165] flushing queue
+Exec: 5 tasks by 100000 times, time: 699.999, throughput: 877.716MB/s
+Core emboss registered 0 bitstream(s)
+[ 4299.792280] dev_ioctl[1165] flushing queue
+Exec: 6 tasks by 100000 times, time: 699.947, throughput: 1053.34MB/s
+Core emboss registered 0 bitstream(s)
+[ 5119.598599] dev_ioctl[1165] flushing queue
+Exec: 7 tasks by 100000 times, time: 819.463, throughput: 1049.66MB/s
+Core emboss registered 0 bitstream(s)
+[ 6057.258076] dev_ioctl[1165] flushing queue
+Exec: 8 tasks by 100000 times, time: 937.273, throughput: 1048.83MB/s
+Core emboss registered 0 bitstream(s)
+[ 7120.179888] dev_ioctl[1165] flushing queue
+Exec: 9 tasks by 100000 times, time: 1062.481, throughput: 1040.88MB/s
+Core emboss registered 0 bitstream(s)
+[ 8291.286635] dev_ioctl[1165] flushing queue
+Exec: 10 tasks by 100000 times, time: 1170.639, throughput: 1049.68MB/s
+Core emboss registered 0 bitstream(s)
+[ 9569.423200] dev_ioctl[1165] flushing queue
+Exec: 11 tasks by 100000 times, time: 1277.638, throughput: 1057.95MB/s
+Core emboss registered 0 bitstream(s)
+[10966.541794] dev_ioctl[1165] flushing queue
+Exec: 12 tasks by 100000 times, time: 1396.565, throughput: 1055.85MB/s
+Core emboss registered 0 bitstream(s)
+[12509.990036] dev_ioctl[1165] flushing queue
+Exec: 13 tasks by 100000 times, time: 1542.814, throughput: 1035.41MB/s
+Core emboss registered 0 bitstream(s)

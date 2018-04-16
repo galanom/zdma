@@ -88,8 +88,8 @@ int zdma_core_register(const char *name, signed char priority, unsigned long aff
 		core.size = st.st_size;
 		strcpy(core.name, name);
 		core.pblock = 1ul << id;
-		core.priority = priority > 10 ? 10 : 
-				priority < 1 ? 1 :
+		core.priority = priority > PRI_MAX ? PRI_MAX : 
+				priority < PRI_MIN ? PRI_MIN :
 				priority;
 		core.bitstream = malloc(core.size);
 		if (core.bitstream == NULL) {

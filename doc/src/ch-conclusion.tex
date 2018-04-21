@@ -110,7 +110,7 @@ one could try an even more difficult target and the HLS may restructure the code
 To make things worse, the HLS resource utilization and latency estimates should be treated as randomly generated numbers.
 In order to confirm resource utilization, the designer should export the compiled output to a synthesized device checkpoint.
 The post-synthesis resource utilization report is far more precise. Regarding latency, numbers may be deceptive. For example,
-in table \ref{tab:acc-util} we see that the estimated latency does not matched measured peformance in table \ref{tab:acc-throughput}.
+in figure \ref{fig:acc-throughput} we see that the measured throughput does not match the HLS latency estimation shown in table \ref{tab:acc-util}.
 
 %Some of these issues could possibly consist current implementation weaknesses that could be mitigated in the future.
 %However there have been difficulties that arise from the language's design. 
@@ -130,14 +130,216 @@ but it proved to be neither easy, and certainly, nor quick.
 
 \section{Future Work}
 
-The are several oportunities to optimize or extend this work.
-....
+The are several opportunities to optimize or extend this work.
+They range from simple additions and improvements to 
+revising significant architectural decisions.
+In this section, we will discuss some of these ideas.
 
-\subsection{A More Efficient use of DMA controllers}
+\subsection{Integration with FPGA Manager}
+
+We discussed FPGA Manager in section \ref{sec:linux-pr}. 
+It is imperative to replace the partial reconfiguration driver from \texttt{devcfg} for two main reasons:
+
+\begin{itemize}
+\item	\textbf{Portability}: FPGA Manager is a Linux kernel API and it offers hardware abstraction. 
+	Using it, it will not only provide future support for ZynqMP, but it will allow porting the system
+	to other architectures like Microblaze or even to Altera/Intel SoCs.
+\item	\textbf{Integration}: Making Linux to be aware of the FPGA is a big step forward.
+	We already discussed the advantages of this framework but we should stress again that this is not just
+	an FPGA programming interface. 
+	As the framework matures, more and more FPGA related functionality will be added, 
+	obsoleting custom and out-of-tree solutions.
+\end{itemize}
+
+Even if that reasoning does not sound compelling enough, 
+the fact that Xilinx has stopped development of \texttt{devcfg} and has 
+completely removed it in its latest kernel (v4.14).
+
+\subsection{Use of Advanced DMA Modes}
 
 The AXI DMA IP core was used in Direct Register mode because it is the simplest solution, not the most efficient.
-This core can be configured to support Scatter-Gather at a cost of around 33\% more resources (see table \ref{tab:dma-modes}).
-However
+The drawback of this method is that there is a significant time interval between 
+one transaction completion and next transaction start, during which the controller is idling. 
+
+The interrupt service latency should not be blamed as it is usually at the 100μs range,
+a value quite small compared to the transaction processing latency or the reconfiguration time,
+both at the order of a milliseconds. The problem arises from the fact that we do not immediately
+know what transaction is going to be processed afterwards. The corresponding slot will be marked as free,
+and it will wait to be chosen at a later scheduler invocation. How long this will be, depends on the system
+load and how frequently the Linux process scheduler is called, which is configurable.
+
+Even if we manage to quantify and/or reduce it, we still need to analyze whether it is avoidable.
+If the system includes many accelerators and few slots, it is highly probable that the slot that has just finished
+will be reconfigured, which closes the door for any optimization. On the contrary, if there is a good probability
+this slot will re-use the same accelerator, it would be very beneficial if we could immediately schedule next transaction.
+
+The Linux DMA Engine API supports scatterlists, an abstraction of DMA Scatter-Gather.
+It is a software construct; an array of transaction descriptors that the API uses
+the program the DMA controller, to avoid the unnecessary controller pauses.
+It does not reqire hardware support, but if present, it will be taken advantage of.
+The AXI DMA ip core does support scatter-gather,
+but at a cost of an one-third increase of resource utilization (see table \ref{tab:dma-modes}).
+
+Regardless from whether it is beneficial in most situations, the driver should provide this possibility.
+
+\subsection{Rethinking the Accelerator - DMAC Relationship}
+
+Initially, the system was envisioned to be capable of supporting a handful of accelerator slots, with four being the initial target.
+With that in mind, using one AXI DMA for each accelerator slot was not an issue. An assumption that may still hold true for the 6-core design,
+but was first challenged at the 16-core design. When the capacity of the XCZU9EG permitted the implementation of 63 accelerator slots,
+it cast a doubt on whether 63 AXI DMA controllers were really necessary.
+
+There are two reasons that drive us to object the current design:
+
+\begin{enumerate}
+\item	An accelerator is not always capable of pulling an AXI \gls{beat} per cycle. 
+	Our convolutional filters pull data once per 8 cycles, so the AXI DMA IP is forced to wait for 7 out of every 8 cycles.
+	If we could time-share the DMA controller, we could theoretically support 8 accelerators from a single DMA controller.
+\item	It is common that a single compuational task is consisted of multiple stages of processing, each being represented as an
+	accelerator core. Instead of pushing in and out data from and to every accelerator, each accelerator could drive directly
+	the next stage. If we could do this, we would have another major gain: the data stream would flow directly within the PL realm,
+	without reaching main memory until the last link of the processing chain has finished. This would greatly reduce latency
+	and relieve the pressure on the memory controller.
+\end{enumerate}
+
+For the first case, we can propose exploring Multi-Channel DMA operation. In this configuration, a DMA controller can control
+multiple AXI streams from a single interface, by time-sharing its resources. The streams can then be routed to their correct
+destination after setting the user AXI signal \texttt{TDEST}. The AXI DMA IP has this capability and recently Xilinx released
+the AXI MCDMA IP core. The routing can be performed using an AXI Stream Switch. Of course, both the mutli-channel support and
+the routing take up FPGA resources. For the former, the table \ref{tab:dma-modes} can be advised, and as for the latter
+one may refer to \cite{pg085}.
+
+The second case is more complex and the ideas behind it may be materialized in several ways, depending the target application.
+The possible approach would be to chain accelerator slots. It could be implemented either as a set of peers or as a big main
+core, accompanied by smaller pre and post processing cores. In any case, the output stream of the one core is driven to the
+input stream of the other. It would be a direct connection, no interconnect is necessary. If a core within a chain is not needed,
+it will be loaded with a loopback module.
+
+One could object that in a scenario that we have few and large accelerator slots serving tasks that cannot be easily broken down
+to elementary computations, such an arrangement would lead to far too many wasted FPGA resources by cores loaded with a loopback module.
+We could withdraw our idea of having only a single DMA controller but keep our idea to directly connect cores, just to avoid
+unnecessary main memory access. We could even extend it, to include the possibility of sourcing or sinking data from/to a
+hardware peripheral, to support a real-time embedded setting.
+
+\begin{figure}[tb!]
+\begin{subfigure}[h]{\textwidth}
+\centering
+\begin{tikzpicture}
+	% The Accelerators
+	\node[block, minimum width = 60mm, minimum height = 16mm] (axidma)
+		at (0,0) {MC AXI DMA};
+
+	\node[block, minimum width = 25mm, minimum height=8mm, above=10mm of axidma] (acc0) {Accelerator 3};
+	\node[block, minimum width = 25mm, minimum height=8mm, above=3mm of acc0] (acc1) {Accelerator 2};
+	\node[block, minimum width = 25mm, minimum height=8mm, above=3mm of acc1] (acc2) {Accelerator 1};
+	\node[block, minimum width = 25mm, minimum height=8mm, above=3mm of acc2] (acc3) {Accelerator 0};
+
+	\node[interconnect] at ($(acc1)!0.5!(acc2) + (-25mm, 0)$) (int0) {};
+	\node[interconnect] at ($(acc1)!0.5!(acc2) + ( 25mm, 0)$) (int1) {};
+	\node[textonly, left of=int0,xshift=-2mm] {\rotatebox{90}{1MI x 4SI}};
+	\node[textonly, right of=int1,xshift=2mm] {\rotatebox{90}{4MI x 1SI}};
+
+	\coordinate (p0) at ($(int0.north east)!0.20!(int0.south east)$); \draw[axis64] (p0) -- +(2.5mm,0) |- (acc3);
+	\coordinate (p1) at ($(int0.north east)!0.40!(int0.south east)$); \draw[axis64] (p1) -|- (acc2);
+	\coordinate (p2) at ($(int0.north east)!0.60!(int0.south east)$); \draw[axis64] (p2) -|- (acc1);
+	\coordinate (p3) at ($(int0.north east)!0.80!(int0.south east)$); \draw[axis64] (p3) -- +(2.5mm,0) |- (acc0);
+	\coordinate (q0) at ($(int1.north west)!0.20!(int1.south west)$); \draw[raxis64] (q0) -- +(-2.5mm,0) |- (acc3);
+	\coordinate (q1) at ($(int1.north west)!0.40!(int1.south west)$); \draw[raxis64] (q1) -|- (acc2);
+	\coordinate (q2) at ($(int1.north west)!0.60!(int1.south west)$); \draw[raxis64] (q2) -|- (acc1);
+	\coordinate (q3) at ($(int1.north west)!0.80!(int1.south west)$); \draw[raxis64] (q3) -- +(-2.5mm,0) |- (acc0);
+
+	\draw[raxis64] (int0) -- (int0 |- axidma.north)
+		node[below]{\footnotesize\ttfamily MM2S};
+	\draw[axis64] (int1) -- (int1 |- axidma.north)
+		node[below]{\footnotesize\ttfamily MM2S};
+\end{tikzpicture}
+\caption{Multichannel DMA}
+\end{subfigure}
+\bigskip\\
+\begin{subfigure}[h]{.4\textwidth}
+\centering
+\vspace{6.5mm}
+\begin{tikzpicture}
+	% The Accelerators
+	\node[block, minimum width = 50mm, minimum height = 16mm] (axidma) at (0,0) {AXI DMA};
+
+	\node[block, minimum width = 15mm, minimum height = 16mm, above=25mm of axidma] (acc) {Acc. 1};
+	\node[block, minimum width = 15mm, minimum height = 16mm, left=5mm of acc] (pre) {Acc. 0};
+	\node[block, minimum width = 15mm, minimum height = 16mm, right=5mm of acc] (post) {Acc. 2};
+
+
+	\coordinate (y0) at ($(acc)!0.5!(axidma)$) ;
+	\coordinate (x0) at ($(acc.south west)!0.25!(acc.south east)$) ;
+	\coordinate (x1) at ($(acc.south west)!0.75!(acc.south east)$) ;
+
+	\draw[axis64] (pre |- axidma.north) node[below]{\footnotesize\ttfamily MM2S} -- (pre);
+	\draw[axis64] (pre) -- (acc);
+	\draw[axis64] (acc) -- (post);
+	\draw[raxis64] (post |- axidma.north) node[below]{\footnotesize\ttfamily S2MM} -- (post);
+\end{tikzpicture}
+\caption{Chaining Accelerators}
+\end{subfigure}
+\begin{subfigure}[h]{0.6\textwidth}
+\centering
+\begin{tikzpicture}
+	% The Accelerators
+	\node[block, minimum width = 55mm, minimum height = 16mm] (axidma) at (0,0) {AXI DMA};
+
+	\node[block, inner sep=0pt, minimum width = 20mm, minimum height = 16mm, above=25mm of axidma] (acc) {Accelerator};
+	\node[interconnect, left=5mm of acc] (pre) {};
+	\node[interconnect, right=5mm of acc] (post) {};
+
+
+	\coordinate (y0) at ($(acc)!0.5!(axidma)$) ;
+	\coordinate (x0) at ($(acc.south west)!0.25!(acc.south east)$) ;
+	\coordinate (x1) at ($(acc.south west)!0.75!(acc.south east)$) ;
+
+	\draw[axis64] (pre |- axidma.north) node[below]{\footnotesize\ttfamily MM2S} -- (pre)
+		node[below left=5mm and 0mm, text width=18mm, align=right]{\scriptsize\ttfamily from main\\\vspace{-3mm}memory};
+	\draw[axis64] (pre) -- (acc);
+	\draw[axis64] (acc) -- (post);
+	\draw[raxis64] (post |- axidma.north) node[below]{\footnotesize\ttfamily S2MM} -- (post)
+		node[below right=4mm and 0mm, text width=18mm, align=left]{\scriptsize\ttfamily to main\\\vspace{-3mm}memory};
+
+	\draw[axis64] (post.east) -- +(10mm, 0) node[above, text width=18mm, align=left]{\scriptsize\ttfamily next\\\vspace{-3mm}accelerator};
+	\draw[axis64] (post.north) -- +(0mm, 10mm) node[below right, text width=15mm,align=left]{\scriptsize\ttfamily sinking\\\vspace{-3mm}peripheral};
+	
+	\draw[raxis64] (pre.west) -- +(-10mm, 0) node[above, text width=18mm, align=right]{\scriptsize\ttfamily previous\\\vspace{-3mm}accelerator};
+	\draw[raxis64] (pre.north) -- +(0mm, 10mm) node[below left, text width=15mm,align=right]{\scriptsize\ttfamily sourcing\\\vspace{-3mm}peripheral};
+
+\end{tikzpicture}
+\caption{Routing streams to/from other hardware}
+\end{subfigure}
+\caption{Alternative accelerator and DMA controller arrangements.}
+\label{fig:alt-arrangements}
+\end{figure}
+
+\subsection{Task Buffer Migration}
+
+The system allocates a buffer pair each time the user application configures a task. If a configured task
+declares a new configuration, the old buffers are released and new buffers, of the new requested size will be allocated.
+The new buffers will be placed wherever the memory allocator deems best -- there is no connection to the old buffers,
+and data will not be preserved. 
+
+Since this action is initiated by the user, the data loss is acceptable since we assume the user will only issue such a request
+when they have finished processing and/or saved their data. However, there might be cases it would be beneficial to perform
+an involuntary buffer move. For example, the external fragmentation of a memory zone might not permit a creation of a new
+task despite that there is enough free space. In another case, there might be free and contiguous space in a zone where 
+a task in not allowed to be placed due to hardware or affinity restrictions. 
+Finally, a re-arrangement of user buffers among memory zones may be help re-balance data traffic to maximize parallellization.
+
+Since these scenarios are determined by the kernel without the consent of the user application, they have to be made transparently
+and without data loss. Indeed, a key reason we implemented a custom memory allocator was to make this feature easier and simpler
+to implement. Implementation should be straiforward:
+
+\begin{enumerate}
+\item	Ensure that no DMA transaction is currently taking place on behalf of this task 
+	and prevent this from happening while the migration takes place.
+\item	Find the new optimal buffer location.
+\item	Update allocator bitmap to reserve the new space.
+\item	Migrate the page frames to the new location, updating the user process page table.
+\item	Update allocator bitmap to release the old space.
+\end{enumerate}
 
 
 \subsection{Simplifying Accelerator Control}
@@ -154,8 +356,71 @@ but it is significantly faster.
 A more efficient solution would be to embed configuration data in the data stream. It adds some implementation complexity
 and might be a bit restrictive in some cases, but it comes at no cost in routing resources.
 
+%\subsection{Task List}
 
+%Currently, the system accepts requests for execution of a task, which completes asynchronously with the request.
+%The execution latency depends on the work queue and the scheduler statistics, which however has absolutely no knowledge
+%about future task requests. 
+%Therefore it loses the capability to schedule tasks in an optimal way that would minimize
+%total execution time. This was decided as the system was required to act upon a dynamic load, in contrast to
+%systems with a static schedule.
 
+%However, we could implement a middle-road solution. The system would still accept requests in a dynamic and unpredictable way,
+%but could also accept task lists
 
+\subsection{Power Consumption}
 
+The system was not designed with power consumption in mind. There can be found opportunities for lowering the power envelope.
+For static power, there is little we can do. The Zynq platform does have programmable voltage regulators but they are global to the PL
+and therefore we cannot power down a single \gls{rp}.
+
+However, it is possible to reduce dynamic power consumption. Even without an external clock source, Zynq and ZynqMP can create and distribute
+four configurable clocks. With a certain cost in resources for the implementation of clock converters, it would be possible to offer more than
+one clock source to an accelerator slot. Depending user desire, policy or simply wheter system is operating from battery, the clock source 
+could be switched to save energy.
+
+\subsection{Support for Interrupts}
+
+We assumed an accelerator would have a input and an output stream, with no other side-effects.
+However, an accelerator may need to generate interrupts. Support of this feature may take the form of
+offering a system call that blocks until the interrupt is acknowledged, as it is done in EPEE\cite{epee}.
+Another approach would be by delivering POSIX Signals, in order to allow the user application to perform
+useful work while waiting for the notification.
+
+\subsection{Extending the Streaming Model}
+
+We used the streaming model under the assumption it is the most appropriate for an FPGA, 
+as they typically lack sufficient memory resources.
+
+However, Xilinx recently presented UltraRAM, an on-chip memory resource for the UltraScale+
+that offers significantly higher capacity but lower performance compared to BlockRAM. 
+Additionally, we should add that a designer may implement a memory controller in the programmable logic.
+Xilinx offers the ``Memory Interface Generator'' IP core to create such an interface to any supported FPGA.
+Altera/Intel offers hard blocks for memory controllers in their Arria V SoCs.
+As the manufacturers advance their capabilities in 2.5D CMOS, it reasonable to assume that FPGAs will
+gain access to large on-chip memories. 
+
+Support for a random-access co-processor model will become significant. 
+Furthermore, cache-coherency is possible and should be offered in such a model. 
+For a discussion on cache-coherence in Zynq and ZynqMP, please see section \ref{sect:interconnect}.
+
+\subsection{Scaling to Multiple Boards}
+
+A very interesting possibility for exploration would be extending the system to more than one FPGA.
+A master-slave architecture could allow the master Zynq to utilize the PL of other boards, not necessarily equipped with a SoC.
+Essentially all control and main memory resides in a single node whereas all other FPGAs would be used to stream data to, process,
+and stream back the output to main node.
+If all boards are Zynq, a peer-to-peer architecture could be implemented, where any Zynq could reserve and utilize an accelerator
+slot from any other Zynq.
+
+Exchanging control signals throughout all the boards would be a trivial problem which can be solved even using the FPGA pins exposed at
+the Pmod connectors. Higher level connectivity could be used, like Ethernet, but with a significant impact in latency.
+The high-speed data transport would be a more complex issue. As a physical layer for the link, single-ended or LVDS I/O pins can be used
+but if the FPGA contains serial transceivers they would be a superior choice. An AXI channel can pass over the Aurora link-layer protocol,
+which can utilize the FPGA transceivers. Xilinx offers two IPs for bridging an AXI Stream, the Aurora 8B/10B and Aurora 64B/66B.
+
+It is worth to mention that Xilinx also offers the AXI Chip2Chip IP core. This core can utilize the Aurora IPs
+to allow briding of the full, memory-mapped AXI. 
+This would make possible for a processor to access memory buffers residing in another board, essentially creating a non-uniform 
+shared memory system of FPGA nodes. However, this would not be just an extension but a radically new approach.
 

@@ -28,446 +28,446 @@
 \glossaryentry{soft-IP?\glossentry{softip}|glsseeformat[\seename ]{hard-ip}}{Z}
 \glossaryentry{memory pinning?\glossentry{pinning}|glsseeformat[\seename ]{migration,locking}}{Z}
 \glossaryentry{memory locking?\glossentry{locking}|glsseeformat[\seename ]{migration,pinning}}{Z}
-\glossaryentry{soft-IP?\glossentry{softip}|setentrycounter[]{page}\glsnumberformat}{1}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{1}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{2}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{2}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{3}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{3}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{4}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{5}
+\glossaryentry{soft-IP?\glossentry{softip}|setentrycounter[]{page}\glsnumberformat}{3}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{3}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{4}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{4}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{5}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{5}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{ACE-Lite?\glossentry{acelite}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{CHI?\glossentry{chi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{soft-IP?\glossentry{softip}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{6}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AFI?\glossentry{afi}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{FIFO?\glossentry{fifo}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{7}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{7}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{7}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{8}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{ACE-Lite?\glossentry{acelite}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{CHI?\glossentry{chi}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{soft-IP?\glossentry{softip}|setentrycounter[]{page}\glsnumberformat}{8}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{8}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{8}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AFI?\glossentry{afi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
+\glossaryentry{FIFO?\glossentry{fifo}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{9}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{AHB-Lite?\glossentry{ahblite}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{APB?\glossentry{apb}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{GPIO?\glossentry{gpio}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{9}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{10}
-\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{10}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{11}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{11}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{11}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{12}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{AHB-Lite?\glossentry{ahblite}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{APB?\glossentry{apb}|setentrycounter[]{page}\glsnumberformat}{12}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{GPIO?\glossentry{gpio}|setentrycounter[]{page}\glsnumberformat}{12}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{12}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{12}
+\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{13}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{13}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{13}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{devc?\glossentry{devc}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{DAP?\glossentry{dap}|setentrycounter[]{page}\glsnumberformat}{13}
 \glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{13}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{13}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{13}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{14}
-\glossaryentry{AFI?\glossentry{afi}|setentrycounter[]{page}\glsnumberformat}{14}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{14}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{14}
-\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{14}
-\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{16}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{14}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{14}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{14}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{devc?\glossentry{devc}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{DAP?\glossentry{dap}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{15}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{16}
+\glossaryentry{AFI?\glossentry{afi}|setentrycounter[]{page}\glsnumberformat}{16}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{16}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{16}
 \glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{16}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{APU?\glossentry{apu}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{17}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{17}
+\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{18}
 \glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{18}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{18}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{19}
 \glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{APU?\glossentry{apu}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{19}
 \glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{19}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{19}
+\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{20}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{FPD?\glossentry{fpd}|setentrycounter[]{page}\glsnumberformat}{21}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{21}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{devc?\glossentry{devc}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{PCAP?\glossentry{pcap}|setentrycounter[]{page}\glsnumberformat}{22}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{23}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{23}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{23}
-\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{23}
-\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{23}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{LPD?\glossentry{lpd}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{HPM?\glossentry{hpm}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{21}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{23}
 \glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{IO Coherency?\glossentry{IO Coherency}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{23}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{24}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{24}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{devc?\glossentry{devc}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{PCAP?\glossentry{pcap}|setentrycounter[]{page}\glsnumberformat}{24}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{RPU?\glossentry{rpu}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{25}
+\glossaryentry{HPC?\glossentry{hpc}|setentrycounter[]{page}\glsnumberformat}{25}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{26}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{26}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{27}
-\glossaryentry{distributed RAM?\glossentry{lutram}|setentrycounter[]{page}\glsnumberformat}{27}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{27}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{28}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{28}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{26}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{28}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{28}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{29}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{29}
+\glossaryentry{distributed RAM?\glossentry{lutram}|setentrycounter[]{page}\glsnumberformat}{29}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{29}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{30}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{30}
 \glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{30}
-\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{31}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{33}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{33}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{34}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{31}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{31}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{32}
+\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{32}
 \glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{34}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{35}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{35}
-\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{36}
-\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{37}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{37}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{35}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{36}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{36}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{37}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{38}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable logic?\glossentry{rl}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{43}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{37}
+\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{38}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{39}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{39}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{39}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{40}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable logic?\glossentry{rl}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{44}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{44}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{45}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{45}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{45}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
-\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{45}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
-\glossaryentry{MGT?\glossentry{mgt}|setentrycounter[]{page}\glsnumberformat}{46}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{46}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{46}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{46}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
+\glossaryentry{MGT?\glossentry{mgt}|setentrycounter[]{page}\glsnumberformat}{47}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{47}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{47}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{47}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{48}
+\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{48}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{48}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{49}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{48}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{49}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
+\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{49}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{DRC?\glossentry{drc}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{DRC?\glossentry{drc}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{49}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{50}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{50}
-\glossaryentry{TNS?\glossentry{tns}|setentrycounter[]{page}\glsnumberformat}{51}
-\glossaryentry{TNS?\glossentry{tns}|setentrycounter[]{page}\glsnumberformat}{51}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{50}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{DRC?\glossentry{drc}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{DRC?\glossentry{drc}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{51}
 \glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{51}
 \glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{51}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{partition pin?\glossentry{pp}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{reconfigurable frame?\glossentry{rf}|setentrycounter[]{page}\glsnumberformat}{51}
+\glossaryentry{TNS?\glossentry{tns}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{TNS?\glossentry{tns}|setentrycounter[]{page}\glsnumberformat}{52}
 \glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{52}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{52}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{52}
-\glossaryentry{MGT?\glossentry{mgt}|setentrycounter[]{page}\glsnumberformat}{53}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{52}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{53}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{53}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{53}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{53}
-\glossaryentry{GPIO?\glossentry{gpio}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{SEU?\glossentry{seu}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{54}
-\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{55}
-\glossaryentry{GSR?\glossentry{gsr}|setentrycounter[]{page}\glsnumberformat}{55}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{55}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{54}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{54}
+\glossaryentry{MGT?\glossentry{mgt}|setentrycounter[]{page}\glsnumberformat}{55}
 \glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{55}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{55}
+\glossaryentry{GPIO?\glossentry{gpio}|setentrycounter[]{page}\glsnumberformat}{55}
 \glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{55}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{59}
-\glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{60}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{60}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{55}
+\glossaryentry{SEU?\glossentry{seu}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{GSR?\glossentry{gsr}|setentrycounter[]{page}\glsnumberformat}{56}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{57}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{57}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{57}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{60}
 \glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{61}
 \glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{61}
-\glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{61}
-\glossaryentry{DT?\glossentry{dt}|setentrycounter[]{page}\glsnumberformat}{64}
+\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{Open Firmware?\glossentry{of}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{61}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{62}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{62}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{62}
+\glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{65}
 \glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{68}
 \glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{68}
 \glossaryentry{FDT?\glossentry{fdt}|setentrycounter[]{page}\glsnumberformat}{68}
@@ -564,64 +564,73 @@
 \glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{110}
 \glossaryentry{AXI-Stream?\glossentry{axistream}|setentrycounter[]{page}\glsnumberformat}{110}
 \glossaryentry{HLS?\glossentry{hls}|setentrycounter[]{page}\glsnumberformat}{110}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{114}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{114}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{114}
-\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{115}
-\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{119}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{119}
-\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{119}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{120}
-\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{120}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{129}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{130}
-\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{131}
-\glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{131}
-\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{131}
-\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{131}
-\glossaryentry{slice?\glossentry{slice}|setentrycounter[]{page}\glsnumberformat}{132}
-\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{132}
-\glossaryentry{PCAP?\glossentry{pcap}|setentrycounter[]{page}\glsnumberformat}{132}
-\glossaryentry{distributed RAM?\glossentry{lutram}|setentrycounter[]{page}\glsnumberformat}{132}
-\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{133}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{134}
-\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{134}
-\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{134}
-\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{135}
-\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{135}
-\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{135}
-\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{135}
-\glossaryentry{PFN?\glossentry{pfn}|setentrycounter[]{page}\glsnumberformat}{136}
-\glossaryentry{ICAP?\glossentry{icap}|setentrycounter[]{page}\glsnumberformat}{137}
-\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{138}
-\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{139}
-\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{139}
-\glossaryentry{VFS?\glossentry{vfs}|setentrycounter[]{page}\glsnumberformat}{140}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{113}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{113}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{114}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{114}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{114}
+\glossaryentry{S\_GP?\glossentry{sgp}|setentrycounter[]{page}\glsnumberformat}{114}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{115}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{118}
+\glossaryentry{OOC synthesis?\glossentry{ooc}|setentrycounter[]{page}\glsnumberformat}{119}
+\glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{123}
+\glossaryentry{AXI-Lite?\glossentry{axilite}|setentrycounter[]{page}\glsnumberformat}{126}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{126}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{127}
+\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{131}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{131}
+\glossaryentry{DCP?\glossentry{dcp}|setentrycounter[]{page}\glsnumberformat}{131}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{132}
+\glossaryentry{reconfigurable partition?\glossentry{rp}|setentrycounter[]{page}\glsnumberformat}{132}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AHB?\glossentry{ahb}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{141}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{SCU?\glossentry{scu}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{AMBA?\glossentry{amba}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{burst?\glossentry{burst}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{142}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{143}
+\glossaryentry{beat?\glossentry{beat}|setentrycounter[]{page}\glsnumberformat}{143}
+\glossaryentry{transaction?\glossentry{transaction}|setentrycounter[]{page}\glsnumberformat}{143}
+\glossaryentry{ACE?\glossentry{ace}|setentrycounter[]{page}\glsnumberformat}{143}
+\glossaryentry{slice?\glossentry{slice}|setentrycounter[]{page}\glsnumberformat}{144}
+\glossaryentry{AXI?\glossentry{axi}|setentrycounter[]{page}\glsnumberformat}{144}
+\glossaryentry{PCAP?\glossentry{pcap}|setentrycounter[]{page}\glsnumberformat}{144}
+\glossaryentry{distributed RAM?\glossentry{lutram}|setentrycounter[]{page}\glsnumberformat}{144}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{145}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{146}
+\glossaryentry{CCI?\glossentry{cci}|setentrycounter[]{page}\glsnumberformat}{146}
+\glossaryentry{ACP?\glossentry{acp}|setentrycounter[]{page}\glsnumberformat}{146}
+\glossaryentry{HP?\glossentry{hp}|setentrycounter[]{page}\glsnumberformat}{147}
+\glossaryentry{M\_GP?\glossentry{mgp}|setentrycounter[]{page}\glsnumberformat}{147}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{147}
+\glossaryentry{OCM?\glossentry{ocm}|setentrycounter[]{page}\glsnumberformat}{147}
+\glossaryentry{PFN?\glossentry{pfn}|setentrycounter[]{page}\glsnumberformat}{148}
+\glossaryentry{ICAP?\glossentry{icap}|setentrycounter[]{page}\glsnumberformat}{149}
+\glossaryentry{power domain?\glossentry{pd}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{BRAM?\glossentry{bram}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{DSP?\glossentry{dsp}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{CLB?\glossentry{clb}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{pblock?\glossentry{pblock}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{reconfigurable module?\glossentry{rm}|setentrycounter[]{page}\glsnumberformat}{150}
+\glossaryentry{LUT?\glossentry{lut}|setentrycounter[]{page}\glsnumberformat}{151}
+\glossaryentry{fabric?\glossentry{fabric}|setentrycounter[]{page}\glsnumberformat}{151}
+\glossaryentry{VFS?\glossentry{vfs}|setentrycounter[]{page}\glsnumberformat}{152}

@@ -1,0 +1,40 @@
+\chapter{Related Work}
+
+The concept of allowing a user software application an abstracted interface to the programmable logic on an FPGA is not new.
+
+The RIFFA Framework \cite{riffa} abstracts the data transfer between a user application and a PCI-e attached FPGA accelerator
+by the means of named pipes. It is minimalistic by design but significant effort was put to offer high performance
+and to make it compatible with several common FPGA development boards from both Xilinx and Altera/Intel. They support the use of
+multiple FPGAs but not a direct FPGA-to-FPGA link. Partial reconfiguration is not supported. It is the only open-source 
+framework that provides support for Microsoft Windows.
+
+The EPEE \cite{epee} and the ffLink \cite{fflink} offer similar set of features. 
+The former has support for interrupt acknowledgement whereas the latter supports PCI-e 3.0.
+
+A significant differentiation is DyRACT \cite{dyract}. It is the first to support partial reconfiguration. However it is the only
+that does not support zero-copy DMA.
+
+The newer JetStream \cite{jetstream} is a major step-up, offering every desirable feature: Partial Reconfiguration, Zero Copy,
+multiple board support and direct FPGA-to-FPGA link. It also supports PCI-e 3.0 and achieves strong performance results.
+
+All the aforementioned works are academic and open-sourced.
+One of the most notable is from Xillybus.
+It is lightweight in FPGA resources but lacks most features discussed.
+It does not support neither partial reconfiguration nor zero-copy DMA. 
+It offers multiple board support but no direct FPGA-to-FPGA link. 
+It comes with a price tag of 25K to 75K USD and no royalties.
+A Linux kernel driver is offered in open source and Windows is also supported.
+
+
+Another important proprietary work is from Nortwest Logic. Not many details are available for the internals of this product
+but the vendor asserts support even for the PCI-e 4.0. It offers high performance but very high FPGA resource utilization.
+No price is published.
+
+
+The work presented in this thesis has a key differentiation point that it uses AXI as a data transport instead of PCI-e,
+as it focuses on FPGA SoCs and not on add-on FPGA cards. To our knowledge, there is currently no other work that is based
+on AXI, except for Xillybus which has a Microblaze port which uses AXI for transport which nonetheless is being phased-out.
+Feature-wise, we support all the (non PCI-e related) features offered by all the open-source works except for JetStream.
+Compared to JetStream, this work lacks support for direct FPGA-to-FPGA link. 
+Finally, since we support zero-copy DMA we found no reason to implement a buffered one. 
+However, EPEE, ffLink and JetStream, chose to implement both transfer types.

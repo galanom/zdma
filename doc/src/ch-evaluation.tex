@@ -166,6 +166,7 @@ In total, there are three pixel transformation accelerators:
 None of this accelerators posed any difficulty to implementation.
 
 \subsection{Contrast and Brightness Transformations}
+\label{sec:contrast}
 
 The ``contrast'' accelerator adjusts the contrast and the brightness of the image.
 It uses the following equation:
@@ -747,17 +748,151 @@ described in the following list, and an example memory map is given in figure \r
 
 \section{Evaluation}
 
+In this section we will try to quantify the performance of our system and measure the effect
+of certain parameters on the achieved throughput.
+
+The most basic test was to find out the effect of DMA transaction size on overall performance.
+This is important so to figure how much of a compromize was to use the AXI DMA in Direct Register mode,
+as we will how important is the dead time between two consecutive transactions.
+
+The test was performed for two module variants: the ``loopback'' which is the most I/O intensive and the ``gauss'' which the least.
+As each test uses only one accelerator variant, no partial reconfiguration will take place to pollute our results.
+We see in table \ref{tab:perf-dma-size} that the impact of the transaction size was mild; a load which
+is more than three times bigger yielded a gain of around 2\%. 
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{crrrr}
+\toprule
+\small size\textrightarrow	& \multicolumn{2}{c}{600kiB} 	& \multicolumn{2}{c}{2025kiB}	\\
+\small \textdownarrow QD	& \small loopback & \small sharpen & \small loopback & \small sharpen \\
+\midrule
+1	&1437.9	& 158.4	&1547.3	& 159.5	\\ 
+2	&1511.2	& 316.4	&1571.9 & 319.0	\\
+3	&1595.8	& 474.2	&1598.6	& 478.4	\\
+4	&2090.8	& 632.7	&2103.0	& 637.8	\\
+5	&2564.5	& 791.1	&2606.5	& 797.2	\\
+6	&3090.5	& 948.8	&3134.8	& 956.7	\\
+7	&3092.5	& 945.2	&3127.6	& 958.4	\\
+8	&3027.3	& 947.4	&3131.3	& 958.7	\\
+9	&3019.2	& 938.3	&3124.6	& 957.7	\\
+10	&3029.7	& 951.5	&3130.0	& 958.8	\\
+\bottomrule		 
+\end{tabular}
+\caption{The effect of DMA transaction size on performance.\\Sample: 6-core design, 10K iterations of each queue.}
+\label{tab:perf-dma-size}
+\end{figure}
+
+Next, we assess the effectiveness of our scheduler algorithms. 
+As a load we make equal use of all accelerator variants.
+We compare all replacement algorithms but the ``Priority'' as it has only specific uses that do not apply here,
+and the test is repeated for ``First Fit'' and ``Best Fit'' as the first-stage empty slot selection algorithm.
+
+The results are shown in table \ref{tab:perf-algo}.
+As for the 16-core design, the biggest surprise is that the ``First Fit'' slot selection algorithm
+performs better than Best Fit.
+Among the replacement algorithms, the ``Least Popular'' performed significantly better than any other.
+
+As a reminder, the ``Least Popular'' chooses its victim slot by finding which slot has least probability to be selected by another currently
+registered task and therefore minimizing the probability to cause a reconfiguration at a later time.
+It is identical to ``Best Fit'', which uses this probability as the fitness criterion. Conversely, ``First Available''
+and ``First Fit'' simply return the first suitable free slot. Ironically, the algorithm that is best for the first stage is the worst for the 
+second stage, and vice versa.
+
+All other algorithms are implementations of the generic replacement algorithms mostly used in caching applications. 
+They fail to perform as good, most probably because they lack the hardware awarness the ``Least Popular'' possesses -- they are based
+only the so far collected statistics.
+
+The overall picture in 6-core design is different. 
+Given that the design homogeneous and we did not alter the cores' or tasks' affinity mask, 
+the ``popularity'' criterion degenerates to something similar to first-fit, depriving its advantage to other algorithms.
+Generally, differences among all algorithms were not characteristic and they could be reversed at another load. 
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{lrrcrr}
+\toprule
+	 			& \multicolumn{5}{c}{Throughput (MB/s)}\\
+Algorithm			& First Fit & Best Fit &~& First Fit & Best Fit \\
+\midrule
+Least Popular 			& 926.0	& 832.6 &&318.9	& 319.6	\\
+First Available			& 743.7	& 721.5 &&317.8	& 324.7	\\
+First In First Out		& 732.7	& 780.8 &&318.8	& 320.4	\\
+Least Recently Used		& 778.8	& 735.6 &&320.0	& 324.9	\\
+Least Frequently Used		& 787.6	& 749.5 &&311.3	& 313.6	\\
+
+\bottomrule		 
+\end{tabular}
+\caption{The effect of replacement algorithm on performance (QD=45).}
+\label{tab:perf-algo}
+\end{figure}
+
+Last but certainly not least, we will test how the application scales with the queue depth, or in effect, with the number of slots.
+We use a single accelerator variant for each test in different queue depths, and we repeat the proceedure for both 
+6-core and the 16-core design. To remind, out of the 16 cores, only 10 are capable of holding a linebuffer for 2D filters.
+
+The results are displayed in figure \ref{fig:acc-throughput}. Looking at the 6-core design, the first to observe is the
+significantly sub-linear increase of throughput with the number of active slots for the pixel transformation accelerators.
+The culprit here is the single flat memory zone we chose to define. Despite that the design utilizes all four \gls{hp} ports
+which see two separate ports of the memory controller, this is not visible to the driver's memory allocator 
+(see section \ref{sec:memory-allocator}). Therefore it assigns the next few tasks at address regions that correspond to the same
+\gls{hp} port, which is saturated at 2272MB/s (142MHz by 64b per direction). The effect is not observed in 2D filter accelerators,
+as the cumulative throughput of all slots running concurrently is not sufficient to saturate the port.
+
+On the contrary, in 16-core design we segmented the memory address space to four zones, one per \gls{hp} port.
+As we saw in design architectural diagram in figure \ref{dia:arch-2}, the memory controller ports are shared 
+by the \gls{hp} ports in pairs. 
+For this reason, we purposefully designed the interconnect so the reader of HP0 cannot be writer to HP1,
+which both share the same memory controller port.
+Thus, as it is seen in the results, throughput scales perfectly linearly.
+
+On 16-core design, the pixel transformation accelerators saturate quite early due to the interconnect,
+as the Zynq ports are clocked lower and are configured to 32b. 
+Still, given the count of ports we used (all four \glspl{hp} and both \glspl{sgp}), we expected the saturation to happen later.
+Moreover, the ripple at higher queue depths cannot be explained.
+
+However, the 2D filter accelerators scale perfectly up to 10 slots, which is the number of slots that are capable of supporting them.
+Therefore, for these accelerators the saturation comes from the computational resources and not the I/O.
+
+Studying the saturation points of these two groups, we can conclude that the design of the 16-core system was not
+an optimal fit for our testbench application. The group of pixel transformation cores is eight times faster than of 2D filters,
+so unless the task count of the former is overwhelmingly higher than of the latter, the 6 cores that cannot execute 2D filtering
+are severely underutilized. But even in the scenario that pixel transformation tasks are so many that these 6 cores
+are fully occupied, their performance would be capped by our I/O capability before we even factor in the traffic from the other 10 cores.
+
+Within the accelerator, we see that the throughput ratio of pixel transformations to 2D filtering is set to 8-to-1 on 16-core design.
+However, this advantage fades away to a mere 1.33-to-1 in the 6-core design. Apparently the BRAM is saturated by the
+8-pixel pipeline of the 6-core design, giving an advantage to the 2-pixel pipelined 16-core design which has more 2D filtering
+capable slots by a 1.66-to-1 ratio.
+
+Thus, in pixel transformation workloads, the 16-core design saturates at around 2.1 GB/s or 1700 fps whereas the 6-core
+saturates at 3.1GB/s or 2500 fps. Conversely, in 2D filtering the 16-core can reach 1250MB/s while the 6-core is limited at 1050MB/s.
+As we observe from table \ref{tab:perf-algo}, in a balanced scenario the performance of the 16-core design is overall higher than of the 6-core design.
+
+
+Concluding, if we were to chose a better architecture for our benchmark application,
+it would be beneficial to sacrifice the 6 small core slots of the 16-core design 
+in favor of allowing larger slots for the remaining 10.
+On the other hand, we saw that the 8-pixel pipeline of the 6-core design saturates the BRAM.
+The middle ground of a 32-bit (4-pixel pipeline) accelerator appears attractive.
+We can assume that the BRAM will still saturate the 2D filter performance, but we should factor in
+our 16-core design all interconnects are already 32-bit wide, as well as the memory-mapped section of the AXI DMA controllers.
+If we convert our 16-bit accelerators to 32-bit, we would double the resource consumption of the \glspl{rp} themselves but
+not of the static part. Finally, the fewer accelerator slots might ease routing and make possible to attain a slightly increased PL clock.
+
 \begin{figure}[htb!]
+\centering
+\begin{subfigure}{\textwidth}
 \begin{gnuplot}[terminal=pdf,terminaloptions=color]
 set grid
 set key inside top left
-set xlabel 'Accelerator Data Width'
-#set xtics rotate by -25 offset -1.2,-0.2
-set ylabel 'LUT utilization'
-set y2label 'Core Latency'
-set xrange [-0.5:3.5]
-set yrange [0:4000]
-set y2range [0:9]
+set xlabel 'Queue Depth'
+set ylabel 'Throughput (MB/s)'
+set y2label 'Throughput (fps)'
+set xrange [-0.5:10]
+set xtics 0,1,10
+set y2range [0:2848.3]
+set y2tics 0,350,2800
 
 set style line 1 lc rgb '#f0f0f0' lt 1 lw 1 pt 7 pi -1 ps 0.5
 set style line 2 lc rgb '#e0e0e0' lt 1 lw 1 pt 7 pi -1 ps 0.5
@@ -783,7 +918,7 @@ set style line 19 lc rgb '#707070' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
 
 set style data linespoints
 
-plot "data/acc-util.plot" using 2:xtic(1) title "loopback" ls 1,\
+plot "data/throughput.plot" using 2:xtic(1) title "loopback" ls 1,\
 			"" using 3 title "negative" ls 2,	\
 			"" using 4 title "threshold" ls 3,	\
 			"" using 5 title "contrast" ls 4,	\
@@ -791,19 +926,63 @@ plot "data/acc-util.plot" using 2:xtic(1) title "loopback" ls 1,\
 			"" using 7 title "emboss" ls 6,		\
 			"" using 8 title "outline" ls 7,	\
 			"" using 9 title "gauss" ls 8,		\
-			"" using 11 title "sobel" ls 9,		\
-	"data/acc-perf.plot" using 2:xtic(1) notitle ls 11 axes x1y2,	\
-			"" using 3 notitle ls 12 axes x1y2, \
-			"" using 4 notitle ls 13 axes x1y2, \
-			"" using 5 notitle ls 14 axes x1y2, \
-			"" using 6 notitle ls 15 axes x1y2, \
-			"" using 7 notitle ls 16 axes x1y2, \
-			"" using 8 notitle ls 17 axes x1y2, \
-			"" using 9 notitle ls 18 axes x1y2, \
-			"" using 11 notitle ls 19 axes x1y2
+			"" using 10 title "sobel" ls 9,		
+
 \end{gnuplot}
-\caption{Resource Utilization vs. Core Latency}
-\label{fig:acc-eff}
+\caption{6-core design}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\begin{gnuplot}[terminal=pdf,terminaloptions=color]
+set grid
+set key off 
+set xlabel 'Queue Depth'
+#set xtics rotate by -25 offset -1.2,-0.2
+set ylabel 'Throughput (MB/s)'
+set y2label 'Throughput (fps)'
+set xrange [-0.5:20]
+set y2range [0:2034.5]
+set y2tics 0,250,2000
+
+set style line 1 lc rgb '#f0f0f0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 2 lc rgb '#e0e0e0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 3 lc rgb '#d0d0d0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 4 lc rgb '#c0c0c0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 5 lc rgb '#b0b0b0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 6 lc rgb '#a0a0a0' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 7 lc rgb '#909090' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 8 lc rgb '#808080' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set style line 9 lc rgb '#707070' lt 1 lw 1 pt 7 pi -1 ps 0.5
+set pointintervalbox 1
+
+set style line 11 lc rgb '#ffffff' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 12 lc rgb '#e8e8e8' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 13 lc rgb '#d0d0d0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 14 lc rgb '#c0c0c0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 15 lc rgb '#b0b0b0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 16 lc rgb '#a0a0a0' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 17 lc rgb '#909090' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 18 lc rgb '#808080' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+set style line 19 lc rgb '#707070' lt 1 dt 10 lw 1 pt 5 pi -1 ps 0.4
+
+
+set style data linespoints
+
+plot "data/throughput-16c.plot" using 2:xtic(1) title "loopback" ls 1,\
+			"" using 3 title "negative" ls 2,	\
+			"" using 4 title "threshold" ls 3,	\
+			"" using 5 title "contrast" ls 4,	\
+			"" using 6 title "sharpen" ls 5,	\
+			"" using 7 title "emboss" ls 6,		\
+			"" using 8 title "outline" ls 7,	\
+			"" using 9 title "gauss" ls 8,		\
+			"" using 10 title "sobel" ls 9,		
+
+\end{gnuplot}
+\caption{16-core design.}
+\label{fig:variants-16c}
+\end{subfigure}
+\caption{Performance Scaling with Queue Depth increase.\\Sample: All accelerators, QD=45, iter: 5k to 10k., DMA size 600kiB (960x640x8b).}
+\label{fig:acc-throughput}
 \end{figure}
 
 

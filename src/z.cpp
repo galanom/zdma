@@ -44,17 +44,18 @@ int main(int argc, char **argv)
 	if (argc >= 4)
 		verify = true;
 
-	zdma_core_register("threshold", 1, 0xffff);
-	/*zdma_core_register("sobel", 1, 0xffff);
+	zdma_core_register("sobel", 1, 0xffff);
 	zdma_core_register("outline", 1, 0xffff);
 	zdma_core_register("sharpen", 1, 0xffff);
 	zdma_core_register("emboss", 1, 0xffff);
-	zdma_core_register("contrast", 1, 0xcc00);
-	zdma_core_register("negative", 1, 0xcc00);
-	zdma_core_register("threshold", 1, 0xcc00);
-	zdma_core_register("loopback", 1, 0xcc00);
+	zdma_core_register("gauss", 1, 0xffff);
 
-	int core_num = 9;*/
+	zdma_core_register("contrast", 1, 0xffff);
+	zdma_core_register("negative", 1, 0xffff);
+	zdma_core_register("threshold", 1, 0xffff);
+	zdma_core_register("loopback", 1, 0xffff);
+
+	int core_num = 9;
 
 	Mat img = imread("./sample.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (!img.data) {
@@ -71,8 +72,7 @@ int main(int argc, char **argv)
 		out[i].create(img.size(), img.type());
 		err = zdma_task_init(&task[i]);
 		assert(!err);
-		err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);
-/*		if (i % core_num == 0)
+		if (i % core_num == 0)
 			err  = zdma_task_configure(&task[i], "loopback", -1, img_size, img_size, 0);
 		else if (i % core_num == 1)
 			err  = zdma_task_configure(&task[i], "sobel", -1, img_size, img_size, 2, img.cols, 0);
@@ -89,7 +89,8 @@ int main(int argc, char **argv)
 		else if (i % core_num == 7)
 			err  = zdma_task_configure(&task[i], "negative", -1, img_size, img_size, 0);
 		else
-			err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);*/
+			err  = zdma_task_configure(&task[i], "threshold", -1, img_size, img_size, 1, 127);
+
 		assert(!err);
 		memcpy(task[i].tx_buf, img.data, img_size);
 	}

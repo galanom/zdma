@@ -355,7 +355,7 @@ static struct zdma_pblock *algo_lp(unsigned long mask)
 	list_for_each_entry_rcu(pblock, &sys.pblocks.node, node) {
 		if ((pblock->id & mask) == 0 || (atomic_read(&pblock->state) == PBLOCK_BUSY))
 			continue;
-		if (atomic_read(&pblock->popularity) <= min_popularity) {
+		if (atomic_read(&pblock->popularity) < min_popularity) {
 			min_popularity = atomic_read(&pblock->popularity);
 			pblock_sel = pblock;
 		}

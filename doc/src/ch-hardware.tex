@@ -96,7 +96,7 @@ and widespread communication protocol arose
 in order to replace custom solutions that deemed
 too inflexible for bigger designs comprising IP
 from different project teams and different companies.
-The ARM's proposal is the \gls{amba}\cite{amba} protocol suite
+The ARM's proposal is the \gls{amba} protocol suite
 which, as the name suggests, was initially deployed
 for microcontroller use but later expanded to SoCs
 gaining momentum as a result of ARM's dominance in the smartphone market.
@@ -138,7 +138,6 @@ which is a single-channel multiple-master shared-bus architecture.
 Comparing these two families would give an edge to \gls{axi} in
 throughput performance and clock frequency requirements, while \gls{ahb} would favor
 better in terms of latency, wire count and power requirements.
-\emph{TODO: να βρω αξιόπιστη πηγή}
 
 The \gls{axi} family has several members, but for this system the following three were used:
 \begin{itemize}
@@ -467,6 +466,7 @@ memory interconnect, and if the OCM path is not used, will be further constricte
 by the memory controller.
 
 \subsubsection{The Accelerator Coherency Port}
+\label{sec:acp}
 
 The \gls{acp} port, compared to the \gls{hp} ports,
 has equivalent performance specifications.
@@ -577,6 +577,7 @@ since the memory access pattern of the \gls{fpd}
 DMA may not always be known in advance.
 
 \subsubsection{High Performance Coherent Ports}
+\label{sec:hpc}
 
 As the name suggests, the \gls{hpc} ports are cache-coherent versions of \gls{hp},
 albeit \glslink{IO Coherency}{IO coherent} only, much like the \gls{acp} port.
@@ -622,6 +623,7 @@ is upgraded to match the performance of the other UltraScale+ ports.
 Only one such a port is available.
 
 \subsubsection{AXI Coherency Extensions Port}
+\label{ace}
 
 The \gls{ace} port is a unique addition to this FPGA-SoC family.
 With the help of \gls{cci} it can offer two-way, full cache coherency.
@@ -1078,7 +1080,6 @@ Their importance however, differs greatly.
 The register slices, despite the fact they cause a rise of about 40\% in LUT usage,
 during the development of the high core count design,
 they were found to permit a 10 to 20\% higher clock in a congested circuit.
-\emph{TODO: μπορώ να το πω αυτό;}
 Their cost was therefore justified.
 The FIFO however is mostly useful when data or clock conversion occurs in the
 interconnect. Therefore, the 32-deep version might be used if the overall design
@@ -1167,7 +1168,6 @@ multiple memory ports of the memory controller,
 it is an opportunity for access parallelization.
 
 However, in section \ref{sect:zynq7000-hp}
-\emph{[TODO να βρω την ταχυτητα της θυρας DDR του US+]}
 we saw that, regarding Zynq-7000,
 the aggregate throughput of just two \gls{hp} ports
 is sufficient to saturate the memory controller,
@@ -1392,7 +1392,7 @@ Firstly, the design objectives must be stated:
 	The software (i.e. the kernel driver) shall support,
 	without recompilation or additional user intervention,
 	any possible interconnect architecture and memory topology
-	as long as it is properly described in the \gls{dt}.
+	as long as it is properly described in the \gls{fdt}.
 	An accelerator may have a restricted view of the addressable memory space
 	or might be given exclusive access to a certain region.
 	The memory space itself might be a collection of different memory resources
@@ -1487,7 +1487,7 @@ maximizes the scheduler's decision options.
 	\draw[axi64] (int3) -- (int3 |- hp3.north);
 	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=50mm, minimum height=28mm]
 		(axi-int) at ($(int0.north west) + (-5mm, 13mm)$) {};
-	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]{\footnotesize 64b Full AXI Interconnects};
+	\node[textonly, left of=axi-int, xshift=-23mm, rotate=90]{\footnotesize 64b Full AXI Interconnects};
 
 	% The AXI DMA multi-block
 	\node[mblock, minimum width = 50mm, minimum height = 16mm] (axidma)
@@ -1558,7 +1558,7 @@ maximizes the scheduler's decision options.
 		|- node[above left = 0mm and 38mm]{\ttfamily\textcolor{black}{CTL/ST}} (acc);
 	\node[emptyblock, gray, very densely dashed, anchor=north west, minimum width=30mm, minimum height=28mm]
 		(axilite-int) at ($(per-int0.north west) + (-5mm, 13mm)$) {};
-	\node[textonly, left of=axilite-int, xshift=-8mm, rotate=90]{\footnotesize AXI-Lite Interconnects};
+	\node[textonly, left of=axilite-int, xshift=-13mm, rotate=90]{\footnotesize AXI-Lite Interconnects};
 
 
 	\draw[axi64] ($(acc.north east) + (45mm,0)$)
@@ -1696,13 +1696,13 @@ More specifically, the following compromises have been made:
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=48mm, minimum height=28mm]
 		(axi-int) at ($(int0.north west) + (-4mm, 13mm)$) {};
-	\node[textonly, left of=axi-int, xshift=-18mm, rotate=90]
+	\node[textonly, left of=axi-int, yshift=3mm, xshift=-21mm, rotate=90]
 		{\footnotesize 32b Full AXI Interconnects};
 
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=30mm, minimum height=28mm]
 		(axi-int-alt) at ($(int4.north west) + (-4mm, 13mm)$) {};
-	\node[textonly, right of=axi-int-alt, xshift=9mm, rotate=90]
+	\node[textonly, right of=axi-int-alt, xshift=12mm, rotate=90]
 		{\footnotesize 32b Full AXI Interconnects};
 
 
@@ -1842,7 +1842,7 @@ More specifically, the following compromises have been made:
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=29mm, minimum height=28mm]
 		(axilite-int) at ($(per-int0.north west) + (-4mm, 13mm)$) {};
-	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
+	\node[textonly, above of=axilite-int, yshift=11mm]{\footnotesize AXI-Lite Interconnects};
 \end{tikzpicture}
 
 \caption{The accelerator core count oriented design's block diagram.}
@@ -1866,7 +1866,7 @@ The accelerator complexity is midway between the two other designs.
 The newer platform's increased capacity, routing capabilities
 and more relaxed partial reconfiguration restrictions
 allowed the packing of several times more accelerator instances
-operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
+operating at significantly higher frequency.
 
 
 \begin{figure}[ht!]
@@ -1957,13 +1957,13 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=45mm, minimum height=28mm]
 		(axi-int) at ($(int0.north west) + (-2mm, 13mm)$) {};
-	\node[textonly, left of=axi-int, yshift=4mm, xshift=-15mm, rotate=90]
+	\node[textonly, left of=axi-int, yshift=4mm, xshift=-20mm, rotate=90]
 		{\footnotesize 32b Full AXI Interconnects};
 
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=50mm, minimum height=37mm]
 		(axi-int-alt) at ($(int4.north west) + (-2mm, 20mm)$) {};
-	\node[textonly, above of=axi-int-alt, yshift=13mm, xshift=-5mm]
+	\node[textonly, above of=axi-int-alt, yshift=18mm, xshift=-5mm]
 		{\footnotesize 32b Full AXI\\\footnotesize Interconnects};
 
 
@@ -2191,7 +2191,7 @@ operating at significantly higher frequency.\emph{TODO να ανανεωθεί}
 	\node[emptyblock, gray, very densely dashed, anchor=north west,
 		minimum width=25mm, minimum height=28mm]
 		(axilite-int) at ($(per-int0.north west) + (-2mm, 13mm)$) {};
-	\node[textonly, above of=axilite-int, yshift=6mm]{\footnotesize AXI-Lite Interconnects};
+	\node[textonly, above of=axilite-int, yshift=11mm]{\footnotesize AXI-Lite Interconnects};
 \end{tikzpicture}
 
 \caption{The UltraScale+ port block diagram.}
@@ -2759,7 +2759,7 @@ so communication is made through simple load/store instructions.
 
 Nonetheless, long after its implementation, despite that it was proven to work reliably,
 there were doubts cast regarding the efficiency of this solution.
-More on this will be discussed in ``Future Work'' section. \emph{TODO: να βαλω ref}.
+More on this will be discussed in section \ref{sec:future}.
 
 \subsection{Decoupling the Reconfigurable Logic}
 
@@ -2863,10 +2863,10 @@ For Zynq SoC FPGAs, the \gls{fdt} is comprised of four parts:
 The first two parts are created by Xilinx and are already in the mainline kernel,
 therefore we do not need to care about them.
 
-The part of \gls{dt} that describes the implemented hardware can be generated by the
+The part of \gls{fdt} that describes the implemented hardware can be generated by the
 Xilinx toolchain. Vivado can export the ``Hardware Description File'' of a design,
 that in turn is input to the SDK or the HSM/HSI command line tools, that are able
-to generate the \gls{dt}.
+to generate the \gls{fdt}.
 
 The last part, the one that describes the configuration and parameters of the implemented hardware,
 has to be written manually, as it describes the intended functional role and not a hardware instantiation.
@@ -2884,10 +2884,8 @@ one will lose label names and file hierarchy.
 \subsection{Writing a Device Tree for the System}
 \label{sec:dt}
 
-As a guideline on how to write this part of \gls{dt}, we will use as an example the second design.
-At this point, only the hardware description syntax will be explained.
-A more in-depth explanation on how the operating system will act upon it,
-will be presented in section \emph{[TODO ref @ περιγραφή software]}.
+As a guideline on how to write this part of \gls{fdt}, 
+we will use as an example the second, 16-core design.
 
 To begin, we will declare the memory segments at the top level block ``\texttt{reserved-memory}''.
 
@@ -3018,7 +3016,7 @@ The ``\texttt{dma-names}'' property is just a textual description of the DMA cha
 
 These entries, repeated for every instance of the resource they describe, is all the kernel driver
 needs to know about the hardware implemented in the PL.
-Should the hardware design change, the \gls{dt} must be revised to reflect the new design.
+Should the hardware design change, the \gls{fdt} must be revised to reflect the new design.
 The kernel driver should not need any modification.
 
 \subsection{Lying about the AXI DMA Interrupt Lines}

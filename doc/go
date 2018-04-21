@@ -2,7 +2,9 @@
 
 cd ~/work/zdma/doc
 
-latexmk --shell-escape -lualatex -outdir=build main.tex
+#latexmk --shell-escape -lualatex -outdir=build main.tex
+lualatex --shell-escape -output-directory=build ./main.tex
+#| grep -v erfull | grep -v texmf | grep -v Citation
 
 for f in build/*.gnuplot
 do

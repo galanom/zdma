@@ -598,7 +598,7 @@ It was decided that the first stage should be re-written to our needs while keep
 The second stage that involves the per-zone bitmap manipulation continues to use the \texttt{genalloc}
 library.
 
-In figure \ref{allocator-overview} we can see an overview of the memory allocator function.
+In figure \ref{fig:allocator-overview} we can see an overview of the memory allocator function.
 A reservation always takes place in pairs: a transmit and a receive buffer, one of them can be of zero size
 for a transmit-only or a receive-only function\footnote{Note that this operation mode is not tested.}.
 If the calling process already holds buffers, they will be deallocated. When allocating or de-allocating
@@ -609,7 +609,7 @@ in the reverse order. This is because the scoring algorithm, in critically low m
 memory zone for one buffer that renders the other unplaceable due to external fragmentation. Reversing the order
 of allocation may resolve this issue.
 
-Figure \ref{allocator-reservation} depicts the algorithm of the actual allocation. 
+Figure \ref{fig:allocator-reservation} depicts the algorithm of the actual allocation. 
 The inner loop scans the list of memory zones and calculates a score metric.
 The default scoring algorithm is given by:
 
@@ -755,6 +755,7 @@ The score function will always return zero if either $MemoryAvailability$ or $Sc
 
 
 \section{The Scheduler}
+\label{sec:scheduler}
 
 The system's scheduler is charged with finding a suitable accelerator slot 
 for a task wishing to execute. The scheduler is completely dynamic; it
@@ -812,7 +813,7 @@ The $SelectSlot$ is actually a function pointer, and the selection algorithm can
 administrator as we saw at the figure \ref{fig:config} at section \ref{sec:sw-api-sys}. The functions that
 implement the two calls are common, however the configuration options are seperate since the context is
 a different and as most are replacement algorithms, they have no purpose in the first stage.
-A detailed list of algorithms implemented is given below at figure \ref{fig:algo}, of whom only the first two
+A detailed list of algorithms implemented is given below, of whom only the first two
 are for the first stage selection while all are offered for second stage (victim) selection.
 
 \begin{itemize}
@@ -967,8 +968,9 @@ completely removed it from its latest kernel.
 Xilinx offers an FPGA Manager backend driver for both Zynq and ZynqMP, 
 albeit the driver lacks partial reconfiguration functionality for ZynqMP as it is not yet supported by the \texttt{Xilfgpa} library
 which implements FPGA programming through PCAP.
-Although it is expected to change soon, currently it appears there is no way to perform partial reconfiguration in ZynqMP from the PS,
-under either Linux or standalone.
+Although it is expected to change soon, currently it appears there is no way to perform 
+partial reconfiguration in ZynqMP from the PS under either Linux or bare-metal. 
+This blocks our porting effort for this platform.
 
 Xilinx proposed \texttt{devcfg} for partial reconfiguration in Zynq and it is this interface it uses 
 on both partial reconfiguration application notes \cite{xapp1231} and \cite{xapp1159}.

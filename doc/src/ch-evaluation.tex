@@ -5,26 +5,26 @@ The chosen field was digital image processing, and a number of common filters we
 in Vivado HLS to be used as accelerators.
 
 Vivado HLS is an attempt from Xilinx to use a software language to describe hardware.
-It accepts a subset of C/C++ and produces Verilog code, that can be synthesized with
+It accepts a subset of C/C++ and produces HDL code, that can be synthesized with
 the existing synthesis tools.
 
 The advantage of this approach is that it a allows a very fast production of a working
 prototype, in order to assess the feasibility of an idea. Since the code describes
 an algorithm function and not its implementation, design exploration can be automated.
 
-There is a price to be paid though, that stems from both the core idea of HLS and its
-current incarnation. More on this subject is discussed in the ``Lessons Learned'' chapter.
+%There is a price to be paid though, that stems from both the core idea of HLS and its
+%current incarnation.
 
 \section{Accelerator Description}
 
 In image processing, from computational aspect, there are two main categories of filters.
-The first, applies a transformation at pixel level. Using a mathematical formula or a
+The first applies a transformation at pixel level. Using a mathematical formula or a
 look-up table, it maps one pixel value to another irrespectively of any other factor.
-The second category needs spatial awareness -- the new pixel value does not depend only
+The second category is spatial, in the sense that the new pixel value does not depend only
 on its old value, but also on its neighbors. To quantify this dependency, a ``mask'' or
 ``kernel'' is created, which is usually an odd-dimension square (or less often, rectangular)
-matrix whose each value represent the weight of the dependency, with its central value
-representing the current pixel. The kernel will scan the whole image pixel after pixel,
+matrix whose each value represents a contribution weight.
+The kernel will scan the whole image pixel after pixel,
 and for each pixel it will calculate the sum of the products of the kernel's weights
 and the corresponding pixel values. This mathematical procedure is called
 ``two-dimensional discrete convolution'' and is symbolized with an asterisk.
@@ -61,9 +61,9 @@ to return to spatial domain. In simpler words,
 	p' = IDFT\left\{ DFT\{h\} \cdot DFT\{p\} \right\}
 \]
 
-In respect to filter size, the latter method has an $O(1)$ complexity, 
+In respect to filter size, the latter method has a per pixel complexity of $O(1)$,
 whereas the former has $O(n\cdot m)$. As crossing the spatial and frequency domains
-has a computational cost, the former method is cheaper for small $m,n$.
+has a computational cost, the latter method is cheaper for small $m,n$.
 For CPUs, the OpenCV library uses the kernel dimension of $11x11$ as the turning point.
 
 In our work, we use only 3x3 and 5x5 kernels. However, the principal deciding factor
@@ -415,10 +415,10 @@ This can be attributed to a sub-optimal BRAM access by the code HLS generates.
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{cl rrrr rrrrrrr}
 \toprule
-&	& \rotatebox{90}{loopback} & \rotatebox{90}{negative} & \rotatebox{90}{threshold}
-	& \rotatebox{90}{contrast} & \rotatebox{90}{sharpen}  & \rotatebox{90}{emboss}
-	& \rotatebox{90}{outline}  & \rotatebox{90}{gauss}    & \rotatebox{90}{gauss/dsp}
-	& \rotatebox{90}{sobel}    & \rotatebox{90}{sobel/dsp}\\
+&	& \rotatebox{60}{loopback} & \rotatebox{60}{negative} & \rotatebox{60}{threshold}
+	& \rotatebox{60}{contrast} & \rotatebox{60}{sharpen}  & \rotatebox{60}{emboss}
+	& \rotatebox{60}{outline}  & \rotatebox{60}{gauss}    & \rotatebox{60}{gauss/dsp}
+	& \rotatebox{60}{sobel}    & \rotatebox{60}{sobel/dsp}\\
 \cmidrule(l{.3em}r{.3em}){1-13}
 \multirow{5}{*}{\rotatebox{90}{8 bit}} &
 LUT	& 125 & 110 & 111 & 288 & 300 & 326& 346 & 587 & 466 & 454 & 635 \\
@@ -450,7 +450,7 @@ LUT	& 231 & 206 & 238 &1206 & 1057&1235 &1362 &3175 &2541&2291& 3784 \\
 \bottomrule
 \end{tabular}
 }
-\caption{Accelerator Resource Utilization (post-synthesis) and Latency (HLS estimation).\\
+\caption{Accelerator resource utilization (post-synthesis) and latency (HLS estimation).
 Target FPGA was Z-7020 at 7.5ns. BRAM is in 18k units and latency is measured in millions of cycles.\\
 The ``/dsp'' suffix denotes that the integer multiplication was assigned manually to a DSP48 core.}
 \label{tab:acc-util}
@@ -550,7 +550,7 @@ if performance scales linearly, it will have to be determined by benchmarking.
 Regarding the number of channels, it was decided to be two. This was an obvious choice,
 given the exact mapping with AXI DMA channels -- one receive, one trasmit. 
 However, it is still the simplest choice and a lot more sophisticated architectures
-can be built. For a discussion on this, see section \emph{TODO ref για future work}.
+can be built. For a discussion on this, see section \ref{sec:future-dmac}.
 
 As for the \gls{axilite} channel, its width is strictly 32 bits, as defined by the protocol.
 However, the address width is variable and depends on the addressable space of the accelerator.
@@ -558,9 +558,8 @@ This is decided indirectly by the mapping of the accelerator input and output va
 
 In order to demonstrate how all this is done, in listing \ref{lst:func-declaration},
 a \gls{rm} function declaration is displayed, among with its \gls{hls} directives.
-\vspace*{\fill}
-\pagebreak
-\begin{figure}[H]
+
+\begin{figure}[t!]
 \centering
 \begin{lstlisting}[style=basic,language=C]
 int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast)
@@ -584,14 +583,13 @@ int CORE_NAME(axi_stream_t& src, axi_stream_t& dst, int brightness, int contrast
 \caption{An \gls{hls} \gls{rm} function declaration.}
 \label{lst:func-declaration}
 \end{figure}
+
 It is an example from the ``\texttt{contrast}'' accelerator. 
 The first thing to notice is that the function name does not 
 mention the \gls{rm}'s variant and it is a generated constant. 
 Its contents are actually related to the ``\texttt{axi\_stream\_t}'' type 
 which is a user defined type. A few lines of code are worth a thousand words of comments:
 
-\begin{figure}[H]
-\centering
 \begin{lstlisting}[style=basic,language=C]
 /* generated.h */
 #define CORE_NAME zcore16
@@ -603,11 +601,9 @@ typedef ap_axiu<sizeof(axi_data_t)*8, 1, 1, 1>  axi_elem_t;
 typedef hls::stream<axi_elem_t> axi_stream_t;
 /* ... */
 \end{lstlisting}
-%\caption{The \gls{rm} data width code.}
-\end{figure}
 
 The file ``\texttt{generated.h}'' is generated by the script shown in appendix \ref{apx:script-hls}.
-The ``\texttt{axi\_data\_t}'' is essentially our accelerator word size, and we see, it is used
+The ``\texttt{axi\_data\_t}'' is essentially our accelerator word size, and we see it is used
 to define ``\texttt{axi\_elem\_t} which describes the full \gls{axistream} signal set.
 From left to right, it defines the effective data (TDATA) width, the user-defined (TUSER)
 width, the master/source identity (TID) and the slave/sink identity (TDEST). All quantities are
@@ -747,13 +743,14 @@ described in the following list, and an example memory map is given in figure \r
 \end{figure}
 
 \section{Evaluation}
+\label{sec:evaluation}
 
 In this section we will try to quantify the performance of our system and measure the effect
 of certain parameters on the achieved throughput.
 
 The most basic test was to find out the effect of DMA transaction size on overall performance.
-This is important so to figure how much of a compromize was to use the AXI DMA in Direct Register mode,
-as we will how important is the dead time between two consecutive transactions.
+This is important so to figure how much of a compromise was to use the AXI DMA in Direct Register mode,
+as we will how important is the time lost between two consecutive transactions.
 
 The test was performed for two module variants: the ``loopback'' which is the most I/O intensive and the ``gauss'' which the least.
 As each test uses only one accelerator variant, no partial reconfiguration will take place to pollute our results.
@@ -764,6 +761,7 @@ is more than three times bigger yielded a gain of around 2\%.
 \centering
 \begin{tabular}{crrrr}
 \toprule
+				& \multicolumn{4}{c}{Throughput (MB/s)}\\
 \small size\textrightarrow	& \multicolumn{2}{c}{600kiB} 	& \multicolumn{2}{c}{2025kiB}	\\
 \small \textdownarrow QD	& \small loopback & \small sharpen & \small loopback & \small sharpen \\
 \midrule
@@ -779,7 +777,8 @@ is more than three times bigger yielded a gain of around 2\%.
 10	&3029.7	& 951.5	&3130.0	& 958.8	\\
 \bottomrule		 
 \end{tabular}
-\caption{The effect of DMA transaction size on performance.\\Sample: 6-core design, 10K iterations of each queue.}
+\caption{The effect of DMA transaction size on performance. Test: 6-core design, 10K iterations of each queue.
+	QD: Queue depth, i.e. the number of concurrently executing tasks.}
 \label{tab:perf-dma-size}
 \end{figure}
 
@@ -795,17 +794,17 @@ Among the replacement algorithms, the ``Least Popular'' performed significantly 
 
 As a reminder, the ``Least Popular'' chooses its victim slot by finding which slot has least probability to be selected by another currently
 registered task and therefore minimizing the probability to cause a reconfiguration at a later time.
-It is identical to ``Best Fit'', which uses this probability as the fitness criterion. Conversely, ``First Available''
-and ``First Fit'' simply return the first suitable free slot. Ironically, the algorithm that is best for the first stage is the worst for the 
-second stage, and vice versa.
+It is identical to ``Best Fit'', which uses this probability as the fitness criterion. 
+Conversely, ``First Available'' and ``First Fit'' simply return the first suitable free slot. 
+Interestingly, the algorithm that is best for the first stage is the worst for the second stage, and vice versa.
 
 All other algorithms are implementations of the generic replacement algorithms mostly used in caching applications. 
 They fail to perform as good, most probably because they lack the hardware awarness the ``Least Popular'' possesses -- they are based
 only the so far collected statistics.
 
 The overall picture in 6-core design is different. 
-Given that the design homogeneous and we did not alter the cores' or tasks' affinity mask, 
-the ``popularity'' criterion degenerates to something similar to first-fit, depriving its advantage to other algorithms.
+Given that the design homogeneous and we did not alter the core or task affinity mask, 
+the ``popularity'' criterion degenerates to something similar to first-fit, losing its advantage to other algorithms.
 Generally, differences among all algorithms were not characteristic and they could be reversed at another load. 
 
 \begin{figure}[h!]
@@ -813,17 +812,18 @@ Generally, differences among all algorithms were not characteristic and they cou
 \begin{tabular}{lrrcrr}
 \toprule
 	 			& \multicolumn{5}{c}{Throughput (MB/s)}\\
-Algorithm			& First Fit & Best Fit &~& First Fit & Best Fit \\
+Algorithm				& \multicolumn{2}{c}{Homogeneous 6-core} && \multicolumn{2}{c}{Heterogeneous 16-core}\\
+\small\textdownarrow 2nd stage~~~1st stage\textrightarrow	& First Fit & Best Fit &~& First Fit & Best Fit \\
 \midrule
-Least Popular 			& 926.0	& 832.6 &&318.9	& 319.6	\\
-First Available			& 743.7	& 721.5 &&317.8	& 324.7	\\
-First In First Out		& 732.7	& 780.8 &&318.8	& 320.4	\\
-Least Recently Used		& 778.8	& 735.6 &&320.0	& 324.9	\\
-Least Frequently Used		& 787.6	& 749.5 &&311.3	& 313.6	\\
+Least Popular 			&318.9	& 319.6	&& 926.0 & 832.6 \\
+First Available			&317.8	& 324.7	&& 743.7 & 721.5 \\
+First In First Out		&318.8	& 320.4	&& 732.7 & 780.8 \\
+Least Recently Used		&320.0	& 324.9	&& 778.8 & 735.6 \\
+Least Frequently Used		&311.3	& 313.6	&& 787.6 & 749.5 \\
 
 \bottomrule		 
 \end{tabular}
-\caption{The effect of replacement algorithm on performance (QD=45).}
+\caption{The effect of scheduler algorithms on performance (QD=45).}
 \label{tab:perf-algo}
 \end{figure}
 
@@ -855,7 +855,7 @@ However, the 2D filter accelerators scale perfectly up to 10 slots, which is the
 Therefore, for these accelerators the saturation comes from the computational resources and not the I/O.
 
 Studying the saturation points of these two groups, we can conclude that the design of the 16-core system was not
-an optimal fit for our testbench application. The group of pixel transformation cores is eight times faster than of 2D filters,
+an optimal fit for our application. The group of pixel transformation cores is eight times faster than of 2D filters,
 so unless the task count of the former is overwhelmingly higher than of the latter, the 6 cores that cannot execute 2D filtering
 are severely underutilized. But even in the scenario that pixel transformation tasks are so many that these 6 cores
 are fully occupied, their performance would be capped by our I/O capability before we even factor in the traffic from the other 10 cores.
@@ -878,7 +878,9 @@ The middle ground of a 32-bit (4-pixel pipeline) accelerator appears attractive.
 We can assume that the BRAM will still saturate the 2D filter performance, but we should factor in
 our 16-core design all interconnects are already 32-bit wide, as well as the memory-mapped section of the AXI DMA controllers.
 If we convert our 16-bit accelerators to 32-bit, we would double the resource consumption of the \glspl{rp} themselves but
-not of the static part. Finally, the fewer accelerator slots might ease routing and make possible to attain a slightly increased PL clock.
+not of the static part. This is a rather modest price to pay, compared to the transition from 32b to 64b (or to 128b in ZynqMP)
+where all DMA controllers and interconnect need to be upgraded to the new data width.
+Finally, the fewer accelerator slots might ease routing and make possible to attain a slightly increased PL clock.
 
 \begin{figure}[htb!]
 \centering
@@ -981,7 +983,11 @@ plot "data/throughput-16c.plot" using 2:xtic(1) title "loopback" ls 1,\
 \caption{16-core design.}
 \label{fig:variants-16c}
 \end{subfigure}
-\caption{Performance Scaling with Queue Depth increase.\\Sample: All accelerators, QD=45, iter: 5k to 10k., DMA size 600kiB (960x640x8b).}
+\caption{Accelerator performance scaling with queue depth increase.
+Upper line group consists of pixel transformation accelerators whereas lower group is 2D filters. 
+The line at the very bottom is the gaussian blur filter (5x5 kernel).
+QD=45, iterations: 5k+, image frame size 600kiB (960x640x8b).
+}
 \label{fig:acc-throughput}
 \end{figure}
 

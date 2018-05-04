@@ -1,106 +1,110 @@
 \select@language {british}
-\contentsline {chapter}{\numberline {1}Related Work}{1}{chapter.1}
-\contentsline {chapter}{\numberline {2}Hardware Architecture}{3}{chapter.2}
-\contentsline {section}{\numberline {2.1}The Hardware Platform}{3}{section.2.1}
-\contentsline {section}{\numberline {2.2}The Communication Protocol}{5}{section.2.2}
-\contentsline {subsection}{\numberline {2.2.1}The AMBA AXI Family}{6}{subsection.2.2.1}
-\contentsline {subsection}{\numberline {2.2.2}The AXI Implementation}{8}{subsection.2.2.2}
-\contentsline {subsubsection}{The Zynq Hard IP}{8}{section*.3}
-\contentsline {subsubsection}{The Xilinx Soft IP}{9}{section*.4}
-\contentsline {subsubsection}{The User IP}{11}{section*.5}
-\contentsline {section}{\numberline {2.3}The Physical Interconnect}{12}{section.2.3}
-\contentsline {subsection}{\numberline {2.3.1}The Zynq 7000 Interconnect Architecture}{13}{subsection.2.3.1}
-\contentsline {subsubsection}{The High Performance Ports}{13}{section*.7}
-\contentsline {subsubsection}{The Accelerator Coherency Port}{15}{section*.8}
-\contentsline {subsubsection}{The General Purpose Slave Ports}{15}{section*.9}
-\contentsline {subsubsection}{The General Purpose Master Ports}{16}{section*.10}
-\contentsline {subsection}{\numberline {2.3.2}The Zynq UltraScale+ Interconnect Architecture}{16}{subsection.2.3.2}
-\contentsline {subsubsection}{High Performance Ports}{16}{section*.12}
-\contentsline {subsubsection}{High Performance Coherent Ports}{18}{section*.13}
-\contentsline {subsubsection}{High Performance Master Ports}{18}{section*.14}
-\contentsline {subsubsection}{The AXI Slave Port of LPD}{18}{section*.15}
-\contentsline {subsubsection}{Accelerator Coherency Port}{19}{section*.16}
-\contentsline {subsubsection}{AXI Coherency Extensions Port}{19}{section*.17}
-\contentsline {section}{\numberline {2.4}Exchanging Data with the Programmable Logic}{19}{section.2.4}
-\contentsline {subsection}{\numberline {2.4.1}Programmed I/O from a Processor}{19}{subsection.2.4.1}
-\contentsline {subsection}{\numberline {2.4.2}Using the ``hard'' DMA controller in the PS}{20}{subsection.2.4.2}
-\contentsline {subsection}{\numberline {2.4.3}Implementing a DMA controller in the PL}{22}{subsection.2.4.3}
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}
+\contentsline {chapter}{\numberline {2}Related Work}{3}{chapter.2}
+\contentsline {chapter}{\numberline {3}Background}{5}{chapter.3}
+\contentsline {section}{\numberline {3.1}The Hardware Platform}{5}{section.3.1}
+\contentsline {section}{\numberline {3.2}The Communication Protocol}{7}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}The AMBA AXI Family}{8}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}The AXI Implementation}{10}{subsection.3.2.2}
+\contentsline {subsubsection}{The Zynq Hard IP}{10}{section*.3}
+\contentsline {subsubsection}{The Xilinx Soft IP}{10}{section*.4}
+\contentsline {subsubsection}{The User IP}{12}{section*.5}
+\contentsline {section}{\numberline {3.3}The Physical Interconnect}{13}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}The Zynq 7000 Interconnect Architecture}{14}{subsection.3.3.1}
+\contentsline {subsubsection}{The High Performance Ports}{14}{section*.7}
+\contentsline {subsubsection}{The Accelerator Coherency Port}{16}{section*.8}
+\contentsline {subsubsection}{The General Purpose Slave Ports}{16}{section*.9}
+\contentsline {subsubsection}{The General Purpose Master Ports}{17}{section*.10}
+\contentsline {subsection}{\numberline {3.3.2}The Zynq UltraScale+ Interconnect Architecture}{17}{subsection.3.3.2}
+\contentsline {subsubsection}{High Performance Ports}{17}{section*.12}
+\contentsline {subsubsection}{High Performance Coherent Ports}{19}{section*.13}
+\contentsline {subsubsection}{High Performance Master Ports}{19}{section*.14}
+\contentsline {subsubsection}{The AXI Slave Port of LPD}{19}{section*.15}
+\contentsline {subsubsection}{Accelerator Coherency Port}{20}{section*.16}
+\contentsline {subsubsection}{AXI Coherency Extensions Port}{20}{section*.17}
+\contentsline {section}{\numberline {3.4}Exchanging Data with the Programmable Logic}{20}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1}Programmed I/O from a Processor}{20}{subsection.3.4.1}
+\contentsline {subsection}{\numberline {3.4.2}Using the ``hard'' DMA controller in the PS}{21}{subsection.3.4.2}
+\contentsline {subsection}{\numberline {3.4.3}Implementing a DMA controller in the PL}{22}{subsection.3.4.3}
 \contentsline {subsubsection}{The HP ports}{23}{section*.18}
-\contentsline {subsubsection}{The HPC ports (UltraScale+ only)}{23}{section*.19}
-\contentsline {subsubsection}{The ACP port}{23}{section*.20}
-\contentsline {subsubsection}{The ACE port}{24}{section*.21}
-\contentsline {subsubsection}{The S\_GP in 7000 and the LPD Slave AXI in UltraScale+}{24}{section*.22}
-\contentsline {section}{\numberline {2.5}Design Components}{25}{section.2.5}
-\contentsline {subsection}{\numberline {2.5.1}The DMA controller}{25}{subsection.2.5.1}
-\contentsline {subsection}{\numberline {2.5.2}The Interconnect}{28}{subsection.2.5.2}
-\contentsline {subsubsection}{A Naive Solution and Basic Configuration}{28}{section*.24}
+\contentsline {subsubsection}{The HPC ports (UltraScale+ only)}{24}{section*.19}
+\contentsline {subsubsection}{The ACP port}{24}{section*.20}
+\contentsline {subsubsection}{The ACE port}{25}{section*.21}
+\contentsline {subsubsection}{The S\_GP in 7000 and the LPD Slave AXI in UltraScale+}{25}{section*.22}
+\contentsline {section}{\numberline {3.5}Design Components}{26}{section.3.5}
+\contentsline {subsection}{\numberline {3.5.1}The DMA controller}{26}{subsection.3.5.1}
+\contentsline {subsection}{\numberline {3.5.2}The Interconnect}{28}{subsection.3.5.2}
+\contentsline {subsubsection}{A Naive Solution and Basic Configuration}{29}{section*.24}
 \contentsline {subsubsection}{Attempting Parallel Access to Memory}{31}{section*.29}
 \contentsline {subsubsection}{Comparing AXI Interconnect and SmartConnect}{34}{section*.33}
-\contentsline {section}{\numberline {2.6}The Implemented Designs}{36}{section.2.6}
-\contentsline {subsection}{\numberline {2.6.1}An Accelerator Performance Oriented Approach}{37}{subsection.2.6.1}
-\contentsline {subsection}{\numberline {2.6.2}An Accelerator Count Oriented Approach}{37}{subsection.2.6.2}
-\contentsline {subsection}{\numberline {2.6.3}The Zynq UltraScale+ Port}{39}{subsection.2.6.3}
-\contentsline {section}{\numberline {2.7}Partial Reconfiguration}{42}{section.2.7}
-\contentsline {subsection}{\numberline {2.7.1}The Partial Reconfiguration Workflow}{44}{subsection.2.7.1}
-\contentsline {subsection}{\numberline {2.7.2}Physical Constraints}{47}{subsection.2.7.2}
-\contentsline {subsection}{\numberline {2.7.3}Floorplanning and Implementation}{50}{subsection.2.7.3}
-\contentsline {subsection}{\numberline {2.7.4}Reconfigurable Partition Sizing}{53}{subsection.2.7.4}
-\contentsline {subsection}{\numberline {2.7.5}Reconfigurable Partition Heterogeneity}{54}{subsection.2.7.5}
-\contentsline {subsection}{\numberline {2.7.6}Accelerator Configuration}{55}{subsection.2.7.6}
-\contentsline {subsection}{\numberline {2.7.7}Decoupling the Reconfigurable Logic}{56}{subsection.2.7.7}
-\contentsline {section}{\numberline {2.8}Debugging}{60}{section.2.8}
-\contentsline {section}{\numberline {2.9}Describing the Hardware with a Device Tree}{60}{section.2.9}
-\contentsline {subsection}{\numberline {2.9.1}Writing a Device Tree for the System}{62}{subsection.2.9.1}
-\contentsline {subsection}{\numberline {2.9.2}Lying about the AXI DMA Interrupt Lines}{65}{subsection.2.9.2}
-\contentsline {chapter}{\numberline {3}Software Framework}{67}{chapter.3}
-\contentsline {section}{\numberline {3.1}System Initialization}{68}{section.3.1}
-\contentsline {section}{\numberline {3.2}The System Library}{69}{section.3.2}
-\contentsline {subsection}{\numberline {3.2.1}The System-Wide API}{69}{subsection.3.2.1}
-\contentsline {subsection}{\numberline {3.2.2}The Task-Specific API}{70}{subsection.3.2.2}
-\contentsline {section}{\numberline {3.3}Communicating with the Hardware}{72}{section.3.3}
-\contentsline {section}{\numberline {3.4}Performing DMA from the kernel}{73}{section.3.4}
-\contentsline {subsection}{\numberline {3.4.1}Allocating DMA'able Memory}{75}{subsection.3.4.1}
-\contentsline {subsection}{\numberline {3.4.2}Controller and Channel Selection}{77}{subsection.3.4.2}
-\contentsline {subsection}{\numberline {3.4.3}Termination of a DMA Transaction}{78}{subsection.3.4.3}
-\contentsline {section}{\numberline {3.5}Zero-Copy Transfers}{79}{section.3.5}
-\contentsline {section}{\numberline {3.6}Security and Error Handling}{80}{section.3.6}
-\contentsline {section}{\numberline {3.7}Configuring the Accelerators}{81}{section.3.7}
-\contentsline {section}{\numberline {3.8}The Memory Allocator}{82}{section.3.8}
-\contentsline {section}{\numberline {3.9}The Scheduler}{88}{section.3.9}
-\contentsline {section}{\numberline {3.10}Partial Reconfiguration}{92}{section.3.10}
-\contentsline {subsection}{\numberline {3.10.1}Using the \texttt {devcfg} Interface}{93}{subsection.3.10.1}
-\contentsline {chapter}{\numberline {4}Application and Evaluation}{97}{chapter.4}
-\contentsline {section}{\numberline {4.1}Accelerator Description}{97}{section.4.1}
-\contentsline {subsection}{\numberline {4.1.1}Trivial Pixel Transformations}{99}{subsection.4.1.1}
-\contentsline {subsection}{\numberline {4.1.2}Contrast and Brightness Transformations}{101}{subsection.4.1.2}
-\contentsline {subsection}{\numberline {4.1.3}The Sharpen, Emboss and Outline Filters}{102}{subsection.4.1.3}
-\contentsline {subsection}{\numberline {4.1.4}The Sobel/Scharr Filter}{102}{subsection.4.1.4}
-\contentsline {subsection}{\numberline {4.1.5}The Gaussian Blur Filter}{103}{subsection.4.1.5}
-\contentsline {subsection}{\numberline {4.1.6}Resource Utilization and Latency}{104}{subsection.4.1.6}
-\contentsline {section}{\numberline {4.2}Accelerator Interface}{106}{section.4.2}
-\contentsline {section}{\numberline {4.3}Evaluation}{111}{section.4.3}
-\contentsline {chapter}{\numberline {5}Conclusion}{117}{chapter.5}
-\contentsline {section}{\numberline {5.1}Challenges and Lessons Learned}{118}{section.5.1}
-\contentsline {subsection}{\numberline {5.1.1}The Implementation Workflow}{118}{subsection.5.1.1}
-\contentsline {subsection}{\numberline {5.1.2}The Xilinx Tools}{119}{subsection.5.1.2}
-\contentsline {subsection}{\numberline {5.1.3}The Efficiency of HLS}{120}{subsection.5.1.3}
-\contentsline {section}{\numberline {5.2}Future Work}{121}{section.5.2}
-\contentsline {subsection}{\numberline {5.2.1}Integration with FPGA Manager}{121}{subsection.5.2.1}
-\contentsline {subsection}{\numberline {5.2.2}Use of Advanced DMA Modes}{122}{subsection.5.2.2}
-\contentsline {subsection}{\numberline {5.2.3}Rethinking the Accelerator - DMAC Relationship}{123}{subsection.5.2.3}
-\contentsline {subsection}{\numberline {5.2.4}Task Buffer Migration}{124}{subsection.5.2.4}
-\contentsline {subsection}{\numberline {5.2.5}Simplifying Accelerator Control}{126}{subsection.5.2.5}
-\contentsline {subsection}{\numberline {5.2.6}Power Consumption}{126}{subsection.5.2.6}
-\contentsline {subsection}{\numberline {5.2.7}Support for Interrupts}{127}{subsection.5.2.7}
-\contentsline {subsection}{\numberline {5.2.8}Extending the Streaming Model}{127}{subsection.5.2.8}
-\contentsline {subsection}{\numberline {5.2.9}Scaling to Multiple Boards}{128}{subsection.5.2.9}
-\contentsline {chapter}{Appendices}{129}{section*.71}
-\contentsline {chapter}{\numberline {A}Partial Reconfiguration Scripts}{131}{Appendix.a.A}
-\contentsline {section}{\numberline {A.1}Creating static design Device Checkpoint}{131}{section.a.A.1}
-\contentsline {section}{\numberline {A.2}Generating the Project Files}{132}{section.a.A.2}
-\contentsline {section}{\numberline {A.3}TCL Client Script}{133}{section.a.A.3}
-\contentsline {section}{\numberline {A.4}Partial Bitstream Manipulation}{138}{section.a.A.4}
-\contentsline {chapter}{\numberline {B}HLS Compiler Scripts}{139}{Appendix.a.B}
-\contentsline {section}{\numberline {B.1}Generating and Exporting an Acccelerator Module}{139}{section.a.B.1}
-\contentsline {chapter}{Glossary}{141}{section*.72}
-\contentsline {chapter}{Bibliography}{153}{chapter.6}
+\contentsline {section}{\numberline {3.6}Partial Reconfiguration}{35}{section.3.6}
+\contentsline {subsection}{\numberline {3.6.1}The Partial Reconfiguration Workflow}{38}{subsection.3.6.1}
+\contentsline {subsection}{\numberline {3.6.2}Floorplanning}{40}{subsection.3.6.2}
+\contentsline {chapter}{\numberline {4}Hardware Architecture}{43}{chapter.4}
+\contentsline {section}{\numberline {4.1}The Implemented Designs}{43}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}An Accelerator Performance Oriented Approach}{44}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}An Accelerator Count Oriented Approach}{44}{subsection.4.1.2}
+\contentsline {subsection}{\numberline {4.1.3}The Zynq UltraScale+ Port}{47}{subsection.4.1.3}
+\contentsline {section}{\numberline {4.2}Enabling Partial Reconfiguration}{49}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Challenges}{49}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}Implementation}{51}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}Partition Sizing}{53}{subsection.4.2.3}
+\contentsline {subsection}{\numberline {4.2.4}Partition Heterogeneity}{56}{subsection.4.2.4}
+\contentsline {subsection}{\numberline {4.2.5}Decoupling the Reconfigurable Logic}{57}{subsection.4.2.5}
+\contentsline {section}{\numberline {4.3}Accelerator Configuration}{57}{section.4.3}
+\contentsline {section}{\numberline {4.4}System Debugging}{59}{section.4.4}
+\contentsline {section}{\numberline {4.5}Describing the Hardware with a Device Tree}{59}{section.4.5}
+\contentsline {subsection}{\numberline {4.5.1}Writing a Device Tree for the System}{61}{subsection.4.5.1}
+\contentsline {subsection}{\numberline {4.5.2}Lying about the AXI DMA Interrupt Lines}{64}{subsection.4.5.2}
+\contentsline {chapter}{\numberline {5}Software Framework}{67}{chapter.5}
+\contentsline {section}{\numberline {5.1}System Initialization}{67}{section.5.1}
+\contentsline {section}{\numberline {5.2}The System Library}{68}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}The System-Wide API}{69}{subsection.5.2.1}
+\contentsline {subsection}{\numberline {5.2.2}The Task-Specific API}{70}{subsection.5.2.2}
+\contentsline {section}{\numberline {5.3}Communicating with the Hardware}{72}{section.5.3}
+\contentsline {section}{\numberline {5.4}Performing DMA from the kernel}{73}{section.5.4}
+\contentsline {subsection}{\numberline {5.4.1}Allocating DMA'able Memory}{74}{subsection.5.4.1}
+\contentsline {subsection}{\numberline {5.4.2}Controller and Channel Selection}{76}{subsection.5.4.2}
+\contentsline {subsection}{\numberline {5.4.3}Termination of a DMA Transaction}{77}{subsection.5.4.3}
+\contentsline {section}{\numberline {5.5}Zero-Copy Transfers}{78}{section.5.5}
+\contentsline {section}{\numberline {5.6}Security and Error Handling}{79}{section.5.6}
+\contentsline {section}{\numberline {5.7}Configuring the Accelerators}{80}{section.5.7}
+\contentsline {section}{\numberline {5.8}The Memory Allocator}{81}{section.5.8}
+\contentsline {section}{\numberline {5.9}The Scheduler}{87}{section.5.9}
+\contentsline {section}{\numberline {5.10}Partial Reconfiguration}{91}{section.5.10}
+\contentsline {subsection}{\numberline {5.10.1}Using the \texttt {devcfg} Interface}{92}{subsection.5.10.1}
+\contentsline {chapter}{\numberline {6}Application and Evaluation}{95}{chapter.6}
+\contentsline {section}{\numberline {6.1}Accelerator Description}{95}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}Trivial Pixel Transformations}{97}{subsection.6.1.1}
+\contentsline {subsection}{\numberline {6.1.2}Contrast and Brightness Transformations}{99}{subsection.6.1.2}
+\contentsline {subsection}{\numberline {6.1.3}The Sharpen, Emboss and Outline Filters}{99}{subsection.6.1.3}
+\contentsline {subsection}{\numberline {6.1.4}The Sobel/Scharr Filter}{100}{subsection.6.1.4}
+\contentsline {subsection}{\numberline {6.1.5}The Gaussian Blur Filter}{101}{subsection.6.1.5}
+\contentsline {subsection}{\numberline {6.1.6}Resource Utilization and Latency}{102}{subsection.6.1.6}
+\contentsline {section}{\numberline {6.2}Accelerator Interface}{104}{section.6.2}
+\contentsline {section}{\numberline {6.3}Evaluation}{108}{section.6.3}
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{115}{chapter.7}
+\contentsline {section}{\numberline {7.1}Challenges and Lessons Learned}{116}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}The Implementation Workflow}{116}{subsection.7.1.1}
+\contentsline {subsection}{\numberline {7.1.2}The Tool Quality}{117}{subsection.7.1.2}
+\contentsline {subsection}{\numberline {7.1.3}The Efficiency of HLS}{118}{subsection.7.1.3}
+\contentsline {section}{\numberline {7.2}Future Work}{119}{section.7.2}
+\contentsline {subsection}{\numberline {7.2.1}Integration with FPGA Manager}{119}{subsection.7.2.1}
+\contentsline {subsection}{\numberline {7.2.2}Use of Advanced DMA Modes}{120}{subsection.7.2.2}
+\contentsline {subsection}{\numberline {7.2.3}Rethinking the Accelerator - DMAC Relationship}{121}{subsection.7.2.3}
+\contentsline {subsection}{\numberline {7.2.4}Task Buffer Migration}{122}{subsection.7.2.4}
+\contentsline {subsection}{\numberline {7.2.5}Simplifying Accelerator Control}{124}{subsection.7.2.5}
+\contentsline {subsection}{\numberline {7.2.6}Power Consumption}{124}{subsection.7.2.6}
+\contentsline {subsection}{\numberline {7.2.7}Support for Interrupts}{125}{subsection.7.2.7}
+\contentsline {subsection}{\numberline {7.2.8}Extending the Streaming Model}{125}{subsection.7.2.8}
+\contentsline {subsection}{\numberline {7.2.9}Scaling to Multiple Boards}{125}{subsection.7.2.9}
+\contentsline {chapter}{Appendices}{127}{section*.70}
+\contentsline {chapter}{\numberline {A}Partial Reconfiguration Scripts}{129}{Appendix.a.A}
+\contentsline {section}{\numberline {A.1}Creating static design Device Checkpoint}{129}{section.a.A.1}
+\contentsline {section}{\numberline {A.2}Generating the Project Files}{130}{section.a.A.2}
+\contentsline {section}{\numberline {A.3}TCL Client Script}{131}{section.a.A.3}
+\contentsline {section}{\numberline {A.4}Partial Bitstream Manipulation}{135}{section.a.A.4}
+\contentsline {chapter}{\numberline {B}HLS Compiler Scripts}{137}{Appendix.a.B}
+\contentsline {section}{\numberline {B.1}Generating and Exporting an Acccelerator Module}{137}{section.a.B.1}
+\contentsline {chapter}{Glossary}{139}{section*.71}
+\contentsline {chapter}{Bibliography}{151}{chapter.8}

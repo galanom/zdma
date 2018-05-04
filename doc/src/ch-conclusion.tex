@@ -1,4 +1,4 @@
-\chapter{Conclusion}
+\chapter{Conclusion and Future Work}
 
 We developed a complete reconfigurable system, capable of providing hardware accelerators on-demand to the end user.
 The system was designed with a server environment in mind -- that is, a capable GNU/Linux system performing
@@ -27,6 +27,18 @@ either for quality of service and predictability or for security.
 A system shared library is provided that abstracts all system details, making it easy of the application
 developer to use the system without any need of hardware knowledge.
 
+The framework was successfully implemented in the Zynq-7000 based Zedboard from AVNET.
+Two different architectures were realized in order to assess design parameters such as the
+interconnect architecture, the memory layout, the accelerator data width and pipeline depth, etc.
+
+A digital image processing application was implemented and used as a benchmark. 
+Certain interesting observations were made from which we can deduct the validity of our design choices.
+
+An attempt to port the system to the UltraScale+ based zcu102 was thwarted at the software porting phase,
+as Xilinx had yet to provide required software support for Partial Reconfiguration on this device class.
+Nonetheless, the hardware design was complete, and this allowed us to assess the new architecture's
+capabilities, including the complete overhaul of partial reconfiguration support.
+
 \section{Challenges and Lessons Learned}
 
 The development of this system was not without unpredicted or underestimated problems. In this section
@@ -34,8 +46,9 @@ we will try to discuss some of the noteworthy issues that arose during developme
 
 \subsection{The Implementation Workflow}
 
-The first and foremost is our underestimation of hardware implementation difficulty of such a system and of partial
-reconfiguration in general. A basic working system to be used as a proof-of-concept is rather easy to implement.
+The first and foremost is our underestimation of the difficulty that arises with the hardware implementation 
+of such a system and of partial reconfiguration in general. 
+A basic working system to be used as a proof-of-concept is rather easy to implement.
 However, as the clock frequency and the number of \glspl{rp} rise, things change a lot. A major issue is that there is
 no partition placer tool despite that proper size, shape and placement is critical for attaining the highest perfomance.
 Thus, the work of the placer had to be done manually. The effort of this endeavor increases exponentially with the target clock.
@@ -44,6 +57,10 @@ to 125MHz requires many hours or tweaking. In order to reach the final goal of 1
 with partition moving or swapping, changing tool settings, chosing the correct initial configuration, finding per-variant
 optimal implementation settings, etc. As performance difference proved to be minimal, it is a question if it was worth the effort.
 
+%Needless to say that before attempting partial reconfiguration, the designer must ensure that at least the static logic and
+%the module that will consist the initial configuration are verified to conform to specifications in a normal workflow.
+%The slightest change in the design might require comparable effort to the inital implementation.
+
 The partition sizing was a decision that if it was to be taken again, it would be taken differently.
 In section \ref{sec:sizing} we discussed the sizing trade-offs. A factor not properly weighed was the
 availability and capability of routing resources. Each partition comes with a fixed cost which does
@@ -51,10 +68,9 @@ not constitute only the LUTs of AXI DMA, but also the wires that connect it, the
 the wires that implement the control interfaces of both the accelerator and the AXI DMA, as well as their own,
 seperate interconnects. Routing can become difficult and at some point, it will necessitate a clock frequency reduction.
 
+\subsection{The Tool Quality}
 
-\subsection{The Xilinx Tools}
-
-An important issue proved to be the implementation tools maturity. The partial reconfiguration TCL scripts that Xilinx offers
+An important issue proved to be the implementation tool maturity. The partial reconfiguration TCL scripts that Xilinx offers
 are not optimized at all. They are not multithreaded even in cases it would be easy to do so, e.g. a parallel \gls{ooc} synthesis
 of module variants or parallel implementation of module variants. Some work could be reused, e.g.
 the implementation of each variant needs carving out the modules of initial configuration,
@@ -66,7 +82,7 @@ causes locking of special resources (BRAM and DSP tiles) during initial configur
 This is irrespectively of the variant used for each configuration. The issue was worked around by reshaping the affected partitions,
 but no golden rule could be figured out for what consists a favorable shape, and no help could be gained from Xilinx forums.
 
-A final and huge issue it the tools speed. At the GUI front, designing larger systems visually is virtually impossible.
+A final and very important issue is the tool speed. At the GUI front, designing larger systems visually is virtually impossible.
 The slightest action causes a sequence of object property propagation which can be an excruciating for a large design.
 This can manifest at some unexplainable ways, like refreshing the custom IP directory data when the user changes the floorplanner's color palette.
 The designer must not hesitate to learn operating Vivado from the TCL console -- the effort invested will pay out fast.
@@ -79,7 +95,7 @@ for the former but around a week for the latter in a dual Xeon X5660.
 
 Clearly, in any new project an UltraScale-class device should not be used for initial development.
 It would be preferrable that first stages to be done in a 7-class device if possible,
-and then switch to an UltraScale-class device when the design is ready for device-specific optimizations.
+and then switch to an UltraScale-class device when the design requires device-specific development.
 
 \subsection{The Efficiency of HLS}
 
@@ -141,7 +157,8 @@ We discussed FPGA Manager in section \ref{sec:linux-pr}.
 It is imperative to replace the partial reconfiguration driver from \texttt{devcfg} for two main reasons:
 
 \begin{itemize}
-\item	\textbf{Portability}: FPGA Manager is a Linux kernel API and it offers hardware abstraction. 
+\item	\textbf{Portability}: FPGA Manager is a Linux kernel API and that offers hardware abstraction to
+	FPGA manipulation.
 	Using it, it will not only provide future support for ZynqMP, but it will allow porting the system
 	to other architectures like Microblaze or even to Altera/Intel SoCs.
 \item	\textbf{Integration}: Making Linux to be aware of the FPGA is a big step forward.
@@ -151,8 +168,8 @@ It is imperative to replace the partial reconfiguration driver from \texttt{devc
 	obsoleting custom and out-of-tree solutions.
 \end{itemize}
 
-Even if that reasoning does not sound compelling enough, 
-the fact that Xilinx has stopped development of \texttt{devcfg} and has 
+If that reasoning does not sound compelling enough, 
+we should add that Xilinx has stopped development of \texttt{devcfg} and has 
 completely removed it in its latest kernel (v4.14).
 
 \subsection{Use of Advanced DMA Modes}
@@ -183,6 +200,7 @@ but at a cost of an one-third increase of resource utilization (see table \ref{t
 Regardless from whether it is beneficial in most situations, the driver should provide this possibility.
 
 \subsection{Rethinking the Accelerator - DMAC Relationship}
+\label{sec:future-dmac}
 
 Initially, the system was envisioned to be capable of supporting a handful of accelerator slots, with four being the initial target.
 With that in mind, using one AXI DMA for each accelerator slot was not an issue. An assumption that may still hold true for the 6-core design,
@@ -207,7 +225,8 @@ multiple AXI streams from a single interface, by time-sharing its resources. The
 destination after setting the user AXI signal \texttt{TDEST}. The AXI DMA IP has this capability and recently Xilinx released
 the AXI MCDMA IP core. The routing can be performed using an AXI Stream Switch. Of course, both the mutli-channel support and
 the routing take up FPGA resources. For the former, the table \ref{tab:dma-modes} can be advised, and as for the latter
-one may refer to \cite{pg085}.
+one may refer to \cite{pg085}. Despite the idea is to share a DMA controller among multiple accelerators, the same
+principle can also be aplied in case we would need multiple input or output streams for a single accelerator.
 
 The second case is more complex and the ideas behind it may be materialized in several ways, depending the target application.
 The possible approach would be to chain accelerator slots. It could be implemented either as a set of peers or as a big main

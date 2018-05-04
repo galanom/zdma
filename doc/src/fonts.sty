@@ -22,14 +22,30 @@
 	Path=./fonts/EB Garamond/,
 	Extension=.otf,
 	UprightFont = *-Regular,
-	BoldFont = *-Bold,
+	BoldFont = ttf/EBGaramond-Bold.ttf,
 	ItalicFont = *-Italic,
-%	SmallCapsFont = *-AllSC,
-	Numbers={Lining,Proportional}, Ligatures={Common, TeX}, Scale=1.1
+	Numbers={Proportional,Lining}, 
+	Ligatures={Common, TeX}, 
+	Scale=1
 	]{EB Garamond 12}
+
 \newfontfamily{\smallcaps}[RawFeature={+c2sc,+scmp}]{EB Garamond}
-\setsansfont[Scale=MatchLowercase, BoldFont={Lato Bold}]{Lato Regular}
-\setmonofont[Scale=MatchLowercase]{Source Code Pro}
+
+\setsansfont[
+	Path=./fonts/Roboto Condensed/,
+	Extension=.ttf,
+	Scale = 1, 
+	UprightFont = *-Regular,
+	BoldFont = *-Bold
+	]{Roboto Condensed}
+
+\setmonofont[
+	Path=./fonts/Source Code Pro/,
+	Extension=.ttf,
+	Scale = .8,
+	UprightFont = *-Regular,
+	]{Source Code Pro}
+
 \RequirePackage[labelfont={bf,sf,footnotesize,singlespacing},
                 textfont={sf,footnotesize,singlespacing},
                 justification={justified,RaggedRight},
@@ -39,7 +55,7 @@
                 tablewithin=chapter]{caption}
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 %\renewcommand*{\UrlFont}{\ttfamily\small\relax}
-\addfontfeature{Numbers=Lining}
+%<F7>\addfontfeature{Numbers=Lining}
 
 % ********* Hyphenation *************
 %\hyphenation{pro-gram-mable}

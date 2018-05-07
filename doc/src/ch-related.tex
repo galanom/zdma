@@ -1,34 +1,114 @@
 \chapter{Related Work}
 
 The concept of allowing a user software application an abstracted interface to the programmable logic on an FPGA is not new.
+The first attempts to offer such a functionality involved commercial entities offering highly integrated solutions.
+Such solutions consist a complete system that includes not only their own proprietary software but also their hardware,
+or even, their own languages. Therefore, apart from being non-free, the cost of purchase can be very high. The best known
+system vendors are Maxeler, Convey (now Micron), Pico Computing (also aquired by Micron) and Impulse Accelerated Technologies,
+the latter being the only that targets commodity FPGAs. Xillybus is also a commercial product, but unlike all others it only
+sells an IP core that drives Xilinx PCIe endpoint block. Additionally, it offers their backing device driver as open source
+which is actually mainlined in Linux kernel.
 
-The RIFFA Framework \cite{riffa} abstracts the data transfer between a user application and a PCI-e attached FPGA accelerator
-by the means of named pipes. It is minimalistic by design but significant effort was put to offer high performance
-and to make it compatible with several common FPGA development boards from both Xilinx and Altera/Intel. They support the use of
-multiple FPGAs but not a direct FPGA-to-FPGA link. Partial reconfiguration is not supported. It is the only open-source 
-framework that provides support for Microsoft Windows.
+There exist free and open source (F/OSS) solutions however. 
+OpenCPI and OmpSs try to create heterogeneous computation environments
+that make use any available computing element be it a CPU, a GPU, an FPGA, etc. 
+They utilise commodity hardware and their existing languages and toolchains. 
+They are ambitious projects with far-reaching vision, being in development for
+several years and been grown to large and complex systems.
 
-The EPEE \cite{epee} and the ffLink \cite{fflink} offer similar set of features. 
-The former has support for interrupt acknowledgement whereas the latter supports PCI-e 3.0.
+A newer and even more ambitious project is ReconOS \cite{reconos}. 
+In this work they attempt to unify the software and the hardware processing.
+They propose the idea of the ``hardware thead'', a hardware processing that is represented as a common thread.
+That thread acts and is acted upon with the available multithreading programming model.
+\\
 
-A significant differentiation is DyRACT \cite{dyract}. It is the first to support partial reconfiguration. However it is the only
-that does not support zero-copy DMA.
+The first simple F/OSS framework came, ironically, from Microsoft Research by K.Eguro.
+The SIRC \cite{sirc} enables the communication of a PC with an FPGA through an Ethernet link, which limits its attainable throughput
+and latency.
+Unsurprisingly, it only supports MS Windows. These two major disadvantages impede most practical use.
+
+The MPRACE \cite{mprace} framework is an attempt to create a library with useful hardware cores (including an open source DMA engine)
+and corresponding device drivers that would enable data exchange between an FPGA and the host PC. 
+The MPRACE repository has no activity after paper publication.
+
+A major step forward was the RIFFA Framework \cite{riffa} as it is the first to conceive the idea of having multiple 
+independent generic accelerator engines in a single FPGA platform.
+RIFFA abstracts the data transfer between a user application and a PCI-e attached FPGA accelerator by the means of named pipes. 
+It is minimalistic by design but significant effort was put to offer the highest performance the data transport medium offers,
+but equally importantly, to support as many environments as possible.
+It can use Xilinx Integrated Block for PCI Express, Altera IP Compiler for PCI Express and Altera HardIP For PCI Express,
+effectively covering all modern large PCIe capable FPGAs. A driver is provided for both GNU/Linux and MS Windows,
+and an API is offered for C, C++, Java, Python and MATLAB. It offers zero-copy data transfer through the means of
+creating a \gls{scatterlist} of the user buffer. It supports multiple FPGA boards but no partial configuration. 
+Apart from the two ``big'' systems, it appears to be the only one framework that receives continued development and have three papers published.
+The combination of these characteristics rendered it as a baseline model for all future attempts as well as a foundation to build upon.
+
+Two years after SIRC publication, in 2012, R.Bittner of Microsoft Research published a new system, 
+Speedy \cite{speedy}, which solved the performance bottleneck by supporting the PCI-e bus 
+and it uses a random-access interface to the end-user utiliting the on-board DDR of Xilinx ML505.
+Authors even designed their own DDR2 controller, to challenge the Xilinx MIG performance.
+However, as its forerunner, it is Windows-only -- even the source code is packed in a Windows executable.
+Generally, due to its restrictions and narrower application it is overshadowed by the significantly more extensive RIFFA,
+which predated it by a few months.
+
+The EPEE \cite{epee} diversifies itself from RIFFA by implementing a user-controllable register and user-defined hardware interrupts.
+The latter will interrupt a blocked system call -- no asynchronous notification mechanism (i.e. POSIX Signals) is offered.
+It offers zero-copy by mapping a kernel buffer to the user and it also supports buffered operations. 
+It has a partial reconfiguration ``plugin'' that is a simple user function that reads a partial bitstream and programs it to the FPGA.
+The system is not aware of the reconfiguration and therefore no synchronization, 
+queueing, scheduling or other kind of management of modules takes place.
+In all fairness, EPEE does not claim to be a partial reconfiguration capable system.
+
+All published works make use of the Xilinx PCIe endpoint block to drive the PCIe protocol. 
+The Gen2 block for 6-series \cite{ug517} and 5-series \cite{ug197} offers a low-level interface that requires significant effort 
+and knowledge of the PCIe protocol in order to be driven by the designer logic.
+Indeed, the majority of the effort invested by the aforementioned works focuses 
+at the hardware block that interfaces the designer logic with the Xilinx PCIe endpoint.
+Xilinx has since then released a Gen3 block for its 7-series \cite{pg054} 
+and UltraScale devices \cite{pg156} as well as the older 6-class \cite{ug671}.
+These blocks present a significantly different user interface compred to the Gen2 block.
+A significant addition is the offering of a DMA bridge for PCIe \cite{pg195} which drastically simplifies connectivity as it can be set up to offer
+a generic \gls{axi}4 or \gls{axistream} interface.
+
+The introduction of these cores allow the creation of a PCIe-based accelerator framework with minimal effort.
+A designer may still prefer a lower level interface if they wish a finer control over the data transfer,
+or cannot tolerate the large amount of logic \cite{dmapcie} the DMA/PCIe bridge consumes. 
+Or they may skip both the bridge and the endpoint entirely if they require a fully custom or a pure F/OSS solution.
+But now, there is little incentive to develop yet another one PCIe endpoint driver if none of the above stand true.
+
+The ffLink \cite{fflink} is the first F/OSS work to be published that uses the new Gen3 endpoint and consequently offer PCIe 3.0 support.
+The authors found the resource utilization of DMA/PCIe bridge unacceptable and they used the generic AXI DMA IP cores to drive the Gen3 endpoint.
+Currently, ffLink is no more available as a standalone project -- it is integrated to TaPaSCo, a bigger project at TU-Darmstadt.
+
+A very interesting work is done by Vipin et al, 2013 \cite{vipin}. 
+It is an attempt to create a generic CUDA-like programming interface to the FPGAs. 
+They abstract access via PCIe, FPGA-based DRAM and Ethernet to generic \gls{axilite} and \gls{axistream} interfaces.
+Additionally, they offer some FPGA device-related functionality such as programming and restarting the programmable logic,
+and even provide diagnostic information (power, voltage, temperature).
+An interesting feature is that they abstract the workflow of three high level synthesis tools, Vivado HLS, Bluespec and SCORE.
+The interface is very similar to CUDA or OpenCL: The user writes the HLS code inside the application as an accelerator core to load.
+The framework assumes the responsibility to synthesize and implement the code.
+
+A year later, Vipin released DyRACT \cite{dyract}.
+It extends previous work by offering partial reconfiguration to support on-demand loading of an accelartor.
+It is the first F/OSS framework to offer such a capability.
+They have implemented a custom ICAP controller that offers superior performance to Xilinx implementation,
+achieving a throughput of 91\% of the maximum ICAP capability.
+The framework still does not support zero-copy transfers nor multiple boards. 
+The latter is stated as intended to be implemented in the future.
+
+
+A newer work is RACOS \cite{racos}. This work introduces the novel idea of multi-core and multi-threaded accelerators.
+A multi-core accelerator consists of two discrete accelerators sharing the same \gls{rp}. A multi-threaded accelerator
+is an accelerator that can save its context internally and context-swap to another user -- in both cases, the 
+connection to the DMA controller is shared. RACOS is especially focused in reconfiguration speed achieving a 99.6\%
+efficiency in ICAP reconfiguration throughput, while they have overclocked the interface from 100 to 125 MHz.
+The key disadvantage of the system is that it is the only academic work mentioned here that is closed source.
+
+
 
 The newer JetStream \cite{jetstream} is a major step-up, offering every desirable feature: Partial Reconfiguration, Zero Copy,
 multiple board support and direct FPGA-to-FPGA link. It also supports PCI-e 3.0 and achieves strong performance results.
-
-All the aforementioned works are academic and open-sourced.
-One of the most notable is from Xillybus.
-It is lightweight in FPGA resources but lacks most features discussed.
-It does not support neither partial reconfiguration nor zero-copy DMA. 
-It offers multiple board support but no direct FPGA-to-FPGA link. 
-It comes with a price tag of 25K to 75K USD and no royalties.
-A Linux kernel driver is offered in open source and Windows is also supported.
-
-
-Another important proprietary work is from Nortwest Logic. Not many details are available for the internals of this product
-but the vendor asserts support even for the PCI-e 4.0. It offers high performance but very high FPGA resource utilization.
-No price is published.
 
 
 The work presented in this thesis has a key differentiation point that it uses AXI as a data transport instead of PCI-e,
@@ -38,3 +118,48 @@ Feature-wise, we support all the (non PCI-e related) features offered by all the
 Compared to JetStream, this work lacks support for direct FPGA-to-FPGA link. 
 Finally, since we support zero-copy DMA we found no reason to implement a buffered one. 
 However, EPEE, ffLink and JetStream, chose to implement both transfer types.
+
+\begin{figure}[tb!]
+\newcommand{\f}{}
+\scalebox{0.9}{
+\begin{tabular}{lccl ccccccc cccc}
+\toprule
+		&&
+
+
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Partial\\Reconfiguration}}}
+%		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Random Access}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Zero Copy}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f User\\Clock}}}
+
+
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Accelerator\\Configuration}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Accelerator\\Interrupt}}}
+
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Multiple FPGAs\\}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f FPGA to FPGA\\direct link}}}
+		
+		& \multicolumn{2}{c}{O/S}
+		& \multicolumn{2}{c}{FPGA}
+		\\
+		
+		&& &&&&&&&
+		& \multirow{2}{*}{\rotatebox[origin=t]{90}{\parbox{25mm}{\f GNU/Linux}}}
+		& \multirow{2}{*}{\rotatebox[origin=b]{90}{\parbox{25mm}{\f Windows}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{25mm}{\f Xilinx}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{25mm}{\f Altera}}}
+		\\ \\ \\ \\
+Framework	& F/OSS	& Transport 	&&&&&\\
+\midrule
+RIFFA v2.2	& \vmark & PCIe 3.0 x4	&\xmark &\vmark & \xmark & \xmark & \xmark & \vmark & \xmark	&\vmark &\vmark &\vmark &\vmark \\
+EPEE		& \vmark & PCIe 2.0 x8	&\xmark &\vmark & \vmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+ffLink		& \vmark & PCIe 3.0 x8  &\xmark &\vmark & \xmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+DyRACT		& \vmark & PCIe 3.0 x4	&\vmark &\xmark & \vmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+RACOS		& \xmark & PCIe 2.0 x4	&\vmark &\xmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+JetStream	& \vmark & PCIe 3.0 x8  &\vmark &\vmark &    ?   &  ?     & ?      & \vmark & \vmark    &\vmark &\xmark &\vmark &\xmark \\
+This work	& \vmark & AXI		&\vmark &\vmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+\bottomrule
+\end{tabular}}
+\caption{Comparison of present FPGA accelerator frameworks.}
+\end{figure}
+

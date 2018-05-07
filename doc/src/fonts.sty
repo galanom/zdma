@@ -1,7 +1,15 @@
 % !TeX spellcheck = el_GR
 \RequirePackage{ifluatex}
 
-\usepackage{amssymb}
+% Various symbols
+\usepackage{amssymb,pifont,fontawesome}
+%\newcommand{\vmark}{\ding{51}}%
+%\newcommand{\xmark}{\ding{55}}%
+\newcommand{\vmark}{\faCheck}%
+\newcommand{\omark}{\faCircleO}%
+\newcommand{\xmark}{\faTimes}%
+
+
 
 \ifluatex
   \usepackage{fontspec}

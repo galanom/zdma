@@ -57,7 +57,6 @@ It offers zero-copy by mapping a kernel buffer to the user and it also supports 
 It has a partial reconfiguration ``plugin'' that is a simple user function that reads a partial bitstream and programs it to the FPGA.
 The system is not aware of the reconfiguration and therefore no synchronization, 
 queueing, scheduling or other kind of management of modules takes place.
-In all fairness, EPEE does not claim to be a partial reconfiguration capable system.
 
 All published works make use of the Xilinx PCIe endpoint block to drive the PCIe protocol. 
 The Gen2 block for 6-series \cite{ug517} and 5-series \cite{ug197} offers a low-level interface that requires significant effort 
@@ -90,36 +89,61 @@ The interface is very similar to CUDA or OpenCL: The user writes the HLS code in
 The framework assumes the responsibility to synthesize and implement the code.
 
 A year later, Vipin released DyRACT \cite{dyract}.
-It extends previous work by offering partial reconfiguration to support on-demand loading of an accelartor.
-It is the first F/OSS framework to offer such a capability.
+In this work they are offer the functionality of partial reconfiguration, more or less with the same (limited) way as EPEE does.
 They have implemented a custom ICAP controller that offers superior performance to Xilinx implementation,
 achieving a throughput of 91\% of the maximum ICAP capability.
 The framework still does not support zero-copy transfers nor multiple boards. 
-The latter is stated as intended to be implemented in the future.
 
+Another published work is JetStream \cite{jetstream}. This work attempts to cover all desired features:
+partial reconfiguration, multiple DMA transfer modes, multiple board support and direct FPGA to FPGA data transfer.
+Regarding the transfer modes, the nomenclature they use is confusing, contradictory and even invalid,
+but they do support both buffered and zero-copy DMA.
+The feature of direct transfer between FPGAs simply means that data will move via the PCIe root complex 
+and will not traverse the memory controller -- there is no
+direct dedicated link between the accelerators as the name would suggest. 
+Finally, the partial reconfiguration feature is not described in the paper and 
+could not be found in the sources -- it is certain however that there is no accelerator scheduler.
+An inspection of the source code reveals that the driver frequently delegates a lot of the work to the end-user,
+leaking kernel data structures to the user-space or exporting functionality that it is not (and should not) be the role of a user application.
+Furthermore, the software code is completely undocumented, 
+contains several rough edges and the respository shows no activity since the paper publication.
+In our opinion, it a half-finished and, at least regarding the software, a low quality work of limited practical use.
 
 A newer work is RACOS \cite{racos}. This work introduces the novel idea of multi-core and multi-threaded accelerators.
-A multi-core accelerator consists of two discrete accelerators sharing the same \gls{rp}. A multi-threaded accelerator
-is an accelerator that can save its context internally and context-swap to another user -- in both cases, the 
-connection to the DMA controller is shared. RACOS is especially focused in reconfiguration speed achieving a 99.6\%
+A multi-core accelerator consists of two discrete accelerators sharing the same \gls{rp}. 
+A multi-threaded accelerator is an accelerator that can save its context internally and 
+context-swap to another user -- in both cases, the connection to the DMA controller is shared. 
+RACOS is especially focused in reconfiguration speed achieving a 99.6\%
 efficiency in ICAP reconfiguration throughput, while they have overclocked the interface from 100 to 125 MHz.
+However, the most important addition is that ROCOS implements a task queue and a scheduler that process it,
+so the end-user can post a request to be executed asynchronously. 
 The key disadvantage of the system is that it is the only academic work mentioned here that is closed source.
 
+Juxtaposing this work with the aforementioned published works, the most apparent differentiation point is that
+the data transport is the AMBA \gls{axi} bus. This changes the working environment and the role of the FPGA
+from an attached acclerator to a closely connected co-processor that may have shared access to the main memory.
 
+Feature-wise, our implementation of partial reconfiguration includes an asynchronously executing scheduler, just like RACOS.
+Our implementation of zero-copy DMA uses kernel allocated buffers mapped to the userspace. Compared to building a scatterlist
+of user allocated pages, the choice of RIFFA and some others, 
+it is simpler and offers higher performance from doing many small DMAs, even if the DMA controller has Scatter-Gather support.
+However, the main reason we followed this way is so we can build a custom memory allocator that has full control of
+all allocated buffers. This was essential for supporting our novel feature of having segmented memory to control and balance
+the flow of data throughout the interconnect. An additional side effect is that we cannot also support buffered DMA.
 
-The newer JetStream \cite{jetstream} is a major step-up, offering every desirable feature: Partial Reconfiguration, Zero Copy,
-multiple board support and direct FPGA-to-FPGA link. It also supports PCI-e 3.0 and achieves strong performance results.
+Another important feature is that our system was designed from the beginning as multi-user, 
+in order to be applied in a FPGA accelerated server. 
+Among other works, only the architecture of RACOS may be capable of this feature, but this subject was not touched in the paper.
+Despite that our system is not yet secure (see \ref{sec:security}), its flaws can be corrected.
 
+In figure \ref{tab:works} we display a comparative table of the frameworks that 
+were designed with the multiple accelerator model in mind, partially reconfigurable or not.
 
-The work presented in this thesis has a key differentiation point that it uses AXI as a data transport instead of PCI-e,
-as it focuses on FPGA SoCs and not on add-on FPGA cards. To our knowledge, there is currently no other work that is based
-on AXI, except for Xillybus which has a Microblaze port which uses AXI for transport which nonetheless is being phased-out.
-Feature-wise, we support all the (non PCI-e related) features offered by all the open-source works except for JetStream.
-Compared to JetStream, this work lacks support for direct FPGA-to-FPGA link. 
-Finally, since we support zero-copy DMA we found no reason to implement a buffered one. 
-However, EPEE, ffLink and JetStream, chose to implement both transfer types.
+%In our enviornment we do not have the notion of multiple attached FPGAs 
+%as the programmable logic is inside the same die with the processor
+%and cannot change or be extended. However 
 
-\begin{figure}[tb!]
+\begin{figure}[b!]
 \newcommand{\f}{}
 \scalebox{0.9}{
 \begin{tabular}{lccl ccccccc cccc}
@@ -128,6 +152,8 @@ However, EPEE, ffLink and JetStream, chose to implement both transfer types.
 
 
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Partial\\Reconfiguration}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Accelerator\\Scheduler}}}
+
 %		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Random Access}}}
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Zero Copy}}}
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f User\\Clock}}}
@@ -143,7 +169,7 @@ However, EPEE, ffLink and JetStream, chose to implement both transfer types.
 		& \multicolumn{2}{c}{FPGA}
 		\\
 		
-		&& &&&&&&&
+		&& &&&&&&&&
 		& \multirow{2}{*}{\rotatebox[origin=t]{90}{\parbox{25mm}{\f GNU/Linux}}}
 		& \multirow{2}{*}{\rotatebox[origin=b]{90}{\parbox{25mm}{\f Windows}}}
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{25mm}{\f Xilinx}}}
@@ -151,15 +177,16 @@ However, EPEE, ffLink and JetStream, chose to implement both transfer types.
 		\\ \\ \\ \\
 Framework	& F/OSS	& Transport 	&&&&&\\
 \midrule
-RIFFA v2.2	& \vmark & PCIe 3.0 x4	&\xmark &\vmark & \xmark & \xmark & \xmark & \vmark & \xmark	&\vmark &\vmark &\vmark &\vmark \\
-EPEE		& \vmark & PCIe 2.0 x8	&\xmark &\vmark & \vmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
-ffLink		& \vmark & PCIe 3.0 x8  &\xmark &\vmark & \xmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
-DyRACT		& \vmark & PCIe 3.0 x4	&\vmark &\xmark & \vmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
-RACOS		& \xmark & PCIe 2.0 x4	&\vmark &\xmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
-JetStream	& \vmark & PCIe 3.0 x8  &\vmark &\vmark &    ?   &  ?     & ?      & \vmark & \vmark    &\vmark &\xmark &\vmark &\xmark \\
-This work	& \vmark & AXI		&\vmark &\vmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+RIFFA v2.2	& \vmark & PCIe 3.0 x4	&\xmark &\xmark &\vmark & \xmark & \xmark & \xmark & \vmark & \xmark	&\vmark &\vmark &\vmark &\vmark \\
+EPEE		& \vmark & PCIe 2.0 x8	&\xmark &\xmark &\vmark & \vmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+ffLink		& \vmark & PCIe 3.0 x8  &\xmark &\xmark &\vmark & \xmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+DyRACT		& \vmark & PCIe 3.0 x4	&\vmark &\xmark &\xmark & \vmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+RACOS		& \xmark & PCIe 2.0 x4	&\vmark &\vmark &\xmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
+JetStream	& \vmark & PCIe 3.0 x8  & ?     &\xmark &\vmark & \xmark & \vmark & \xmark & \vmark & \vmark    &\vmark &\xmark &\vmark &\xmark \\
+This work	& \vmark & AXI		&\vmark &\vmark &\vmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
 \bottomrule
 \end{tabular}}
+\label{tab:works}
 \caption{Comparison of present FPGA accelerator frameworks.}
 \end{figure}
 

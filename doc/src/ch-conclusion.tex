@@ -361,7 +361,7 @@ to implement. Implementation should be straiforward:
 \end{enumerate}
 
 
-\subsection{Simplifying Accelerator Control}
+\subsection{Accelerator Control}
 
 The \gls{axilite} protocol rightfully gained its name as it requires only a few dozen of LUT instances to implement a slave interface.
 Nonetheless, this slave interface consists of 94 wires. Despite that we have so modest demands for throughput from a configuration
@@ -371,40 +371,93 @@ On top of that, we should add the implementation of the required interconnect.
 It is worth exploring the use of a simpler protocol, even a serial one. The I\textsuperscript{2}C is rather slow but it uses only
 two wires (clock and data) shared between all slaves. The SPI needs a clock, a data-in and a data-out plus one slave select per slave,
 but it is significantly faster.
-
 A more efficient solution would be to embed configuration data in the data stream. It adds some implementation complexity
 and might be a bit restrictive in some cases, but it comes at no cost in routing resources.
 
-%\subsection{Task List}
+Moreover, currently, the accelerator control is modeled after the Vivado HLS control signals. 
+While it would not be very difficult to generate these signals from an HDL or another HLS tool,
+a cleaner solution would be to define a custom interface and offer wrappers for any HLS tool.
 
-%Currently, the system accepts requests for execution of a task, which completes asynchronously with the request.
-%The execution latency depends on the work queue and the scheduler statistics, which however has absolutely no knowledge
-%about future task requests. 
-%Therefore it loses the capability to schedule tasks in an optimal way that would minimize
-%total execution time. This was decided as the system was required to act upon a dynamic load, in contrast to
-%systems with a static schedule.
-
-%However, we could implement a middle-road solution. The system would still accept requests in a dynamic and unpredictable way,
-%but could also accept task lists
-
-\subsection{Power Consumption}
-
-The system was not designed with power consumption in mind. There can be found opportunities for lowering the power envelope.
-For static power, there is little we can do. The Zynq platform does have programmable voltage regulators but they are global to the PL
-and therefore we cannot power down a single \gls{rp}.
-
-However, it is possible to reduce dynamic power consumption. Even without an external clock source, Zynq and ZynqMP can create and distribute
-four configurable clocks. With a certain cost in resources for the implementation of clock converters, it would be possible to offer more than
-one clock source to an accelerator slot. Depending user desire, policy or simply wheter system is operating from battery, the clock source 
-could be switched to save energy.
-
-\subsection{Support for Interrupts}
+\subsection{Accelerator Interrupts}
 
 We assumed an accelerator would have a input and an output stream, with no other side-effects.
 However, an accelerator may need to generate interrupts. Support of this feature may take the form of
 offering a system call that blocks until the interrupt is acknowledged, as it is done in EPEE\cite{epee}.
 Another approach would be by delivering POSIX Signals, in order to allow the user application to perform
 useful work while waiting for the notification.
+
+\subsection{Portability}
+
+The system was designed using the Xilinx tools on a Zynq platform. As it is already discussed, FPGA Manager will
+solve the unportable nature of partial reconfiguration. 
+
+Two additional points that tie us to a specific architecture are the AXI interconnect and the ARM processor.
+The former is not expected to be an issue, at least if we fix the accelerator control protocol (see above).
+The latter is a bit more a senstive issue. While we do not bind to the processor architecture, we extensively use
+the \gls{ftd}. GNU/Linux has decoupled it from \gls{of} and the current trend is to expand support to more platforms.
+Despite that support for x86 was introduced back in 2011, it is uncertain how easy would be the transition to
+the future x86-connected FPGAs.
+
+However, the biggest -by far- burden is the heavy dependence on Xilinx IP cores. It is certain that
+Intel/Altera would have an equivalent core for every basic core of Xilinx, however they would differ on
+configuration and interface.
+
+While it is unavoidable to get rid of all of them, as some provide support for vendor specific hardware,
+they could be reduced to a minimum by replacing generic functionality (like a DMA controller) with
+other academic and/or open-source alternatives.
+
+\subsection{Scheduler Improvements}
+
+So far, the scheduler may decide only by taking into account the past (frequency of use, time elapsed from an event)
+or a user wish (e.g. priority, affinity). The scheduler has no knowledge of the future except from
+the tasks that are in-flight trying to find a free core.
+
+A useful feature would be to help the scheduler by stating an intent to execute a certain list of tasks.
+This way it can collect information that will more accurately predict which accelerator core would less likely be needed
+or it could postpone or re-arrange scheduling of tasks so to minimize the number of slot reconfigurations.
+
+\subsection{Bitsteam Size}
+
+In our work, for each module variant we produced a partial bitstream for every \gls{rp}.
+This was a significant burden for the memory constrained Zedboard. We did use XZ compression for bitstream storage,
+but we chose to decompress them in the kernel during registration time, as doing so on-demand would incur a penalty of
+more than 25ms. One might wonder, why not just use one for every variant?
+
+In modern FPGAs, the routing of the static design is permitted to cross a \gls{rp} in order to reduce pressure on router.
+This had as a consequence that every partial bitstream is totally different for each \gls{rp} it is implemented.
+Xilinx does not provide a way to restrict this routing apart from constraining all static routing to a static pblock,
+with whatever impact it would have on the quality of the result. The recent Altera Stratix 10 has a different architecture
+what permits bitstream relocation. For a detailed discussion on bitstream relocation and other current PR-related topics,
+one can address to \cite{survey}.
+
+There are several attempts to tackle this issue, either with run-time relocation or with bitstream manipulation prior programming.
+At bare minimum, the native bitstream compression should be attempted. Since it is processed directly from the hardware,
+the latency overhead could be small.
+
+\subsection{Clock Management}
+
+The system was not designed with power consumption in mind. There can be found opportunities for lowering the power envelope.
+For static power, there is little we can do. The Zynq platform does have programmable voltage regulators but they are global to the PL
+and therefore we cannot power down a single \gls{rp}.
+
+However, it is possible to reduce dynamic power consumption. Even without an external clock source, Zynq and ZynqMP can create and distribute
+four configurable clocks. Either by delivering multiple pre-set clocks or by using clock converters, it would be possible to offer more than
+one clock to an accelerator slot. 
+
+Depending user desire, policy or simply wheter system is operating from battery, the clock source could be switched to save energy.
+Furthermore, it would be beneficial for more complex accelerator designs that may fail timing closure at maximum clock
+to be given the oportunity to run at a slower one.
+
+\subsection{Extend Heterogeniety}
+
+In our work, support for heterogeniety is minimal. 
+It is simply offered with the notion that if a certain module variant doesn't fit, it's ok, we'll schedule the task somewhere else.
+
+This model has to be extended and the scheduler must be aware of the slot size and the special resources it contains.
+We already take into account the slot parameters for defining a slot attractiveness, but if the scheduler had more information
+about the slots and/or the task demands, it could even affect its decision taking into account time slacks, power consumption,
+and even chose an appropriate slot data width.
+
 
 \subsection{Extending the Streaming Model}
 

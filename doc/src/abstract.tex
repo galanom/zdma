@@ -1,9 +1,9 @@
 \cleardoublepage
 \rm
 \begin{center}
-	\textcolor{gray} {\large
-		An Accelerator Framework for Partially Reconfigurable\\
-		FPGA SoCs under GNU/Linux\\
+	\textcolor{gray} {\Large
+		Efficient Support for Partially Reconfigurable Accelerators\\
+		in FPGA SoC for the GNU/Linux Operating System\\
 	}
 
 	\vspace{20pt}
@@ -12,52 +12,42 @@
 \end{center}
 
 Currently there is a rising trend in accelerating specialized computation,
-mostly driven by the growing need for machine learning. The solutions can
-be classified to two major groups: novel processor architectures that are tailored
-for the targeted computation problem and hardware acceleration, which is represented
-by ASICs and FPGAs. The advantage of lower non-recurring engineering and field reconfiguration
-gave FPGAs a dominant position in the second group. Partial reconfiguration further extends
-the FPGA reconfigurability by allowing the reconfiguration of a part of the device
-during run-time without interrupting the overall system operation.
+mostly driven by the growing need for machine learning. 
+The solutions can be classified to two groups: 
+novel processor architectures, tailored for the targeted computation problem,
+and hardware acceleration, which is represented mostly by the FPGAs due
+to their capability to adapt or re-purposed to a different enviornment.
 
+Partial reconfiguration further extends the FPGA flexibility
+by allowing the reconfiguration of a part of the device
+during run-time without interrupting the overall system operation.
 This technology makes possible to create a system that offers mutliple accelerator cores
-which can be reconfigured on-demand during run-time.
-This work implements such a system using the Zynq SoC from Xilinx, using the AXI as data transport.
-It consists of following parts:
+that can be reconfigured on-demand during normal system operation.
+
+This work implements such a system using the Zynq SoC from Xilinx. It consists of the following parts:
 
 \begin{itemize}
-\item	Hardware implementation of one homogeneous and one heterogeneous accelerator system for Zynq-7000 SoC,
-	as well as a port to the newer and more advanced Zynq UltraScale+.
-\item	A Linux kernel driver for supporting any hardware accelerator system design under its specifications
-	and offers an abstracted view of the system to the user applications.
+\item	Hardware implementation of one homogeneous low-latency
+	and one heterogeneous high-throughput 
+	accelerator system for Zynq-7000 SoC,
+	as well as one homogeneous and balanced system for an UltraScale+ SoC.
+\item	A Linux device driver supporting any system design under its specifications.
 \item	A system library that provides a user-friendly API for managing the accelerators.
-\item	An application in digital image processing that implements 
-	several common accelerators, for system evaluation.
+\item	An application in image processing that implements some common accelerators.
 \end{itemize}
 
-The system achieves high performance by taking advantage of the SoC interconnect and 
-balances data traffic among the ports that connect the FPGA fabric to the SoC.
+In this modular system, each component is isolated and provides an abstracted interface to the others. 
+At the user level, the system provides a simple API that hides all hardware details.
+Using this API, the user can request a computation from the system which will be scheduled for execution
+when a hardware resource is available.
+The system administrator may add, remove or restrict the accelerator availablity to system slots or
+may configure the behavior the scheduler and modify security policies, 
+all without interrupting the normal operation of the system.
 
-It supports memory segmentation so a user can define multiple memory resources that can be
-different hardware devices and/or are connected at a varying proximity to the processor, all being accessed concurrently.
-The user may additionally express their relative preference of a memory resource versus the others,
-matching the capability and shaping the traffic of the corresponding underlying interconnect.
-Accelerator access to memory can be restricted to offer isolation for security or quality-of-service. 
-
-The user can define a desired set of accelerator core slots where their task is allowed to execute,
-whereas the administrator is able to define which accelerator variants can be programmed to each slot.
-In this way performance can be maximized if the workload can be predicted.
-
-The accelerator slots can be unequal and an accelerator variant may therefore not be placeable in every slot.
-In this way we can create a heterogeneous system of slots with different size 
-or containing different specialized fixed logic.
-
-Finally, the system was designed to be as flexible and portable as possible.
-Although a few designs were implemented, they act as examples --
-the designer can implement any hardware configuration within specs
-with the only obligation to properly describe it in a textual file that is passed to the kernel.
-None of this information is exported in the userspace so the software applications have only
-an abstracted view of the acceleration capability.
-
+Finally, the system takes advantage of the system interconnect to provide 
+concurrent data transfers and parallel access to memory, maximizing total I/O throughput.
+In order to permit the exploration for the optimal design,
+we made the system flexible enough to accept any accelerator arrangement 
+and any memory and interconnect layout without any software modification.
 \vspace*{\fill}
 

@@ -20,12 +20,11 @@ A newer and even more ambitious project is ReconOS \cite{reconos}.
 In this work they attempt to unify the software and the hardware processing.
 They propose the idea of the ``hardware thead'', a hardware processing that is represented as a common thread.
 That thread acts and is acted upon with the available multithreading programming model.
-\\
 
 The first simple F/OSS framework came, ironically, from Microsoft Research by K.Eguro.
 The SIRC \cite{sirc} enables the communication of a PC with an FPGA through an Ethernet link, which limits its attainable throughput
 and latency.
-Unsurprisingly, it only supports MS Windows. These two major disadvantages impede most practical use.
+Unsurprisingly, it only supports MS Windows. These two major disadvantages impede most practical use. 
 
 The MPRACE \cite{mprace} framework is an attempt to create a library with useful hardware cores (including an open source DMA engine)
 and corresponding device drivers that would enable data exchange between an FPGA and the host PC. 
@@ -41,13 +40,15 @@ effectively covering all modern large PCIe capable FPGAs. A driver is provided f
 and an API is offered for C, C++, Java, Python and MATLAB. It offers zero-copy data transfer through the means of
 creating a \gls{scatterlist} of the user buffer. It supports multiple FPGA boards but no partial configuration. 
 Apart from the two ``big'' systems, it appears to be the only one framework that receives continued development and have three papers published.
+The API is simple and the source code is very well written and commented. 
+They also offer extensive documentation and step-by-step instructions for using their work.
 The combination of these characteristics rendered it as a baseline model for all future attempts as well as a foundation to build upon.
 
 Two years after SIRC publication, in 2012, R.Bittner of Microsoft Research published a new system, 
 Speedy \cite{speedy}, which solved the performance bottleneck by supporting the PCI-e bus 
 and it uses a random-access interface to the end-user utiliting the on-board DDR of Xilinx ML505.
 Authors even designed their own DDR2 controller, to challenge the Xilinx MIG performance.
-However, as its forerunner, it is Windows-only -- even the source code is packed in a Windows executable.
+However, as its forerunner, it is Windows-only -- even the source code is packed in a Windows executable, so it could not be studied.
 Generally, due to its restrictions and narrower application it is overshadowed by the significantly more extensive RIFFA,
 which predated it by a few months.
 
@@ -56,10 +57,13 @@ The latter will interrupt a blocked system call -- no asynchronous notification 
 It offers zero-copy by mapping a kernel buffer to the user and it also supports buffered operations. 
 It has a partial reconfiguration ``plugin'' that is a simple user function that reads a partial bitstream and programs it to the FPGA.
 The system is not aware of the reconfiguration and therefore no synchronization, 
-queueing, scheduling or other kind of management of modules takes place.
+queueing, scheduling or other kind of management of modules takes place. 
+In all fairness, they do not advertize their system as partially reconfigurable.
+The API is simple and source code is clean, but it appears the authors have no interest in further development of their work.
+
 
 All published works make use of the Xilinx PCIe endpoint block to drive the PCIe protocol. 
-The Gen2 block for 6-series \cite{ug517} and 5-series \cite{ug197} offers a low-level interface that requires significant effort 
+The Gen2 block for 6-series \cite{ug571} and 5-series \cite{ug197} offers a low-level interface that requires significant effort 
 and knowledge of the PCIe protocol in order to be driven by the designer logic.
 Indeed, the majority of the effort invested by the aforementioned works focuses 
 at the hardware block that interfaces the designer logic with the Xilinx PCIe endpoint.
@@ -77,7 +81,8 @@ But now, there is little incentive to develop yet another one PCIe endpoint driv
 
 The ffLink \cite{fflink} is the first F/OSS work to be published that uses the new Gen3 endpoint and consequently offer PCIe 3.0 support.
 The authors found the resource utilization of DMA/PCIe bridge unacceptable and they used the generic AXI DMA IP cores to drive the Gen3 endpoint.
-Currently, ffLink is no more available as a standalone project -- it is integrated to TaPaSCo, a bigger project at TU-Darmstadt.
+Currently, ffLink is no more available as a standalone project -- it is integrated in ThreadPoolComposer \cite{tpc}, which in turn was
+superceded by TaPaSCo \cite{tapasco}, a bigger project at TU-Darmstadt which appears to be current and well maintained.
 
 A very interesting work is done by Vipin et al, 2013 \cite{vipin}. 
 It is an attempt to create a generic CUDA-like programming interface to the FPGAs. 
@@ -86,13 +91,14 @@ Additionally, they offer some FPGA device-related functionality such as programm
 and even provide diagnostic information (power, voltage, temperature).
 An interesting feature is that they abstract the workflow of three high level synthesis tools, Vivado HLS, Bluespec and SCORE.
 The interface is very similar to CUDA or OpenCL: The user writes the HLS code inside the application as an accelerator core to load.
-The framework assumes the responsibility to synthesize and implement the code.
+The framework assumes the responsibility to synthesize and implement the code. 
+It is an open-source work but source code could not be found.
 
 A year later, Vipin released DyRACT \cite{dyract}.
-In this work they are offer the functionality of partial reconfiguration, more or less with the same (limited) way as EPEE does.
+In this work they offer the functionality of partial reconfiguration, more or less with the same limited way the EPEE does.
 They have implemented a custom ICAP controller that offers superior performance to Xilinx implementation,
 achieving a throughput of 91\% of the maximum ICAP capability.
-The framework still does not support zero-copy transfers nor multiple boards. 
+The framework still does not support zero-copy transfers nor multiple boards. The API is clean and the source is well-written and commented.
 
 Another published work is JetStream \cite{jetstream}. This work attempts to cover all desired features:
 partial reconfiguration, multiple DMA transfer modes, multiple board support and direct FPGA to FPGA data transfer.
@@ -103,11 +109,12 @@ and will not traverse the memory controller -- there is no
 direct dedicated link between the accelerators as the name would suggest. 
 Finally, the partial reconfiguration feature is not described in the paper and 
 could not be found in the sources -- it is certain however that there is no accelerator scheduler.
-An inspection of the source code reveals that the driver frequently delegates a lot of the work to the end-user,
-leaking kernel data structures to the user-space or exporting functionality that it is not (and should not) be the role of a user application.
+An inspection of the source code reveals that the driver frequently delegates a lot of the work to the end user,
+leaking kernel data structures to the user-space 
+or exporting functionality that should not be at a user application's authority.
 Furthermore, the software code is completely undocumented, 
 contains several rough edges and the respository shows no activity since the paper publication.
-In our opinion, it a half-finished and, at least regarding the software, a low quality work of limited practical use.
+In our opinion, it is half-finished and, at least regarding the software, a work of questionable quality.
 
 A newer work is RACOS \cite{racos}. This work introduces the novel idea of multi-core and multi-threaded accelerators.
 A multi-core accelerator consists of two discrete accelerators sharing the same \gls{rp}. 
@@ -115,7 +122,7 @@ A multi-threaded accelerator is an accelerator that can save its context interna
 context-swap to another user -- in both cases, the connection to the DMA controller is shared. 
 RACOS is especially focused in reconfiguration speed achieving a 99.6\%
 efficiency in ICAP reconfiguration throughput, while they have overclocked the interface from 100 to 125 MHz.
-However, the most important addition is that ROCOS implements a task queue and a scheduler that process it,
+However, the most important addition is that RACOS implements a task queue and a scheduler that process it,
 so the end-user can post a request to be executed asynchronously. 
 The key disadvantage of the system is that it is the only academic work mentioned here that is closed source.
 
@@ -129,7 +136,7 @@ of user allocated pages, the choice of RIFFA and some others,
 it is simpler and offers higher performance from doing many small DMAs, even if the DMA controller has Scatter-Gather support.
 However, the main reason we followed this way is so we can build a custom memory allocator that has full control of
 all allocated buffers. This was essential for supporting our novel feature of having segmented memory to control and balance
-the flow of data throughout the interconnect. An additional side effect is that we cannot also support buffered DMA.
+the flow of data throughout the interconnect.
 
 Another important feature is that our system was designed from the beginning as multi-user, 
 in order to be applied in a FPGA accelerated server. 
@@ -145,18 +152,16 @@ were designed with the multiple accelerator model in mind, partially reconfigura
 
 \begin{figure}[b!]
 \newcommand{\f}{}
-\scalebox{0.9}{
-\begin{tabular}{lccl ccccccc cccc}
+\scalebox{0.75}{
+\begin{tabular}{lccc ccccccc cccc}
 \toprule
 		&&
-
-
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Partial\\Reconfiguration}}}
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Accelerator\\Scheduler}}}
 
 %		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Random Access}}}
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Zero Copy}}}
-		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f User\\Clock}}}
+		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f User Clock}}}
 
 
 		& \multirow{2}{*}{\rotatebox{90}{\parbox{30mm}{\setstretch{.5}\f Accelerator\\Configuration}}}
@@ -182,11 +187,11 @@ EPEE		& \vmark & PCIe 2.0 x8	&\xmark &\xmark &\vmark & \vmark & \vmark & \vmark 
 ffLink		& \vmark & PCIe 3.0 x8  &\xmark &\xmark &\vmark & \xmark & \vmark & \vmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
 DyRACT		& \vmark & PCIe 3.0 x4	&\vmark &\xmark &\xmark & \vmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
 RACOS		& \xmark & PCIe 2.0 x4	&\vmark &\vmark &\xmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
-JetStream	& \vmark & PCIe 3.0 x8  & ?     &\xmark &\vmark & \xmark & \vmark & \xmark & \vmark & \vmark    &\vmark &\xmark &\vmark &\xmark \\
+JetStream	& \vmark & PCIe 3.0 x8  &~\faQuestion &\xmark &\vmark & \xmark & \vmark & \xmark & \vmark & \vmark    &\vmark &\xmark &\vmark &\xmark \\
 This work	& \vmark & AXI		&\vmark &\vmark &\vmark & \xmark & \vmark & \xmark & \xmark & \xmark	&\vmark &\xmark &\vmark &\xmark \\
 \bottomrule
 \end{tabular}}
-\label{tab:works}
 \caption{Comparison of present FPGA accelerator frameworks.}
+\label{tab:works}
 \end{figure}
 

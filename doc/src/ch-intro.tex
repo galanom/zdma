@@ -1,5 +1,174 @@
 \chapter{Introduction}
 
+There is little a modern processor cannot do. They are powerful machines, and this power comes at low prices.
+Indeed, the abundance of processing power made the IoT revolution possible, where a quite capable processing core
+may be embedded in the simplest and cheapest everyday devices.
 
-...
+So, if processing power is abundant, why do we often need to resort to specialized computation machines?
+A general rule is that a general-purpose computing machine would be less efficient in performing a task
+than a highly specialized machine that was tail-made for the execution for this specific task.
+In most cases we can tolerate this inefficiency and this is why general-purpose computers do exist.
+There are other cases however, where we are prepared to sacrifice a lot of effort in order to
+possess the most efficient computer possible.
+
+Before we become more specific with the FPGAs, let us first define our areas
+of interest regarding efficiency:
+
+\begin{itemize}
+\item	\textbf{Energy:} 
+	A general purpose machine utilizes many structural units to perform a computation,
+	requiring more energy. Additionally, it requires more support logic and power management, all of which
+	waste energy by generating heat. Even worse, this heat must be dissipated and therefore we must spend
+	additional energy to cool the computer.
+
+	All of these are less insignificant on a personal computer but they do matter in battery-powered portable devices.
+	However, the most important beneficiary of energy efficiency is scientific computation, where the cost of
+	energy consumption is usually more important than the cost of the machine itself.
+
+\item	\textbf{Performance:}
+	A general-purpose has its silicon architected for offering optimal overall performance. 
+	A specific computation could be benefited more by some other design decisions or
+	it may not benefit at all from the majority of the silicon of a general-purpose computer.
+	In contrast, a highly specialized computer has defined its architecture and has dedicated all of its silicon
+	for the sole purpose of doing a specific task efficiently, making it the best machine to solve this problem.
+\end{itemize}
+
+Now, one may pose the question conversely: Why is not everything specialized processing machines?
+The answer is that the cost of development and manufactoring favor mass production.
+A highly specialized machine will likely be produced in lower quantities and therefore the
+effort put for producing a single unit is higher. 
+%Given the ever increasing cost of VLSI manufactoring, it is worthy to produce specialized silicon
+%only on parts that are guaranteed to be mass produced -- little logic, controllers, memory, etc.
+
+It is this trade-off that the FPGA disrupts. The FPGA silicon itself is mass produced and is pre-validated
+on transistor-level. The FPGA designer will need to design and validate only their own functionality,
+thus greatly lowering the non-recurring engineering effort to produce specialized silicon.
+
+\section{Motivation}
+
+There is a consensus that FPGAs are a powerful tool for computation. 
+However there are certain unsolved problems that impede their spread. 
+One of these is the lack of a standardized interface to the operating system
+and a common framework to support the building of accelerators. 
+
+At the operating system front, it is only recently that 
+the Linux kernel gained awareness of the dynamically reconfigurable hardware
+(see section \ref{sec:linux-pr}) and the supporting framework is under development.
+A generic userspace API and ABI is yet to be defined 
+and currently, at its initial stage, it focuses on basic functionality
+like the abstracted view of reconfiguration interface, 
+the correct automatic probing and removal of dependent device drivers 
+and the software isolation during partial reconfiguration, etc.
+Clearly, a lot of things will change in the near future -- but for now,
+there is no way to have an environment of dynamically reconfigurable accelerators
+without writing kernel code.
+
+At the system software front, the situation is worse.
+There is no universally accepted method of time scheduling hardware accelerators
+in a dynamically reconfigurable environment. There is some work done in proprietary
+systems. As for open source frameworks, there exist a couple of frameworks
+that tackle the issue of parallel processing in a heterogenious environment,
+but as their scope includes all types of processing devices, they have grown large and complex.
+The few academic approaches to a simple and open dynamically reconfigurable acceleration 
+typically pass the burden of scheduling to the end-user.
+
+At the hardware front, fortunately, there is significant academic work to support
+a reconfigurable accelerator framework, albeit dynamic partial reconfiguration is not often used.
+All academic work is focused to the model of a PCIe attached FPGA. 
+In recent years, we saw the rise of integrated FPGA SoCs where the programmable logic is closely
+connected to the processor, sharing access to a common memory controller. 
+To our knowledge, no academic work has yet published utilizing this novel architecture.
+
+
+\section{Our Approach}
+
+In this work we will explore the aforementioned shortcomings by creating
+a hardware and software framework that supports on-demand loading of custom accelerators.
+We decided to include a run-time scheduler to manage the tasks and the accelerator cores,
+in order to relieve the end user of such a responsibility. 
+A user request is posted to the system and served asynchronously, 
+in order to allow the user to perform their own computation in parallel to the hardware processing.
+
+The target usage is a server environment that offers hardware acceleration capability
+to user applications that feature an a priori known set of computational kernels.
+This environment was inspired by the upcoming Xeon hybrid CPU+FPGA processors, but since we had no access
+to such hardware, our initial target platform was set to be the Xilinx Zynq-7000 All Programmable SoC.
+Additionally, we will try to port our system to the newer and more advanced Zynq UltraScale+.
+
+Due to the nature of the intended environment, the system must be multi-user and security will matter.
+The end user software API must be simple and offer an abstracted view of the hardware system.
+The user shall be allowed to configure their task's affinity to the system
+accelerator slots. The system administrator shall be able to add or remove an accelerator
+to the system, as well as to configure its priority and its availability to the system slots. 
+Additionally, they shall be able to configure the scheduling algorithms and security policies.
+Changes shall be effective immediately and without interruption of normal operation.
+
+The system adaptability will be realized by the use of dynamic partial reconfiguration.
+We will attempt to create high performance architectures by exploiting 
+the opportunities for parallelization that the hardware platform offers.
+
+It is of paramount importance that the system would be flexible to support any accelerator arrangement
+and any memory and interconnect layout with minimal effort.
+
+\section{Contributions}
+
+The implementation of such a system was successful, as we achieved most of our goals.
+
+We implemented a kernel driver that assumes the responsibility of programming, configuration
+and exchange of data between the accelerator and the user. We opted for an in-kernel scheduler
+which manages resources and synchronization. Several scheduling algorithms were implemented,
+for selecting the most appropriate free slot and for finding the best victim for eviction.
+
+The system was made multi-user. A user posts a task for execution and the system will schedule it.
+The user has no direct access to the scheduler and cannot steal priority. No sensitive data
+cross the user-kernel barrier, so the user cannot discover other user's data. 
+System-wide operations can be restricted to the system root user, in order to prevent a user
+to affect system scheduling decisions in their favor or to unload an accelerator that is desired by another user.
+
+Nonetheless, our security model has weaknesses. The system is aware only of tasks and accelerator resources.
+It is not aware of the task owner, the user, so in current form, no user or group quotas may be assigned.
+This makes the system susceptible to DoS attacks (see section \ref{sec:security}).
+Also, proper operation by unpriviledged users still needs some work.
+
+The software API is made simple and is grouped to task operations, available to all users,
+and to system operations, available to the system administrator. All intended functionality was implemented.
+
+In order to support efficient interconnect and memory usage, we implemented a segmented memory model.
+Available memory is divided in zones, which serve as configurable pools for allocation.
+The natural use of these zones is to match the interconnect architecture.
+This way we achieve balancing of data traffic among the ports that connect the programmable logic
+to the processor system which includes the memory controller. 
+We made possible to define a memory zone's bandwidth capacity, 
+in order to indirectly affect its desirability for accelerator usage.
+
+The system manages a degree of accelerator slot hetergeniety.
+Not all slots are required to be equal and certain accelerator types may not fit certain slots.
+The scheduler will take into account this fact in order to assess how attractive a system slot is,
+and the memory allocator will use this information to determine the potential scheduling freedom 
+a memory zone selection will provide.
+
+The segmented memory model combined with the affinity capability allow the implementation of basic quality-of-service
+and assignment of isolated or dedicated memory paths to a set of acccelerators.
+These are desirable capabilities for a mixed criticality system.
+
+Finally, the goal of flexibility was achieved with the proper use of the \gls{fdt}.
+A designer may implement any accelerator arrangement, any interconnect architecture and any memory layout.
+The implementation tool will generate an hardware description file, out of which the \gls{fdt} can be generated.
+Nonetheless, the designer will still need to manually describe a certain amount of additional details regarding
+the organization of the hardware design. The final \gls{fdt} will be passed to the kernel and is sufficient
+to fully describe the hardware -- no source code modification is needed.
+For more information, please see section \ref{sec:dt}.
+
+A shortcoming of our system is that memory layout, 
+as well as the implemented static hardware design
+cannot change without system reboot. 
+This is due to older Linux kernel limitations on modifying an active \gls{fdt}.
+Please see section \ref{sec:linux-pr} for details.
+
+Finally, the port to Zynq UltraScale+ had to be halted. 
+We completed the hardware design and the partial reconfiguration workflow,
+but we could not support it by the driver.
+The reason is that Xilinx has yet to offer software support for 
+the partial reconfiguration capability through the PCAP interface.
+
 

@@ -84,34 +84,32 @@
 \contentsline {subsection}{\numberline {6.1.4}The Sobel/Scharr Filter}{108}{subsection.6.1.4}
 \contentsline {subsection}{\numberline {6.1.5}The Gaussian Blur Filter}{109}{subsection.6.1.5}
 \contentsline {subsection}{\numberline {6.1.6}Resource Utilization and Latency}{110}{subsection.6.1.6}
-\contentsline {section}{\numberline {6.2}Accelerator Interface}{112}{section.6.2}
+\contentsline {section}{\numberline {6.2}Accelerator Interface}{111}{section.6.2}
 \contentsline {section}{\numberline {6.3}Evaluation}{116}{section.6.3}
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{123}{chapter.7}
-\contentsline {section}{\numberline {7.1}Challenges and Lessons Learned}{124}{section.7.1}
-\contentsline {subsection}{\numberline {7.1.1}The Implementation Workflow}{124}{subsection.7.1.1}
-\contentsline {subsection}{\numberline {7.1.2}The Tool Quality}{125}{subsection.7.1.2}
-\contentsline {subsection}{\numberline {7.1.3}The Efficiency of HLS}{126}{subsection.7.1.3}
-\contentsline {section}{\numberline {7.2}Future Work}{127}{section.7.2}
-\contentsline {subsection}{\numberline {7.2.1}Integration with FPGA Manager}{127}{subsection.7.2.1}
-\contentsline {subsection}{\numberline {7.2.2}Use of Advanced DMA Modes}{128}{subsection.7.2.2}
-\contentsline {subsection}{\numberline {7.2.3}Rethinking the Accelerator - DMAC Relationship}{129}{subsection.7.2.3}
-\contentsline {subsection}{\numberline {7.2.4}Task Buffer Migration}{130}{subsection.7.2.4}
-\contentsline {subsection}{\numberline {7.2.5}Accelerator Control}{132}{subsection.7.2.5}
-\contentsline {subsection}{\numberline {7.2.6}Accelerator Interrupts}{132}{subsection.7.2.6}
-\contentsline {subsection}{\numberline {7.2.7}Portability}{133}{subsection.7.2.7}
-\contentsline {subsection}{\numberline {7.2.8}Scheduler Improvements}{133}{subsection.7.2.8}
-\contentsline {subsection}{\numberline {7.2.9}Bitsteam Size}{134}{subsection.7.2.9}
-\contentsline {subsection}{\numberline {7.2.10}Clock Management}{135}{subsection.7.2.10}
-\contentsline {subsection}{\numberline {7.2.11}Extending Heterogeniety}{135}{subsection.7.2.11}
-\contentsline {subsection}{\numberline {7.2.12}Random-Access Model}{135}{subsection.7.2.12}
-\contentsline {subsection}{\numberline {7.2.13}Scaling to Multiple Boards}{136}{subsection.7.2.13}
-\contentsline {chapter}{Appendices}{137}{section*.71}
-\contentsline {chapter}{\numberline {A}Partial Reconfiguration Scripts}{139}{Appendix.a.A}
-\contentsline {section}{\numberline {A.1}Creating static design Device Checkpoint}{139}{section.a.A.1}
-\contentsline {section}{\numberline {A.2}Generating the Project Files}{140}{section.a.A.2}
-\contentsline {section}{\numberline {A.3}TCL Client Script}{141}{section.a.A.3}
-\contentsline {section}{\numberline {A.4}Partial Bitstream Manipulation}{145}{section.a.A.4}
-\contentsline {chapter}{\numberline {B}HLS Compiler Scripts}{147}{Appendix.a.B}
-\contentsline {section}{\numberline {B.1}Generating and Exporting an Acccelerator Module}{147}{section.a.B.1}
-\contentsline {chapter}{Glossary}{149}{section*.72}
-\contentsline {chapter}{Bibliography}{161}{chapter.8}
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{121}{chapter.7}
+\contentsline {section}{\numberline {7.1}Challenges and Lessons Learned}{122}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}The Implementation Workflow}{122}{subsection.7.1.1}
+\contentsline {subsection}{\numberline {7.1.2}The Tool Quality}{123}{subsection.7.1.2}
+\contentsline {subsection}{\numberline {7.1.3}The Efficiency of HLS}{124}{subsection.7.1.3}
+\contentsline {section}{\numberline {7.2}Future Work}{125}{section.7.2}
+\contentsline {subsection}{\numberline {7.2.1}Integration with FPGA Manager}{125}{subsection.7.2.1}
+\contentsline {subsection}{\numberline {7.2.2}Use of Advanced DMA Modes}{126}{subsection.7.2.2}
+\contentsline {subsection}{\numberline {7.2.3}Rethinking the Accelerator - DMAC Relationship}{127}{subsection.7.2.3}
+\contentsline {subsection}{\numberline {7.2.4}Task Buffer Migration}{128}{subsection.7.2.4}
+\contentsline {subsection}{\numberline {7.2.5}Accelerator Control}{130}{subsection.7.2.5}
+\contentsline {subsection}{\numberline {7.2.6}Accelerator Interrupts}{130}{subsection.7.2.6}
+\contentsline {subsection}{\numberline {7.2.7}Portability}{131}{subsection.7.2.7}
+\contentsline {subsection}{\numberline {7.2.8}Scheduler Improvements}{131}{subsection.7.2.8}
+\contentsline {subsection}{\numberline {7.2.9}Bitsteam Size}{132}{subsection.7.2.9}
+\contentsline {subsection}{\numberline {7.2.10}Clock Management}{133}{subsection.7.2.10}
+\contentsline {subsection}{\numberline {7.2.11}Extending Heterogeniety}{133}{subsection.7.2.11}
+\contentsline {subsection}{\numberline {7.2.12}Random-Access Model}{133}{subsection.7.2.12}
+\contentsline {subsection}{\numberline {7.2.13}Scaling to Multiple Boards}{134}{subsection.7.2.13}
+\contentsline {chapter}{Appendices}{135}{section*.71}
+\contentsline {chapter}{\numberline {A}Partial Reconfiguration Scripts}{137}{Appendix.a.A}
+\contentsline {section}{\numberline {A.1}Creating static design Device Checkpoint}{137}{section.a.A.1}
+\contentsline {section}{\numberline {A.2}Generating the Project Files}{138}{section.a.A.2}
+\contentsline {section}{\numberline {A.3}TCL Client Script}{139}{section.a.A.3}
+\contentsline {section}{\numberline {A.4}Partial Bitstream Manipulation}{143}{section.a.A.4}
+\contentsline {chapter}{\numberline {B}HLS Compiler Scripts}{145}{Appendix.a.B}
+\contentsline {section}{\numberline {B.1}Generating and Exporting an Acccelerator Module}{145}{section.a.B.1}
